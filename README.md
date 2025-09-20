@@ -1,4 +1,4 @@
-# Piano Trainer UI
+# Piano Trainer Engine
 
 Piano Trainer est une application interactive permettant aux utilisateurs
 d'apprendre et de s'entrainer à jouer des **notes et des accords** sur un
