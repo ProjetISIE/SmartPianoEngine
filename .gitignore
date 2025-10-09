@@ -37,6 +37,7 @@
 *.out
 *.app
 IHM
+PianoTrainerMDJV1
 
 # Debug information files
 *.dwo
@@ -44,6 +45,7 @@ IHM
 # Generated build files
 Makefile*
 release/
+moc_*
 
 # Environment
 .direnv/
