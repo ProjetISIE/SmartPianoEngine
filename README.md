@@ -1,76 +1,44 @@
-# Piano Trainer Engine
+# Piano Trainer (moteur)
 
-Piano Trainer est une application interactive permettant aux utilisateurs
-d'apprendre et de s'entrainer à jouer des **notes et des accords** sur un
-**clavier MIDI** connecté à une **Raspberry Pi 4** et un **écran tactile**.
+Piano Trainer est une application aidant à progresser au piano en s'entrainer
+intelligemment à jouer des **notes** et **accords** sur un **clavier MIDI**
+connecté.
 
 L'application propose plusieurs **modes de jeu** et évalue la performance du
-joueur en temps réel.
+joueur en temps réel pour lui proposer les exercices les plus propices à le
+faire progresser.
 
-## Installation
+Ce projet, développé dans un cadre scolaire (Polytech Tours), vise à être une
+plateforme ayant un intérêt **pédagogique** à la fois sur le piano et sur le
+développement (`C++`…).
 
-### Prérequis
+## Matériel
 
-Avant d'installer l'application, assurez-vous d'avoir :
+Smart Piano a été conçu pour fonctionner avec :
 
-- **Raspberry Pi 4** sous **Raspberry Pi OS** avec une carte Micro SD de **32 Go
-  minimum**.
+- **Raspberry Pi 4** sous **Raspberry Pi OS** avec une carte
+  Micro SD de **32 Go minimum**.
 - **Un écran tactile** connecte à la Raspberry Pi via HDMI.
-- **Un clavier MIDI** compatible (ex : `SWISSONIC EasyKeys49`).
-- **Connexion Internet** pour télécharger les dépendances.
-- **Accès au terminal** (SSH ou interface locale).
+- **Un clavier MIDI** standard (ex : `SWISSONIC EasyKeys49`).
 
-### Étapes d'installation
+De plus, la compilation peut requérir :
 
-1. Mettre à jour le système
+- **Connexion internet** pour télécharger les dépendances.
+- **Accès au terminal** pour l'installation et la configuration.
 
-   `sudo apt update && sudo apt upgrade -y`
+Il est néanmoins possible que l'application fonctionne sur d'autres
+systèmes d’exploitations et architectures.
 
-2. Installer les dépendances Qt
-
-   `sudo apt install -y qtbase5-dev qttools5-dev qttools5-dev-tools qt5-qmake libqt5network5 libqt5network5-dev libqt5gui5 libqt5widgets5`
-
-3. Installer les outils de compilation
-
-   `sudo apt install -y build-essential cmake git`
-
-4. Installer RtMidi
-
-   `git clone https://github.com/thestk/rtmidi.git cd rtmidi mkdir build && cd build cmake .. make -j$(nproc) sudo make install`
-
-5. Installer ALSA et outils audio
-
-   `sudo apt install -y alsa-utils libasound2-dev`
-
-6. Vérifier l'installation
-
-   `qmake --version cmake --version g++ --version aplay --version aconnect -l`
-
-## Lancer l'application
-
-### Cloner le projet depuis le dépôt GitHub
-
-    git clone <URL_DU_REPO>
-    cd PianoTrainer
-
-### Compiler l'application
-
-    qmake && make
-
-### Exécuter l'application
-
-    ./IHM => l'IHM lance le MDJ automatiquement en arrière plan.
-
-## Utilisation de l'application
+## Utilisation
 
 ### Écran d'accueil
 
-Lors du lancement, l'utilisateur peut :
+Lors du lancement, l'utilisateur peut :
 
-- **Sélectionner un type de jeu** :
-  - **Jeu de note** : Joue des notes une par une.
-  - **Jeu d'accords SR** : Joue des accords sans renversement.
-  - **Jeu d'accords AR** : Joue des accords avec renversement.
+- **Sélectionner un type de jeu** :
+  - **Jeu de note** : Joue des notes une par une.
+  - **Jeu d'accords SR** : Joue des accords sans renversement.
+  - **Jeu d'accords AR** : Joue des accords avec renversement.
 - **Choisir une gamme** (Do, Ré, Mi, etc.).
 - **Définir le mode** (Majeur ou Mineur).
 - **Activer/désactiver le son**.
@@ -87,20 +55,7 @@ Lors du lancement, l'utilisateur peut :
 - **Affiche le score final** (temps total du jeu).
 - Permets de **rejouer** ou de **retourner à l'accueil**.
 
-## Communication réseau
-
-L'application utilise un **serveur local** pour gérer les interactions entre
-l'IHM et le **Moteur de Jeu (MDJ)**.
-
-**Le serveur tourne sur le port 8080** et échange des **messages JSON** entre
-l'IHM et le MDJ :
-
-- **Paramètres du jeu** envoyés par l'IHM.
-- **Notes et accords** générés par le MDJ.
-- **Validation des entrées MIDI**.
-- **Envoi du score final**.
-
-## Dépannage et résolution de problèmes
+## Dépannage et résolution des problèmes
 
 | **Problème**                    | **Solution**                                                                                    |
 | ------------------------------- | ----------------------------------------------------------------------------------------------- |
@@ -109,22 +64,44 @@ l'IHM et le MDJ :
 | **Connexion au MDJ impossible** | Assurez-vous que le **Moteur de Jeu (MDJ)** est bien lancé avec `./PianoTrainerMDJV1`.          |
 | **L'application plante**        | **Relancez l'application** et, si nécessaire, **redémarrez la Raspberry Pi**.                   |
 
+## Communications front-end <-> back-end
+
+L'application s’architecture autour d’une communication client-serveur
+HTTP entre l'*IHM* et le **moteur de jeu** (MDJ).
+
+**Le serveur tourne sur le port 8080** et échange des messages encodés en
+**JSON** entre l'IHM et le MDJ :
+
+- **Paramètres du jeu** envoyés par l'IHM.
+- **Notes et accords** générés par le MDJ.
+- **Validation des entrées MIDI**.
+- **Envoi du score final**.
+
+## Contribution
+
+Ce projet utilise [Nix](https://nixos.org) pour télécharger les
+(bonnes versions des) dépendances, configurer l’environnement, et permettant
+in-fine d’effectuer des compilations (croisées) reproductibles.
+Il est défini dans [`flake.nix`](./flake.nix) et s’active avec
+la commande `nix flake develop` (`nix` doit être installé) ou plus simplement via
+[`direnv`](https://direnv.net) (qui doit aussi être installé séparément).
+
+### Compilation
+
+Commencer donc par activer l’environnement pour l’IHM avec `nix flake develop`,
+puis générer les Makefiles avec la commande `qmake`, et finalement compiler
+l’IHM avec la commande `make`.
+
+Réitérer désormais les mêmes étapes pour le MDJ (Moteur de Jeu), à commencer
+pas changer de répertoire de travail avec `cd engine`. Ensuite, activer
+l’environnement pour le MDJ avec `nix flake develop`, générer les Makefiles
+avec la commande `qmake`, et finalement compiler le MDJ avec la commande `make`.
+
+Bravo, il est maintenant possible de lancer l’IHM (qui devrait lancer le MDJ
+automatiquement) avec `./IHM` (après être revenu dans le répertoire `cd ..`).
+
 ## Auteurs
 
-- **Auteurs** : Fankam Jisele, Fauré Guilhem
-- **Auteur original** : _Mahut Vivien_
-- **Documentation utilisateur et technique** : _Voir
-  `docs/DocumentationUtilisateur.pdf`_
+Fankam Jisele, Fauré Guilhem
 
-## Remarque
-
-Ce projet a été développé dans le cadre d'un projet scolaire d'ingénierie et
-vise à être une **plateforme pédagogique d'apprentissage du piano** sur
-**clavier MIDI**.
-
-## Licence
-
-**Open Source** : Vous pouvez utiliser et modifier ce projet en respectant la
-licence du dépôt.
-
-**Merci d'utiliser Piano Trainer !**
+> L’auteur original est Mahut Vivien
