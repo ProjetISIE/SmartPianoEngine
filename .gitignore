@@ -36,6 +36,22 @@
 *.exe
 *.out
 *.app
+IHM
 
-# debug information files
+# Debug information files
 *.dwo
+
+# Generated build files
+Makefile*
+release/
+
+# Environment
+.direnv/
+.qmake.stash
+
+# Editors
+.vscode
+.helix
+
+# Log files
+log_*.txt
