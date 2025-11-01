@@ -1,50 +1,56 @@
 {
-  description = "A Nix-flake-based C/C++ development environment";
-  inputs.nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05"; # NixOS Stable
-  # inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-  # inputs.nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0.1.*.tar.gz";
-  outputs = { self, nixpkgs }:
+  description = "Nix-flake-based Qt/C++ development environment";
+  inputs.nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05";
+  outputs =
+    { self, nixpkgs }:
     let
-      supportedSystems = [ "x86_64-linux" "aarch64-linux" "aarch64-darwin" ];
-      forEachSupportedSystem = f:
-        nixpkgs.lib.genAttrs supportedSystems
-        (system: f { pkgs = import nixpkgs { inherit system; }; });
-    in {
-      devShells = forEachSupportedSystem ({ pkgs }: {
-        default = pkgs.mkShell.override {
-          # stdenv = pkgs.clangStdenv; # Clang instead of GCC
-        } {
-          packages = with pkgs; [
-            alsa-lib # Lib
-            # alsa-utils # Lib
-            # gcc # Compiler
-            clang-tools # Clang CLIs
-            cmake # Automation tool
-            cmake-language-server # LSP
-            cppcheck # Static analysis
-            clang-uml # Generate UML from c(++)
-            doctest # Testing framework
-            doxygen # Documentation generator
-            # gdb # Debugger
-            gnumake # Automation tool
-            gtest # Testing framework
-            lcov # Code coverage
-            libsForQt5.full # Lib
-            libpulseaudio # Lib
-            lldb # Debug adapter
-            # pulseaudio # Lib
-            rtmidi # Lib
-            # pkg-config # Find libraries
-            # valgrind # Debugging and profiling
+      eachSystem =
+        f:
+        let
+          localSystems = [
+            "aarch64-linux"
+            "x86_64-linux"
+            "aarch64-darwin"
           ];
-          env = {
-            CXX = "c++"; # Use Clang++ as the default C++ compiler
-            CC = "clang"; # Use Clang as the default C compiler
-            CXXFLAGS = ''
-              -std=c++23 -Wall -Wextra -Wpedantic -Wshadow -Wconversion
-            ''; # C++23 and more warnings
+          crossSystem = "aarch64-linux";
+        in
+        nixpkgs.lib.genAttrs localSystems (
+          localSystem:
+          f (import nixpkgs { inherit localSystem; }) (
+            import nixpkgs {
+              inherit localSystem;
+              inherit crossSystem;
+            }
+          )
+        );
+    in
+    {
+      packages = eachSystem (
+        pkgs: crossPkgs: {
+          smart-piano = pkgs.qt5.callPackage ./smartPianoEngine.nix { inherit self; };
+          cross-smart-piano = crossPkgs.qt5.callPackage ./smartPianoEngine.nix { inherit self; };
+          default = self.packages.${pkgs.system}.smart-piano;
+          cross = self.packages.${pkgs.system}.cross-smart-piano;
+        }
+      );
+      devShells = eachSystem (
+        pkgs: crossPkgs: {
+          default = pkgs.mkShell {
+            packages = with pkgs; [
+              clang-tools # Clang CLIs, including LSP
+              cmake-language-server # Cmake LSP
+              cppcheck # C++ Static analysis
+              doctest # Testing framework
+              doxygen # Documentation generator
+              gtest # Testing framework
+              lcov # Code coverage
+              lldb # Clang debug adapter
+              valgrind # Debugging and profiling
+            ];
+            nativeBuildInputs = self.packages.${pkgs.system}.smart-piano.nativeBuildInputs;
+            buildInputs = self.packages.${pkgs.system}.smart-piano.buildInputs;
           };
-        };
-      });
+        }
+      );
     };
 }

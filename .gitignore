@@ -46,6 +46,7 @@ PianoTrainerMDJV1
 Makefile*
 release/
 moc_*
+result
 
 # Environment
 .direnv/
