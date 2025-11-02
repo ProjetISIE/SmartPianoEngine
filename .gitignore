@@ -51,6 +51,7 @@ result
 # Environment
 .direnv/
 .qmake.stash
+.cache/
 
 # Editors
 .vscode
