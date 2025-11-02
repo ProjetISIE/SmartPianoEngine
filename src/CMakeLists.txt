@@ -19,6 +19,7 @@ target_link_libraries(
          Threads::Threads # System library
          ALSA::ALSA # System audio library
          rtmidi # MIDI library
+         # jack::jack # Audio interconnection
 )
 
 add_executable(${PROJECT_NAME} main.cpp)

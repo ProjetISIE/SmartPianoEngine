@@ -4,6 +4,7 @@
   doctest,
   mkDerivation,
   ninja,
+  jack2,
   qtmultimedia,
   rtmidi,
   self,
@@ -22,6 +23,7 @@ mkDerivation {
   buildInputs = [
     alsa-lib # Audio lib
     # qtbase # Qt itself, included by qt5.mkDerivation
+    jack2 # Audio interconnection lib
     qtmultimedia # Qt Multimedia lib
     rtmidi # Lib
   ];

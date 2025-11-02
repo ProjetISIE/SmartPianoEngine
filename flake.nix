@@ -41,6 +41,8 @@
               cmake-language-server # Cmake LSP
               cppcheck # C++ Static analysis
               doxygen # Documentation generator
+              fluidsynth # JACK Synthesizer
+              soundfont-fluid # Soudfont for FluidSynth
               gtest # Testing framework
               lcov # Code coverage
               lldb # Clang debug adapter

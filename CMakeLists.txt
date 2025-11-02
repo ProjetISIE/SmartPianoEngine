@@ -19,6 +19,7 @@ find_package(ALSA REQUIRED)
 find_package(Threads REQUIRED)
 find_package(rtmidi REQUIRED)
 find_package(doctest REQUIRED)
+# find_package(jack REQUIRED)
 
 add_subdirectory(src)
 include(GNUInstallDirs)
