@@ -2,7 +2,6 @@
   alsa-lib,
   cmake,
   doctest,
-  libpulseaudio,
   mkDerivation,
   ninja,
   qtmultimedia,
@@ -17,12 +16,10 @@ mkDerivation {
     cmake # Modern build tool
     doctest # Testing framework
     ninja # Modern build tool
-    # pkg-config # Build tool
     # wrapQtAppsHook # Qt build tool, included by qt5.mkDerivation
   ];
   buildInputs = [
     alsa-lib # Audio lib
-    libpulseaudio # Audio lib
     # qtbase # Qt itself, included by qt5.mkDerivation
     qtmultimedia # Qt Multimedia lib
     rtmidi # Lib

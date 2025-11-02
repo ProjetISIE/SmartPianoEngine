@@ -15,9 +15,7 @@ find_package(
   Qt5
   COMPONENTS Core Gui Network Multimedia MultimediaWidgets Test
   REQUIRED)
-find_package(PkgConfig REQUIRED)
 find_package(ALSA REQUIRED)
-pkg_check_modules(PulseAudio REQUIRED libpulse)
 find_package(Threads REQUIRED)
 find_package(doctest REQUIRED)
 find_package(rtmidi REQUIRED)
@@ -54,7 +52,6 @@ target_link_libraries(
           Qt5::Test # Qt5 testing library
           ${ALSA_LIBRARIES} # System libraries
           doctest::doctest # C++ testing library
-          ${PulseAudio_LIBRARIES} # System libraries
           rtmidi # MIDI Library
           Threads::Threads # System libraries
 )
