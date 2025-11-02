@@ -20,6 +20,7 @@ find_package(ALSA REQUIRED)
 pkg_check_modules(PulseAudio REQUIRED libpulse)
 find_package(Threads REQUIRED)
 find_package(doctest REQUIRED)
+find_package(rtmidi REQUIRED)
 
 set(SOURCES
     src/main.cpp
@@ -29,8 +30,7 @@ set(SOURCES
     src/ValidationNote.cpp
     src/LectureNoteJouee.cpp
     src/GestionSon.cpp
-    src/BaseAccords.cpp
-    rtmidi/RtMidi.cpp)
+    src/BaseAccords.cpp)
 set(HEADERS
     include/GameManager.h
     include/SocketManager.h
@@ -39,7 +39,6 @@ set(HEADERS
     include/LectureNoteJouee.h
     include/GestionSon.h
     include/BaseAccords.h
-    rtmidi/RtMidi.h
     include/Logger.h)
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
@@ -56,13 +55,13 @@ target_link_libraries(
           ${ALSA_LIBRARIES} # System libraries
           doctest::doctest # C++ testing library
           ${PulseAudio_LIBRARIES} # System libraries
+          rtmidi # MIDI Library
           Threads::Threads # System libraries
 )
 
 include(GNUInstallDirs)
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-# set(TESTS
-#     test/BaseAccordsTest.cpp test/GameManagerTest.cpp
-#     test/GenererNoteAleatoireTest.cpp test/LectureNoteJoueeTest.cpp
-#     test/SocketManagerTest.cpp test/ValidationNoteTest.cpp)
+# set(TESTS test/BaseAccordsTest.cpp test/GameManagerTest.cpp
+# test/GenererNoteAleatoireTest.cpp test/LectureNoteJoueeTest.cpp
+# test/SocketManagerTest.cpp test/ValidationNoteTest.cpp)

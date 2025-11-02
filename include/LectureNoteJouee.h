@@ -1,9 +1,9 @@
 #ifndef LECTURENOTEJOUEE_H
 #define LECTURENOTEJOUEE_H
 
-#include "RtMidi.h"
 #include <atomic>
 #include <mutex>
+#include <rtmidi/RtMidi.h>
 #include <string>
 #include <vector>
 
@@ -11,7 +11,7 @@
  * @brief Classe LectureNoteJouee
  *
  * Cette classe permet de lire les notes ou accords joues sur un peripherique
- * MIDI. Elle g�re la connexion au peripherique, la lecture des messages MIDI et
+ * MIDI. Elle gère la connexion au peripherique, la lecture des messages MIDI et
  * leur conversion en notation musicale standard.
  */
 class LectureNoteJouee {
