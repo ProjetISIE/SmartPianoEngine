@@ -1,23 +1,22 @@
 #ifndef LECTURENOTEJOUEE_H
 #define LECTURENOTEJOUEE_H
 
-#include <string>
-#include <vector>
-#include <thread>
+#include "RtMidi.h"
 #include <atomic>
 #include <mutex>
-#include "RtMidi.h"
+#include <string>
+#include <thread>
+#include <vector>
 
 /**
  * @brief Classe LectureNoteJouee
  *
- * Cette classe permet de lire les notes ou accords joues sur un peripherique MIDI.
- * Elle g�re la connexion au peripherique, la lecture des messages MIDI et leur conversion
- * en notation musicale standard.
+ * Cette classe permet de lire les notes ou accords joues sur un peripherique
+ * MIDI. Elle g�re la connexion au peripherique, la lecture des messages MIDI et
+ * leur conversion en notation musicale standard.
  */
-class LectureNoteJouee
-{
-public:
+class LectureNoteJouee {
+  public:
     /**
      * @brief Constructeur de la classe LectureNoteJouee
      *
@@ -64,21 +63,27 @@ public:
     void test();
 
     /**
-     * @brief Fonction pour les tests unitaires pour tester la convertion des notes
+     * @brief Fonction pour les tests unitaires pour tester la convertion des
+     * notes
      *
      */
-    std::string testerConvertirNote(int noteMidi) { return convertirNote(noteMidi); }
+    std::string testerConvertirNote(int noteMidi) {
+        return convertirNote(noteMidi);
+    }
 
     /**
-     * @brief Fonction pour les tests unitaires pour tester la lecture du dernier accord.
+     * @brief Fonction pour les tests unitaires pour tester la lecture du
+     * dernier accord.
      *
      */
     std::vector<std::string> getDernierAccord() { return dernierAccord; }
 
-private:
-    RtMidiIn *midiIn;                       ///< Pointeur sur l'objet RtMidiIn pour gerer la connexion MIDI
-    std::string derniereNote;               ///< Derniere note jouee
-    bool jouerSonON;                        ///< Booléen indiquant si il faut jouer le son des notes depuis le programme.
+  private:
+    RtMidiIn*
+        midiIn; ///< Pointeur sur l'objet RtMidiIn pour gerer la connexion MIDI
+    std::string derniereNote; ///< Derniere note jouee
+    bool jouerSonON; ///< Booléen indiquant si il faut jouer le son des notes
+                     ///< depuis le programme.
 
     /**
      * @brief Traite les messages MIDI recus
@@ -87,10 +92,7 @@ private:
      */
     void traiterMessagesMIDI();
 
-    
-
-protected:
-
+  protected:
     /**
      * @brief Convertit une note MIDI en notation musicale
      *
@@ -100,14 +102,14 @@ protected:
      * @param noteMidi Valeur MIDI de la note
      * @return La note en notation musicale.
      */
-    std::string convertirNote(int noteMidi);  
+    std::string convertirNote(int noteMidi);
 
     std::vector<std::string> dernierAccord; ///< Dernier accord joue
 
-    std::atomic<bool> noteDisponible;       ///< Indique si une note ou un accord est disponible
+    std::atomic<bool>
+        noteDisponible; ///< Indique si une note ou un accord est disponible
 
-    std::mutex noteMutex;                   ///< Mutex pour proteger l'acces aux notes
-
+    std::mutex noteMutex; ///< Mutex pour proteger l'acces aux notes
 };
 
 #endif // LECTURENOTEJOUEE_H

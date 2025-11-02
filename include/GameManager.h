@@ -1,17 +1,16 @@
 #ifndef GAME_MANAGER_H
 #define GAME_MANAGER_H
 
-#include "SocketManager.h"
-#include "GenererNoteAleatoire.h"
-#include "ValidationNote.h"
 #include "BaseAccords.h"
+#include "GenererNoteAleatoire.h"
 #include "LectureNoteJouee.h"
 #include "Logger.h"
+#include "SocketManager.h"
+#include "ValidationNote.h"
 
 // Classe principale pour gerer le jeu
-class GameManager
-{
-public:
+class GameManager {
+  public:
     // Constructeur par defaut
     GameManager();
 
@@ -25,7 +24,7 @@ public:
     void lancerJeu();
 
     // Methode pour relancer le jeu avec des parametres definis
-    void rejouer(const std::string &gamme, const std::string &mode);
+    void rejouer(const std::string& gamme, const std::string& mode);
 
     // Methode pour retourner a l'accueil (remet le jeu a l'etat initial)
     void retourAccueil();
@@ -33,24 +32,23 @@ public:
     // Methode pour redemarrer le programme
     void restartProgram();
 
-    //Permet d'acceder a socketManager dans les tests unitaires
+    // Permet d'acceder a socketManager dans les tests unitaires
     SocketManager& getSocketManager() { return socketManager; }
 
-
-
-protected :
+  protected:
     // Methode pour lancer le mode de jeu "Jeu de note"
-    void lancerJeuDeNote(const std::string &gamme, const std::string &mode, bool jouerSon);
+    void lancerJeuDeNote(const std::string& gamme, const std::string& mode,
+                         bool jouerSon);
 
     // Methode pour lancer le mode de jeu "Jeu d'accords simples"
-    void lancerJeuDaccordSR(const std::string &gamme, const std::string &mode, bool jouerSon);
+    void lancerJeuDaccordSR(const std::string& gamme, const std::string& mode,
+                            bool jouerSon);
 
     // Methode pour lancer le mode de jeu "Jeu d'accords avec renversements"
-    void lancerJeuDaccordRenversement(const std::string &gamme, const std::string &mode, bool jouerSon);
+    void lancerJeuDaccordRenversement(const std::string& gamme,
+                                      const std::string& mode, bool jouerSon);
 
-private:
-    
-
+  private:
     // Gestion des communications reseau avec le client
     SocketManager socketManager;
 
@@ -64,7 +62,7 @@ private:
     LectureNoteJouee lectureNote;
 
     // Variables pour stocker les parametres du jeu actuel
-    std::string jeuActuel;   // Type de jeu en cours (ex: "Jeu de note")
+    std::string jeuActuel;     // Type de jeu en cours (ex: "Jeu de note")
     std::string gammeActuelle; // Gamme musicale utilisee (ex: "Do")
     std::string modeActuel;    // Mode utilise (ex: "Majeur" ou "Mineur")
 };

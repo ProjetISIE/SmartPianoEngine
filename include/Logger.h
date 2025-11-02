@@ -1,19 +1,20 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <filesystem>
-#include <mutex>
 #include <chrono>
+#include <filesystem>
+#include <fstream>
 #include <iomanip>
+#include <iostream>
+#include <mutex>
 #include <sstream>
+#include <string>
 
 class Logger {
-public:
+  public:
     // Initialise les chemins des fichiers de log
-    static void init(const std::string &basicLogPath, const std::string &errorLogPath) {
+    static void init(const std::string& basicLogPath,
+                     const std::string& errorLogPath) {
         basicLogFilePath = basicLogPath;
         errorLogFilePath = errorLogPath;
 
@@ -24,22 +25,28 @@ public:
         std::ofstream errorFile(errorLogFilePath, std::ios::app);
 
         if (!basicFile.is_open() || !errorFile.is_open()) {
-            std::cerr << "[Logger] Erreur : Impossible de créer les fichiers de log." << std::endl;
+            std::cerr
+                << "[Logger] Erreur : Impossible de créer les fichiers de log."
+                << std::endl;
         }
     }
 
     // écrit un message dans le fichier de log approprié
-    static void log(const std::string &message, bool isError = false) {
+    static void log(const std::string& message, bool isError = false) {
         std::lock_guard<std::mutex> lock(logMutex);
 
         if (basicLogFilePath.empty() || errorLogFilePath.empty()) {
-            std::cerr << "[Logger] Erreur : Les fichiers de log ne sont pas initialisés." << std::endl;
+            std::cerr << "[Logger] Erreur : Les fichiers de log ne sont pas "
+                         "initialisés."
+                      << std::endl;
             return;
         }
 
-        const std::string &logFilePath = isError ? errorLogFilePath : basicLogFilePath;
+        const std::string& logFilePath =
+            isError ? errorLogFilePath : basicLogFilePath;
 
-        // Vérifie la taille du fichier de log et applique une rotation si nécessaire
+        // Vérifie la taille du fichier de log et applique une rotation si
+        // nécessaire
         if (std::filesystem::exists(logFilePath)) {
             auto fileSize = std::filesystem::file_size(logFilePath);
             if (fileSize > MAX_LOG_SIZE) {
@@ -56,18 +63,24 @@ public:
         if (file.is_open()) {
             file << logEntry << std::endl;
         } else {
-            std::cerr << "[Logger] Erreur : Impossible d'écrire dans le fichier de log." << std::endl;
+            std::cerr << "[Logger] Erreur : Impossible d'écrire dans le "
+                         "fichier de log."
+                      << std::endl;
         }
     }
 
-private:
-    static inline std::string basicLogFilePath; // Chemin du fichier de log basique
-    static inline std::string errorLogFilePath; // Chemin du fichier de log des erreurs
-    static inline std::mutex logMutex;          // Mutex pour garantir l'accès thread-safe
-    static const uintmax_t MAX_LOG_SIZE = 2 * 1024 * 1024; // Taille max en octets (2 Mo)
+  private:
+    static inline std::string
+        basicLogFilePath; // Chemin du fichier de log basique
+    static inline std::string
+        errorLogFilePath; // Chemin du fichier de log des erreurs
+    static inline std::mutex
+        logMutex; // Mutex pour garantir l'accès thread-safe
+    static const uintmax_t MAX_LOG_SIZE =
+        2 * 1024 * 1024; // Taille max en octets (2 Mo)
 
     // Gère la rotation des fichiers de log
-    static void rotateLog(const std::string &filePath) {
+    static void rotateLog(const std::string& filePath) {
         std::string backupPath = filePath + ".backup";
 
         // Supprime l'ancienne sauvegarde si elle existe
@@ -81,7 +94,9 @@ private:
         // Crée un nouveau fichier vide
         std::ofstream newFile(filePath, std::ios::trunc);
         if (!newFile.is_open()) {
-            std::cerr << "[Logger] Erreur : Impossible de recréer le fichier de log." << std::endl;
+            std::cerr
+                << "[Logger] Erreur : Impossible de recréer le fichier de log."
+                << std::endl;
         }
     }
 
@@ -89,7 +104,9 @@ private:
     static std::string getCurrentTimestamp() {
         auto now = std::chrono::system_clock::now();
         auto timeT = std::chrono::system_clock::to_time_t(now);
-        auto timeMs = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()) % 1000;
+        auto timeMs = std::chrono::duration_cast<std::chrono::milliseconds>(
+                          now.time_since_epoch()) %
+                      1000;
 
         std::ostringstream timestamp;
         timestamp << std::put_time(std::localtime(&timeT), "%Y-%m-%d %H:%M:%S")
