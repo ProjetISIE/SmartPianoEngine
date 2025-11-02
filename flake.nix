@@ -49,6 +49,11 @@
             ];
             nativeBuildInputs = self.packages.${pkgs.system}.smart-piano.nativeBuildInputs;
             buildInputs = self.packages.${pkgs.system}.smart-piano.buildInputs;
+            shellHook = ''
+              mkdir build
+              cd build
+              cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..
+            '';
           };
         }
       );

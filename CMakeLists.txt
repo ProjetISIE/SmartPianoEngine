@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 project(
   PianoTrainer
-  VERSION 1.0
+  VERSION 0.0.0
   LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 23)
@@ -9,11 +9,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
+# set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-find_package(
-  Qt5 5.15
-  COMPONENTS Core Gui Network Multimedia MultimediaWidgets
-  REQUIRED)
+find_package(Qt5 REQUIRED COMPONENTS Core Gui Network Multimedia
+                                     MultimediaWidgets Test)
 find_package(PkgConfig REQUIRED)
 find_package(ALSA REQUIRED)
 pkg_check_modules(PulseAudio REQUIRED libpulse)
@@ -50,6 +49,7 @@ target_link_libraries(
           Qt5::Network # Qt5 libraries
           Qt5::Multimedia # Qt5 libraries
           Qt5::MultimediaWidgets # Qt5 libraries
+          Qt5::Test # Qt5 testing library
           ${ALSA_LIBRARIES} # System libraries
           ${PulseAudio_LIBRARIES} # System libraries
           Threads::Threads # System libraries

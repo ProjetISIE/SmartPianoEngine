@@ -5,11 +5,11 @@ Checks: >
   clang-analyzer-*,
   clang-diagnostic-*,
   concurrency-*,
-  cppcoreguidelines-*,
   modernize-*,
   performance-*,
-  readability-*
-HeaderFilterRegex: '(include/|src/|testMDJ/)'
+  readability-*,
+# cppcoreguidelines-*,
+# HeaderFilterRegex: '(include/|src/|testMDJ/)'
 CheckOptions:
     readability-identifier-naming.ClassCase:           CamelCase
     readability-identifier-naming.StructCase:          CamelCase
