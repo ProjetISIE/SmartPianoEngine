@@ -1,13 +1,13 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "doctest.h"
 #include "../include/ValidationNote.h"
+#include "doctest.h"
 
 // Test de la validation d'une seule note
 TEST_CASE("ValidationNote - Validation d'une note") {
     ValidationNote validation;
 
-    CHECK(validation.valider("C4", "C4") == true);   // Identique
-    CHECK(validation.valider("D4", "C4") == false);  // Different
+    CHECK(validation.valider("C4", "C4") == true);  // Identique
+    CHECK(validation.valider("D4", "C4") == false); // Different
 }
 
 // Test de la validation d'un accord sans renversement

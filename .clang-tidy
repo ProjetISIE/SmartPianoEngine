@@ -9,19 +9,19 @@ Checks: >
   performance-*,
   readability-*,
 # cppcoreguidelines-*,
-# HeaderFilterRegex: '(include/|src/|testMDJ/)'
 CheckOptions:
-    readability-identifier-naming.ClassCase:           CamelCase
-    readability-identifier-naming.StructCase:          CamelCase
-    readability-identifier-naming.EnumCase:            CamelCase
-    readability-identifier-naming.EnumConstantCase:    UPPER_CASE
-    readability-identifier-naming.FunctionCase:        camelBack
-    readability-identifier-naming.GlobalFunctionCase:  camelBack
-    readability-identifier-naming.VariableCase:        camelBack
-    readability-identifier-naming.GlobalVariableCase:  camelBack
-    readability-identifier-naming.ParameterCase:       camelBack
-    readability-identifier-naming.NamespaceCase:       lower_case
-    readability-identifier-naming.ConstexprVariableCase: UPPER_CASE
-    readability-identifier-naming.GlobalConstantCase:    UPPER_CASE
+  readability-identifier-naming:
+    EnumConstantCase:      UPPER_CASE
+    ConstexprVariableCase: UPPER_CASE
+    GlobalConstantCase:    UPPER_CASE
+    ClassCase:             CamelCase
+    StructCase:            CamelCase
+    EnumCase:              CamelCase
+    FunctionCase:          camelBack
+    GlobalFunctionCase:    camelBack
+    VariableCase:          camelBack
+    GlobalVariableCase:    camelBack
+    ParameterCase:         camelBack
+    NamespaceCase:         lower_case
 ...
 

@@ -1,11 +1,11 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "doctest.h"
 #include "../include/SocketManager.h"
-#include <QTcpSocket>
+#include "doctest.h"
+#include <QByteArray>
 #include <QCoreApplication>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QByteArray>
+#include <QTcpSocket>
 
 // Test de l'initialisation du serveur
 TEST_CASE("SocketManager - Initialisation du serveur") {
@@ -34,8 +34,6 @@ TEST_CASE("SocketManager - Envoi d'un message") {
 
     QJsonObject message = {{"type", "test"}, {"content", "Hello"}};
     serveur.envoyerMessage(message);
-
-
 }
 
 // Test de la reception d'un message JSON
@@ -46,14 +44,14 @@ TEST_CASE("SocketManager - Reception d'un message") {
     QTcpSocket client;
     client.connectToHost("127.0.0.1", 8080);
     CHECK(client.waitForConnected(3000) == true);
-
 }
 
 // Test du traitement d'un message JSON
 TEST_CASE("SocketManager - Traitement JSON") {
     SocketManager serveur;
     QString jsonString = R"({"key1":"value1", "key2":"value2"})";
-    std::map<std::string, std::string> resultat = serveur.traiterMessage(jsonString);
+    std::map<std::string, std::string> resultat =
+        serveur.traiterMessage(jsonString);
 
     CHECK(resultat["key1"] == "value1");
     CHECK(resultat["key2"] == "value2");

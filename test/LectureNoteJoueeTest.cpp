@@ -1,11 +1,13 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "doctest.h"
 #include "../include/LectureNoteJouee.h"
+#include "doctest.h"
 #include <vector>
 
 class TestLectureNoteJouee : public LectureNoteJouee {
-public:
-    std::string testerConvertirNote(int noteMidi) { return convertirNote(noteMidi); }
+  public:
+    std::string testerConvertirNote(int noteMidi) {
+        return convertirNote(noteMidi);
+    }
 
     void simulerAccord(std::vector<std::string> notes) {
         std::lock_guard<std::mutex> lock(noteMutex);
@@ -15,7 +17,6 @@ public:
 
     std::vector<std::string> getDernierAccord() { return dernierAccord; }
 };
-
 
 // Test de la conversion des notes MIDI
 TEST_CASE("LectureNoteJouee - Conversion des notes MIDI") {

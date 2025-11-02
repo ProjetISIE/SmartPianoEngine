@@ -1,31 +1,27 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "doctest.h"
 #include "../include/GameManager.h"
-#include <QTcpSocket>
+#include "doctest.h"
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QTcpSocket>
 #include <QTest>
 
 // Classe derivee pour acceder aux methodes protegees
-class TestGameManager : public GameManager
-{
-public:
-
+class TestGameManager : public GameManager {
+  public:
     using GameManager::lancerJeuDaccordRenversement;
     using GameManager::lancerJeuDaccordSR;
     using GameManager::lancerJeuDeNote;
 };
 
 // Test de l'initialisation du serveur
-TEST_CASE("GameManager - Initialisation du serveur")
-{
+TEST_CASE("GameManager - Initialisation du serveur") {
     TestGameManager manager;
     CHECK(manager.initialiserServeur(8080) == true);
 }
 
 // Test de l'attente de connexion
-TEST_CASE("GameManager - Attente de connexion")
-{
+TEST_CASE("GameManager - Attente de connexion") {
     TestGameManager manager;
     CHECK(manager.initialiserServeur(8080) == true);
 
@@ -38,35 +34,29 @@ TEST_CASE("GameManager - Attente de connexion")
 }
 
 // Test du lancement du jeu avec des parametres valides
-TEST_CASE("GameManager - Lancement du jeu")
-{
+TEST_CASE("GameManager - Lancement du jeu") {
     TestGameManager manager;
     CHECK(manager.initialiserServeur(8080) == true);
 
     QTcpSocket client;
     client.connectToHost("127.0.0.1", 8080);
     CHECK(client.waitForConnected(3000) == true);
-
-
 }
 
 // Test du traitement d'un jeu de note
-TEST_CASE("GameManager - Jeu de note")
-{
+TEST_CASE("GameManager - Jeu de note") {
     TestGameManager manager;
     manager.lancerJeuDeNote("Do", "Majeur", false);
 }
 
 // Test du traitement d'un jeu d'accords sans renversement
-TEST_CASE("GameManager - Jeu d'accord sans renversement")
-{
+TEST_CASE("GameManager - Jeu d'accord sans renversement") {
     TestGameManager manager;
     manager.lancerJeuDaccordSR("Do", "Majeur", false);
 }
 
 // Test du traitement d'un jeu d'accords avec renversement
-TEST_CASE("GameManager - Jeu d'accord avec renversement")
-{
+TEST_CASE("GameManager - Jeu d'accord avec renversement") {
     TestGameManager manager;
     manager.lancerJeuDaccordRenversement("Do", "Majeur", false);
 }
