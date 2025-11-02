@@ -1,3 +1,4 @@
+// Classe inutilisée, gardée pour référence
 #include "GestionSon.h"
 #include "Logger.h"
 #include <cstdlib>

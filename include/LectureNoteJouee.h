@@ -34,10 +34,9 @@ class LectureNoteJouee {
      * @brief Initialise le peripherique MIDI
      *
      * Configure le peripherique MIDI pour la lecture des messages.
-     * @param jouerSonON Paramètre pour jouer ou non le son .wav des notes.
      * @return true si l'initialisation reussit, false sinon.
      */
-    bool initialiser(bool jouerSonON);
+    bool initialiser();
 
     /**
      * @brief Lit une ou plusieurs notes jouees
@@ -81,8 +80,6 @@ class LectureNoteJouee {
     RtMidiIn*
         midiIn; ///< Pointeur sur l'objet RtMidiIn pour gerer la connexion MIDI
     std::string derniereNote; ///< Derniere note jouee
-    bool jouerSonON; ///< Booléen indiquant si il faut jouer le son des notes
-                     ///< depuis le programme.
 
     /**
      * @brief Traite les messages MIDI recus

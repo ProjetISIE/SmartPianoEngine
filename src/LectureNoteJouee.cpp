@@ -1,5 +1,4 @@
 #include "LectureNoteJouee.h"
-#include "GestionSon.h"
 #include "Logger.h"
 #include <QCoreApplication>
 #include <chrono>
@@ -15,14 +14,12 @@ LectureNoteJouee::~LectureNoteJouee() {
     fermer();
 }
 
-GestionSon gestionSon(QCoreApplication::instance());
+// GestionSon gestionSon(QCoreApplication::instance());
 
 // Initialisation de la lecture MIDI
-bool LectureNoteJouee::initialiser(bool jouerSonON) {
-    this->jouerSonON = jouerSonON;
-    Logger::log(
-        "[LectureNoteJouee] Ligne 25 : Initialisation commencee, jouerSonON=" +
-        std::to_string(jouerSonON));
+bool LectureNoteJouee::initialiser() {
+    // this->jouerSonON = jouerSonON;
+    Logger::log("[LectureNoteJouee] Ligne 25 : Initialisation commencee");
     Logger::log("[LectureNoteJouee] Ligne 26 : RtMidi Version : " +
                 std::string(RtMidi::getVersion()));
 
@@ -168,14 +165,12 @@ void LectureNoteJouee::traiterMessagesMIDI() {
                             dernierAccord = notesAccord;
                             noteDisponible = true;
                         }
-                        if (jouerSonON) {
-                            std::thread(&GestionSon::jouerSon, &gestionSon,
-                                        note)
-                                .detach();
-                            Logger::log("[LectureNoteJouee] Ligne 141 : Son "
-                                        "joue pour la note : " +
-                                        note);
-                        }
+                        // if (jouerSonON) {
+                        //     std::thread(&GestionSon::jouerSon, &gestionSon,
+                        //                 note).detach();
+                        //     Logger::log("[LectureNoteJouee] Ligne 141 : Son "
+                        //                 "joué pour la note : " + note);
+                        // }
                     }
                 }
             }

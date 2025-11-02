@@ -9,7 +9,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
-# set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 find_package(
   Qt5
@@ -17,48 +16,40 @@ find_package(
   REQUIRED)
 find_package(ALSA REQUIRED)
 find_package(Threads REQUIRED)
-find_package(doctest REQUIRED)
 find_package(rtmidi REQUIRED)
+find_package(doctest REQUIRED)
 
-set(SOURCES
-    src/main.cpp
-    src/GameManager.cpp
-    src/SocketManager.cpp
-    src/GenererNoteAleatoire.cpp
-    src/ValidationNote.cpp
-    src/LectureNoteJouee.cpp
-    src/GestionSon.cpp
-    src/BaseAccords.cpp)
-set(HEADERS
-    include/GameManager.h
-    include/SocketManager.h
-    include/GenererNoteAleatoire.h
-    include/ValidationNote.h
-    include/LectureNoteJouee.h
-    include/GestionSon.h
-    include/BaseAccords.h
-    include/Logger.h)
-
-add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
+add_executable(
+  ${PROJECT_NAME}
+  src/main.cpp
+  src/GameManager.cpp
+  src/SocketManager.cpp
+  src/GenererNoteAleatoire.cpp
+  src/ValidationNote.cpp
+  src/LectureNoteJouee.cpp
+  src/BaseAccords.cpp
+  include/GameManager.h
+  include/SocketManager.h
+  include/GenererNoteAleatoire.h
+  include/ValidationNote.h
+  include/LectureNoteJouee.h
+  include/BaseAccords.h
+  include/Logger.h)
 target_include_directories(${PROJECT_NAME} PRIVATE include rtmidi)
 target_compile_definitions(${PROJECT_NAME} PRIVATE __LINUX_ALSA__)
 target_link_libraries(
   ${PROJECT_NAME}
-  PRIVATE Qt5::Core # Qt5 libraries
-          Qt5::Gui # Qt5 libraries
-          Qt5::Network # Qt5 libraries
-          Qt5::Multimedia # Qt5 libraries
-          Qt5::MultimediaWidgets # Qt5 libraries
-          Qt5::Test # Qt5 testing library
-          ${ALSA_LIBRARIES} # System libraries
-          doctest::doctest # C++ testing library
-          rtmidi # MIDI Library
-          Threads::Threads # System libraries
+  PRIVATE Qt5::Core # Qt5 library
+          Qt5::Gui # Qt5 library
+          Qt5::Network # Qt5 library
+          Qt5::Multimedia # Qt5 library
+          Qt5::MultimediaWidgets # Qt5 library
+          Threads::Threads # System library
+          ALSA::ALSA # System audio library
+          rtmidi # MIDI library
+          # Qt5::Test # Qt5 testing library TODO test target
+          # doctest::doctest # C++ testing library TODO test target
 )
 
 include(GNUInstallDirs)
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-
-# set(TESTS test/BaseAccordsTest.cpp test/GameManagerTest.cpp
-# test/GenererNoteAleatoireTest.cpp test/LectureNoteJoueeTest.cpp
-# test/SocketManagerTest.cpp test/ValidationNoteTest.cpp)

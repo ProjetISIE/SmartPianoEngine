@@ -53,18 +53,17 @@ void GameManager::lancerJeu() {
     std::string jeu = jsonObj.value("jeu").toString().toStdString();
     std::string gamme = jsonObj.value("gamme").toString().toStdString();
     std::string mode = jsonObj.value("mode").toString().toStdString();
-    bool jouerSon = jsonObj.value("jouerSon").toBool();
+    // bool jouerSon = jsonObj.value("jouerSon").toBool();
 
     Logger::log("[GameManager] ligne 57 : Parametres recus - Jeu : " + jeu +
-                ", Gamme : " + gamme + ", Mode : " + mode +
-                ", JouerSon : " + std::to_string(jouerSon));
+                ", Gamme : " + gamme + ", Mode : " + mode);
 
     if (jeu == "Jeu de note") {
-        lancerJeuDeNote(gamme, mode, jouerSon);
+        lancerJeuDeNote(gamme, mode);
     } else if (jeu == "Jeu d'accord SR") {
-        lancerJeuDaccordSR(gamme, mode, jouerSon);
+        lancerJeuDaccordSR(gamme, mode);
     } else if (jeu == "Jeu d'accord AR") {
-        lancerJeuDaccordRenversement(gamme, mode, jouerSon);
+        lancerJeuDaccordRenversement(gamme, mode);
     } else {
         Logger::log(
             "[GameManager] ligne 75 : Type de jeu non supporte : " + jeu, true);
@@ -73,11 +72,10 @@ void GameManager::lancerJeu() {
 
 // Jeu d'accords avec renversements
 void GameManager::lancerJeuDaccordRenversement(const std::string& gamme,
-                                               const std::string& mode,
-                                               bool jouerSon) {
+                                               const std::string& mode) {
     Logger::log("[GameManager] ligne 83 : Lancement du jeu d'accords avec "
                 "renversements");
-    if (!lectureNote.initialiser(jouerSon)) {
+    if (!lectureNote.initialiser()) {
         Logger::log("[GameManager] ligne 86 : Erreur - Impossible "
                     "d'initialiser la lecture MIDI",
                     true);
@@ -143,10 +141,10 @@ void GameManager::lancerJeuDaccordRenversement(const std::string& gamme,
 
 // Jeu d'accords standards
 void GameManager::lancerJeuDaccordSR(const std::string& gamme,
-                                     const std::string& mode, bool jouerSon) {
+                                     const std::string& mode) {
     Logger::log(
         "[GameManager] ligne 151 : Lancement du jeu d'accords standards");
-    if (!lectureNote.initialiser(jouerSon)) {
+    if (!lectureNote.initialiser()) {
         Logger::log("[GameManager] ligne 154 : Erreur - Impossible "
                     "d'initialiser la lecture MIDI",
                     true);
@@ -208,9 +206,9 @@ void GameManager::lancerJeuDaccordSR(const std::string& gamme,
 
 // Jeu de notes
 void GameManager::lancerJeuDeNote(const std::string& gamme,
-                                  const std::string& mode, bool jouerSon) {
+                                  const std::string& mode) {
     Logger::log("[GameManager] ligne 217 : Lancement du jeu de notes");
-    if (!lectureNote.initialiser(jouerSon)) {
+    if (!lectureNote.initialiser()) {
         Logger::log("[GameManager] ligne 220 : Erreur - Impossible "
                     "d'initialiser la lecture MIDI",
                     true);

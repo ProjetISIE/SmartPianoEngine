@@ -1,3 +1,4 @@
+// Classe inutilisée, gardée pour référence
 #ifndef GESTIONSON_H
 #define GESTIONSON_H
 

@@ -35,16 +35,14 @@ class GameManager {
 
   protected:
     // Methode pour lancer le mode de jeu "Jeu de note"
-    void lancerJeuDeNote(const std::string& gamme, const std::string& mode,
-                         bool jouerSon);
+    void lancerJeuDeNote(const std::string& gamme, const std::string& mode);
 
     // Methode pour lancer le mode de jeu "Jeu d'accords simples"
-    void lancerJeuDaccordSR(const std::string& gamme, const std::string& mode,
-                            bool jouerSon);
+    void lancerJeuDaccordSR(const std::string& gamme, const std::string& mode);
 
     // Methode pour lancer le mode de jeu "Jeu d'accords avec renversements"
     void lancerJeuDaccordRenversement(const std::string& gamme,
-                                      const std::string& mode, bool jouerSon);
+                                      const std::string& mode);
 
   private:
     // Gestion des communications reseau avec le client
