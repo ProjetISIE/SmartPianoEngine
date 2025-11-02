@@ -48,8 +48,9 @@
             ];
             nativeBuildInputs = self.packages.${pkgs.system}.smart-piano.nativeBuildInputs;
             buildInputs = self.packages.${pkgs.system}.smart-piano.buildInputs;
+            # Export compile commands JSON for LSP and other tools
             shellHook = ''
-              mkdir build
+              mkdir --verbose build
               cd build
               cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..
             '';

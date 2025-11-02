@@ -28,15 +28,8 @@ add_executable(
   src/ValidationNote.cpp
   src/LectureNoteJouee.cpp
   src/BaseAccords.cpp
-  include/GameManager.h
-  include/SocketManager.h
-  include/GenererNoteAleatoire.h
-  include/ValidationNote.h
-  include/LectureNoteJouee.h
-  include/BaseAccords.h
-  include/Logger.h)
-target_include_directories(${PROJECT_NAME} PRIVATE include rtmidi)
-target_compile_definitions(${PROJECT_NAME} PRIVATE __LINUX_ALSA__)
+  include/SocketManager.h)
+target_include_directories(${PROJECT_NAME} PRIVATE include)
 target_link_libraries(
   ${PROJECT_NAME}
   PRIVATE Qt5::Core # Qt5 library
@@ -55,8 +48,7 @@ install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 include(CTest) # TESTS
 
 add_executable(BaseAccordsTest src/BaseAccords.cpp test/BaseAccordsTest.cpp)
-target_include_directories(BaseAccordsTest PRIVATE include rtmidi)
-target_compile_definitions(BaseAccordsTest PRIVATE __LINUX_ALSA__)
+target_include_directories(BaseAccordsTest PRIVATE include)
 target_link_libraries(
   BaseAccordsTest PRIVATE doctest::doctest # C++ testing library
                           Qt5::Test # Qt5 testing library
