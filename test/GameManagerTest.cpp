@@ -46,17 +46,17 @@ TEST_CASE("GameManager - Lancement du jeu") {
 // Test du traitement d'un jeu de note
 TEST_CASE("GameManager - Jeu de note") {
     TestGameManager manager;
-    manager.lancerJeuDeNote("Do", "Majeur", false);
+    manager.lancerJeuDeNote("Do", "Majeur");
 }
 
 // Test du traitement d'un jeu d'accords sans renversement
 TEST_CASE("GameManager - Jeu d'accord sans renversement") {
     TestGameManager manager;
-    manager.lancerJeuDaccordSR("Do", "Majeur", false);
+    manager.lancerJeuDaccordSR("Do", "Majeur");
 }
 
 // Test du traitement d'un jeu d'accords avec renversement
 TEST_CASE("GameManager - Jeu d'accord avec renversement") {
     TestGameManager manager;
-    manager.lancerJeuDaccordRenversement("Do", "Majeur", false);
+    manager.lancerJeuDaccordRenversement("Do", "Majeur");
 }

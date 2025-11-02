@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 project(
-  PianoTrainer
+  SmartPiano
   VERSION 0.0.0
   LANGUAGES CXX)
 
@@ -47,9 +47,19 @@ target_link_libraries(
           Threads::Threads # System library
           ALSA::ALSA # System audio library
           rtmidi # MIDI library
-          # Qt5::Test # Qt5 testing library TODO test target
-          # doctest::doctest # C++ testing library TODO test target
 )
 
 include(GNUInstallDirs)
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+include(CTest) # TESTS
+
+add_executable(BaseAccordsTest src/BaseAccords.cpp test/BaseAccordsTest.cpp)
+target_include_directories(BaseAccordsTest PRIVATE include rtmidi)
+target_compile_definitions(BaseAccordsTest PRIVATE __LINUX_ALSA__)
+target_link_libraries(
+  BaseAccordsTest PRIVATE doctest::doctest # C++ testing library
+                          Qt5::Test # Qt5 testing library
+)
+
+add_test(NAME BaseAccordsTest COMMAND BaseAccordsTest)
