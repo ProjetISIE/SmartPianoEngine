@@ -5,11 +5,8 @@
   libpulseaudio,
   mkDerivation,
   ninja,
-  pkg-config,
   qtmultimedia,
   rtmidi,
-  qtbase,
-  wrapQtAppsHook,
   self,
 }:
 mkDerivation {
@@ -20,17 +17,14 @@ mkDerivation {
     cmake # Modern build tool
     doctest # Testing framework
     ninja # Modern build tool
-    pkg-config # Build tool
-    wrapQtAppsHook # Qt build tool, included by qt5.mkDerivation
+    # pkg-config # Build tool
+    # wrapQtAppsHook # Qt build tool, included by qt5.mkDerivation
   ];
   buildInputs = [
     alsa-lib # Audio lib
     libpulseaudio # Audio lib
-    qtbase # Qt itself, included by qt5.mkDerivation
+    # qtbase # Qt itself, included by qt5.mkDerivation
     qtmultimedia # Qt Multimedia lib
     rtmidi # Lib
   ];
-  # installPhase = ''
-  #   install -D PianoTrainerMDJV1 $out/bin/engine
-  # '';
 }
