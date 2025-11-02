@@ -1,14 +1,13 @@
 #include "GameManager.h"
-#include <iostream>
-#include <QCoreApplication>
-#include <alsa/asoundlib.h>
-#include "RtMidi.h"
-#include <vector>
-#include <QLoggingCategory>
 #include "Logger.h"
+#include "RtMidi.h"
+#include <QCoreApplication>
+#include <QLoggingCategory>
+#include <alsa/asoundlib.h>
+#include <iostream>
+#include <vector>
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char* argv[]) {
     // Initialisation des chemins de logs
     Logger::init("log_basique_MDJ.txt", "log_erreurs_MDJ.txt");
     Logger::log("[MAIN] Ligne 14 : Initialisation des logs");
@@ -26,9 +25,10 @@ int main(int argc, char *argv[])
     Logger::log("[MAIN] Ligne 26 : Instance de GameManager creee");
 
     // Initialisation du serveur sur le port 8080
-    if (!gameManager.initialiserServeur(8080))
-    {
-        Logger::log("[MAIN] Ligne 31 : Erreur : Impossible de demarrer le serveur", true);
+    if (!gameManager.initialiserServeur(8080)) {
+        Logger::log(
+            "[MAIN] Ligne 31 : Erreur : Impossible de demarrer le serveur",
+            true);
         return -1; // Retourne une erreur si l'initialisation echoue
     }
     Logger::log("[MAIN] Ligne 34 : Serveur demarre sur le port 8080");

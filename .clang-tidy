@@ -9,16 +9,17 @@ Checks: >
   modernize-*,
   performance-*,
   readability-*
+HeaderFilterRegex: '(include/|src/|testMDJ/)'
 CheckOptions:
-    readability-identifier-naming.ClassCase:           PascalCase
-    readability-identifier-naming.StructCase:          PascalCase
-    readability-identifier-naming.EnumCase:            PascalCase
+    readability-identifier-naming.ClassCase:           CamelCase
+    readability-identifier-naming.StructCase:          CamelCase
+    readability-identifier-naming.EnumCase:            CamelCase
     readability-identifier-naming.EnumConstantCase:    UPPER_CASE
-    readability-identifier-naming.FunctionCase:        camelCase
-    readability-identifier-naming.GlobalFunctionCase:  camelCase
-    readability-identifier-naming.VariableCase:        camelCase
-    readability-identifier-naming.GlobalVariableCase:  camelCase
-    readability-identifier-naming.ParameterCase:       camelCase
+    readability-identifier-naming.FunctionCase:        camelBack
+    readability-identifier-naming.GlobalFunctionCase:  camelBack
+    readability-identifier-naming.VariableCase:        camelBack
+    readability-identifier-naming.GlobalVariableCase:  camelBack
+    readability-identifier-naming.ParameterCase:       camelBack
     readability-identifier-naming.NamespaceCase:       lower_case
     readability-identifier-naming.ConstexprVariableCase: UPPER_CASE
     readability-identifier-naming.GlobalConstantCase:    UPPER_CASE
