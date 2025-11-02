@@ -1,6 +1,6 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "../include/LectureNoteJouee.h"
-#include "doctest.h"
+#include <doctest/doctest.h>
 #include <vector>
 
 class TestLectureNoteJouee : public LectureNoteJouee {

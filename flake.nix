@@ -40,7 +40,6 @@
               clang-tools # Clang CLIs, including LSP
               cmake-language-server # Cmake LSP
               cppcheck # C++ Static analysis
-              doctest # Testing framework
               doxygen # Documentation generator
               gtest # Testing framework
               lcov # Code coverage

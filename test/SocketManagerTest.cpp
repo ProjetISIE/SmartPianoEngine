@@ -1,11 +1,11 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "../include/SocketManager.h"
-#include "doctest.h"
 #include <QByteArray>
 #include <QCoreApplication>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QTcpSocket>
+#include <doctest/doctest.h>
 
 // Test de l'initialisation du serveur
 TEST_CASE("SocketManager - Initialisation du serveur") {

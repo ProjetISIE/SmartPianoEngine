@@ -11,14 +11,17 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 # set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-find_package(Qt5 REQUIRED COMPONENTS Core Gui Network Multimedia
-                                     MultimediaWidgets Test)
+find_package(
+  Qt5
+  COMPONENTS Core Gui Network Multimedia MultimediaWidgets Test
+  REQUIRED)
 find_package(PkgConfig REQUIRED)
 find_package(ALSA REQUIRED)
 pkg_check_modules(PulseAudio REQUIRED libpulse)
 find_package(Threads REQUIRED)
+find_package(doctest REQUIRED)
 
-set(SRC
+set(SOURCES
     src/main.cpp
     src/GameManager.cpp
     src/SocketManager.cpp
@@ -28,7 +31,7 @@ set(SRC
     src/GestionSon.cpp
     src/BaseAccords.cpp
     rtmidi/RtMidi.cpp)
-set(HEADER
+set(HEADERS
     include/GameManager.h
     include/SocketManager.h
     include/GenererNoteAleatoire.h
@@ -39,7 +42,7 @@ set(HEADER
     rtmidi/RtMidi.h
     include/Logger.h)
 
-add_executable(${PROJECT_NAME} ${SRC} ${HEADER})
+add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 target_include_directories(${PROJECT_NAME} PRIVATE include rtmidi)
 target_compile_definitions(${PROJECT_NAME} PRIVATE __LINUX_ALSA__)
 target_link_libraries(
@@ -51,9 +54,15 @@ target_link_libraries(
           Qt5::MultimediaWidgets # Qt5 libraries
           Qt5::Test # Qt5 testing library
           ${ALSA_LIBRARIES} # System libraries
+          doctest::doctest # C++ testing library
           ${PulseAudio_LIBRARIES} # System libraries
           Threads::Threads # System libraries
 )
 
 include(GNUInstallDirs)
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+# set(TESTS
+#     test/BaseAccordsTest.cpp test/GameManagerTest.cpp
+#     test/GenererNoteAleatoireTest.cpp test/LectureNoteJoueeTest.cpp
+#     test/SocketManagerTest.cpp test/ValidationNoteTest.cpp)

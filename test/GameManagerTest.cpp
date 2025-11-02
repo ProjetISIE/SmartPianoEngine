@@ -1,10 +1,10 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "../include/GameManager.h"
-#include "doctest.h"
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QTcpSocket>
 #include <QTest>
+#include <doctest/doctest.h>
 
 // Classe derivee pour acceder aux methodes protegees
 class TestGameManager : public GameManager {

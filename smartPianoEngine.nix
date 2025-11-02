@@ -1,6 +1,7 @@
 {
   alsa-lib,
   cmake,
+  doctest,
   libpulseaudio,
   mkDerivation,
   ninja,
@@ -17,6 +18,7 @@ mkDerivation {
   src = self;
   nativeBuildInputs = [
     cmake # Modern build tool
+    doctest # Testing framework
     ninja # Modern build tool
     pkg-config # Build tool
     wrapQtAppsHook # Qt build tool, included by qt5.mkDerivation

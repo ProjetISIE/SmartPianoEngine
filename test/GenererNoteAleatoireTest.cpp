@@ -1,6 +1,6 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "../include/GenererNoteAleatoire.h"
-#include "doctest.h"
+#include <doctest/doctest.h>
 
 // Test de la generation d'une note aleatoire dans une gamme donnee
 TEST_CASE("GenererNoteAleatoire - generation de note") {
