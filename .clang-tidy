@@ -1,0 +1,26 @@
+---
+Checks: >
+  bugprone-*,
+  cert-*,
+  clang-analyzer-*,
+  clang-diagnostic-*,
+  concurrency-*,
+  cppcoreguidelines-*,
+  modernize-*,
+  performance-*,
+  readability-*
+CheckOptions:
+    readability-identifier-naming.ClassCase:           PascalCase
+    readability-identifier-naming.StructCase:          PascalCase
+    readability-identifier-naming.EnumCase:            PascalCase
+    readability-identifier-naming.EnumConstantCase:    UPPER_CASE
+    readability-identifier-naming.FunctionCase:        camelCase
+    readability-identifier-naming.GlobalFunctionCase:  camelCase
+    readability-identifier-naming.VariableCase:        camelCase
+    readability-identifier-naming.GlobalVariableCase:  camelCase
+    readability-identifier-naming.ParameterCase:       camelCase
+    readability-identifier-naming.NamespaceCase:       lower_case
+    readability-identifier-naming.ConstexprVariableCase: UPPER_CASE
+    readability-identifier-naming.GlobalConstantCase:    UPPER_CASE
+...
+
