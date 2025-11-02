@@ -12,6 +12,7 @@ mkDerivation {
   pname = "smart-piano-engine";
   version = "0.1.0";
   src = self;
+  doCheck = true; # Enable tests
   nativeBuildInputs = [
     cmake # Modern build tool
     doctest # Testing framework
