@@ -7,7 +7,6 @@
 #include <QString>
 #include <chrono>
 #include <cstdlib>
-#include <iostream>
 #include <unistd.h>
 
 using namespace std::chrono;

@@ -1,7 +1,6 @@
 #include "GestionSon.h"
 #include "Logger.h"
 #include <cstdlib>
-#include <iostream>
 
 // Constructeur de la classe GestionSon
 GestionSon::GestionSon(QObject* parent) : QObject(parent) {

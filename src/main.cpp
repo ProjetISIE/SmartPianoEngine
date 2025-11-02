@@ -1,11 +1,9 @@
 #include "GameManager.h"
 #include "Logger.h"
-#include "RtMidi.h"
 #include <QCoreApplication>
 #include <QLoggingCategory>
 #include <alsa/asoundlib.h>
 #include <iostream>
-#include <vector>
 
 int main(int argc, char* argv[]) {
     // Initialisation des chemins de logs

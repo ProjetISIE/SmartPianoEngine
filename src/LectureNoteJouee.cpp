@@ -3,7 +3,6 @@
 #include "Logger.h"
 #include <QCoreApplication>
 #include <chrono>
-#include <iostream>
 #include <map>
 #include <thread>
 

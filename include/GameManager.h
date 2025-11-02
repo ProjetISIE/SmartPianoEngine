@@ -1,10 +1,8 @@
 #ifndef GAME_MANAGER_H
 #define GAME_MANAGER_H
 
-#include "BaseAccords.h"
 #include "GenererNoteAleatoire.h"
 #include "LectureNoteJouee.h"
-#include "Logger.h"
 #include "SocketManager.h"
 #include "ValidationNote.h"
 
