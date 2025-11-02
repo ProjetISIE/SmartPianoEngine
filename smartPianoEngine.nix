@@ -4,7 +4,8 @@
   doctest,
   mkDerivation,
   ninja,
-  jack2,
+  libjack2,
+  pkg-config,
   qtmultimedia,
   rtmidi,
   self,
@@ -18,12 +19,14 @@ mkDerivation {
     cmake # Modern build tool
     doctest # Testing framework
     ninja # Modern build tool
+    pkg-config # Build tool
     # wrapQtAppsHook # Qt build tool, included by qt5.mkDerivation
   ];
   buildInputs = [
     alsa-lib # Audio lib
     # qtbase # Qt itself, included by qt5.mkDerivation
-    jack2 # Audio interconnection lib
+    # jack2 # Audio interconnection lib
+    libjack2 # Audio interconnection lib
     qtmultimedia # Qt Multimedia lib
     rtmidi # Lib
   ];

@@ -7,8 +7,8 @@ add_library(
   LectureNoteJouee.cpp
   BaseAccords.cpp
   ${CMAKE_SOURCE_DIR}/include/SocketManager.h)
-target_include_directories(${PROJECT_NAME}Lib
-                           PUBLIC ${CMAKE_SOURCE_DIR}/include)
+target_include_directories(${PROJECT_NAME}Lib PUBLIC ${CMAKE_SOURCE_DIR}/include
+                                                     ${JACK_INCLUDE_DIRS})
 target_link_libraries(
   ${PROJECT_NAME}Lib
   PUBLIC Qt5::Core # Qt5 library
@@ -19,7 +19,7 @@ target_link_libraries(
          Threads::Threads # System library
          ALSA::ALSA # System audio library
          rtmidi # MIDI library
-         # jack::jack # Audio interconnection
+         ${JACK_LIBRARIES} # Audio interconnection
 )
 
 add_executable(${PROJECT_NAME} main.cpp)

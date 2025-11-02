@@ -14,22 +14,31 @@ LectureNoteJouee::~LectureNoteJouee() {
     fermer();
 }
 
-// GestionSon gestionSon(QCoreApplication::instance());
-
 // Initialisation de la lecture MIDI
 bool LectureNoteJouee::initialiser() {
     // this->jouerSonON = jouerSonON;
     Logger::log("[LectureNoteJouee] Ligne 25 : Initialisation commencee");
     Logger::log("[LectureNoteJouee] Ligne 26 : RtMidi Version : " +
                 std::string(RtMidi::getVersion()));
-
-    // Verifier les APIs MIDI compilees
-    test();
-
+    test(); // Verifier les APIs MIDI compilees
+    // Sortie MIDI pour la passer au sythétiseur
+    try {
+        midiOut = new RtMidiOut(RtMidi::Api::UNIX_JACK, "LectureNoteJouee");
+        midiOut->openVirtualPort("SmartPianoOutput");
+    } catch (RtMidiError& error) {
+        Logger::log("[LectureNoteJouee] Ligne 35 : Erreur : Impossible de "
+                    "creer l'objet RtMidiOut",
+                    true);
+        if (midiOut) {
+            delete midiOut;
+            midiOut = nullptr;
+        }
+    }
+    // TODO Séparer cet énorme bloc try en petits blocs plus gérables
     try {
         Logger::log(
             "[LectureNoteJouee] Ligne 32 : Creation de l'objet RtMidiIn");
-        midiIn = new RtMidiIn(RtMidi::Api::LINUX_ALSA, "LectureNoteJouee");
+        midiIn = new RtMidiIn(RtMidi::Api::UNIX_JACK, "LectureNoteJouee");
         if (!midiIn) {
             Logger::log("[LectureNoteJouee] Ligne 35 : Erreur : Impossible de "
                         "creer l'objet RtMidiIn",
@@ -79,7 +88,6 @@ bool LectureNoteJouee::initialiser() {
                             true);
             }
         }
-
         Logger::log("[LectureNoteJouee] Ligne 70 : Aucun port correspondant "
                     "trouve pour 'SWISSONIC EasyKeys49'",
                     true);
@@ -165,12 +173,7 @@ void LectureNoteJouee::traiterMessagesMIDI() {
                             dernierAccord = notesAccord;
                             noteDisponible = true;
                         }
-                        // if (jouerSonON) {
-                        //     std::thread(&GestionSon::jouerSon, &gestionSon,
-                        //                 note).detach();
-                        //     Logger::log("[LectureNoteJouee] Ligne 141 : Son "
-                        //                 "joué pour la note : " + note);
-                        // }
+                        midiOut->sendMessage(&message);
                     }
                 }
             }

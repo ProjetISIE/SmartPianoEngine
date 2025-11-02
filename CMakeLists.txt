@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.20)
 project(
   SmartPiano
   VERSION 0.0.0
@@ -15,11 +15,12 @@ find_package(
   Qt5
   COMPONENTS Core Gui Network Multimedia MultimediaWidgets Test
   REQUIRED)
-find_package(ALSA REQUIRED)
+find_package(ALSA REQUIRED) # Consider removing
 find_package(Threads REQUIRED)
 find_package(rtmidi REQUIRED)
 find_package(doctest REQUIRED)
-# find_package(jack REQUIRED)
+find_package(PkgConfig REQUIRED) # Consider removing
+pkg_check_modules(JACK REQUIRED jack)
 
 add_subdirectory(src)
 include(GNUInstallDirs)

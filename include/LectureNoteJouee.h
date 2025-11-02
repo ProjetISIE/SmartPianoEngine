@@ -77,8 +77,8 @@ class LectureNoteJouee {
     std::vector<std::string> getDernierAccord() { return dernierAccord; }
 
   private:
-    RtMidiIn*
-        midiIn; ///< Pointeur sur l'objet RtMidiIn pour gerer la connexion MIDI
+    RtMidiIn* midiIn;         ///< Pointeur sur l’entrée MIDI
+    RtMidiOut* midiOut;       ///< Pointeur sur la sortie MIDI
     std::string derniereNote; ///< Derniere note jouee
 
     /**
