@@ -1,3 +1,7 @@
+---
+lang: fr
+---
+
 # Piano Trainer (moteur)
 
 Piano Trainer est une application aidant à progresser au piano en s'entrainer
@@ -29,32 +33,6 @@ De plus, la compilation peut requérir :
 Il est néanmoins possible que l'application fonctionne sur d'autres
 systèmes d’exploitations et architectures.
 
-## Utilisation
-
-### Écran d'accueil
-
-Lors du lancement, l'utilisateur peut :
-
-- **Sélectionner un type de jeu** :
-  - **Jeu de note** : Joue des notes une par une.
-  - **Jeu d'accords SR** : Joue des accords sans renversement.
-  - **Jeu d'accords AR** : Joue des accords avec renversement.
-- **Choisir une gamme** (Do, Ré, Mi, etc.).
-- **Définir le mode** (Majeur ou Mineur).
-- **Activer/désactiver le son**.
-- **Lancer le jeu** en cliquant sur "Lancer le jeu".
-
-### Écran du jeu
-
-- Affiche la **note ou l'accord** à jouer.
-- Compare la **note jouée** avec celle attendue.
-- Enregistre le **temps total** pour terminer le jeu.
-
-### Écran des résultats
-
-- **Affiche le score final** (temps total du jeu).
-- Permets de **rejouer** ou de **retourner à l'accueil**.
-
 ## Dépannage et résolution des problèmes
 
 | **Problème**                    | **Solution**                                                                                    |
@@ -64,20 +42,7 @@ Lors du lancement, l'utilisateur peut :
 | **Connexion au MDJ impossible** | Assurez-vous que le **Moteur de Jeu (MDJ)** est bien lancé avec `./PianoTrainerMDJV1`.          |
 | **L'application plante**        | **Relancez l'application** et, si nécessaire, **redémarrez la Raspberry Pi**.                   |
 
-## Communications front-end <-> back-end
-
-L'application s’architecture autour d’une communication client-serveur
-HTTP entre l'*IHM* et le **moteur de jeu** (MDJ).
-
-**Le serveur tourne sur le port 8080** et échange des messages encodés en
-**JSON** entre l'IHM et le MDJ :
-
-- **Paramètres du jeu** envoyés par l'IHM.
-- **Notes et accords** générés par le MDJ.
-- **Validation des entrées MIDI**.
-- **Envoi du score final**.
-
-## Contribution
+## Contribution et conventions de code
 
 Ce projet utilise [Nix](https://nixos.org) pour télécharger les
 (bonnes versions des) dépendances, configurer l’environnement, et permettant
@@ -85,6 +50,18 @@ in-fine d’effectuer des compilations (croisées) reproductibles.
 Il est défini dans [`flake.nix`](./flake.nix) et s’active avec
 la commande `nix flake develop` (`nix` doit être installé) ou plus simplement via
 [`direnv`](https://direnv.net) (qui doit aussi être installé séparément).
+
+### Outils
+
+| Fonction                                | Outil                                     |
+| --------------------------------------- | ----------------------------------------- |
+| Compilation C++                         | [Clang](https://clang.llvm.org)           |
+| Assistance langage C++                  | [clangd](https://clangd.llvm.org) (LSP)   |
+| Formatage de code                       | [clangd](https://clangd.llvm.org) (LSP)   |
+| Débogage C++                            | [lldb](https://lldb.llvm.org)             |
+| Système de build                        | [CMake](https://cmake.org) (utilise Make) |
+| Versionnage et collaboration            | [Git](https://git-scm.com) avec GitHub    |
+| Gestion de dépendances et environnement | [Nix](https://nixos.org)                  |
 
 ### Compilation
 
@@ -99,6 +76,95 @@ avec la commande `qmake`, et finalement compiler le MDJ avec la commande `make`.
 
 Bravo, il est maintenant possible de lancer l’IHM (qui devrait lancer le MDJ
 automatiquement) avec `./IHM` (après être revenu dans le répertoire `cd ..`).
+
+### Organisation
+
+| Fichier                 | Contenu                                              |
+| ----------------------- | ---------------------------------------------------- |
+| `src/main.c`            | Initialisation, boucle principale, fin et nettoyages |
+
+### Nommage des symboles
+
+> Définis dans [`.clang-tidy`](./.clang-tidy)
+
+| Symbole                                     | Convention                   |
+| ------------------------------------------- | ---------------------------- |
+| Variable (`uint32_t`)                       | `snake_case` (`my_var = …`)  |
+| Tableau (`example_tab [] = …`)              | `snake_case` suivi de `_tab` |
+| Pointeur (`* example_ptr = …`)              | `snake_case` suivi de `_ptr` |
+| Macro (constante) (`#DEFINE`)               | `UPPER_CASE` (`MY_CONST …`)  |
+| Fonction (`void my_func(uint32_t arg) {…}`) | `snake_case`                 |
+| Types (`typedef` `struct`/`enum` `{…} …`)   | `snake_case` suivi de `_t`   |
+
+```yaml
+Checks: >
+  bugprone-*,
+  cert-*,
+  clang-analyzer-*,
+  clang-diagnostic-*,
+  concurrency-*,
+  modernize-*,
+  performance-*,
+  readability-*,
+CheckOptions:
+  readability-identifier-naming:
+    EnumConstantCase:      UPPER_CASE
+    ConstexprVariableCase: UPPER_CASE
+    GlobalConstantCase:    UPPER_CASE
+    ClassCase:             CamelCase
+    StructCase:            CamelCase
+    EnumCase:              CamelCase
+    FunctionCase:          camelBack
+    GlobalFunctionCase:    camelBack
+    VariableCase:          camelBack
+    GlobalVariableCase:    camelBack
+    ParameterCase:         camelBack
+    NamespaceCase:         lower_case
+```
+
+### Formatage du code (sauts de ligne, indentation…)
+
+Formatage automatique avec clang-format. Style de code défini dans le fichier
+[`.clang-format`](./.clang-format).
+
+```yml
+BasedOnStyle: LLVM # Se baser sur le style « officiel » de Clang
+IndentWidth: 4     # Indenter fortement pour décourager trop de sous-niveaux
+---
+Language: Cpp # Règles spécifiques au C++
+AllowShortBlocksOnASingleLine: Empty # Code plus compact, ex. {}
+AllowShortCaseExpressionOnASingleLine: true # Code plus compact, ex. switch(a) { case 1: … }
+AllowShortCaseLabelsOnASingleLine: true # Code plus compact, ex. case 1: …
+AllowShortIfStatementsOnASingleLine: AllIfsAndElse # Code plus compact, ex. if (a) { … } else { … }
+AllowShortLoopsOnASingleLine: true # Code plus compact, ex. for (…) { … }
+DerivePointerAlignment: false # Tout le temps…
+PointerAlignment: Left # afficher le marquer de pointeur "*" collé au type
+```
+
+### Documentation du code
+
+Documentation de toutes les méthodes/fonctions en français, suivant la syntaxe
+[Doxygen](https://www.doxygen.nl/manual), comportant au moins la mention
+`@brief`, ainsi que `@param` si la fonction prend un ou plusieurs paramètres, et
+`@return` si son type de retour n’est pas `void`.
+
+```c
+/**
+ * @brief Ne fais rien, mis à part être un fonction d’exemple
+ * @param arg1 Le premier argument
+ * @param arg2 Le second argument
+ */
+void my_func(uint32_t arg1, uint16_t arg2);
+```
+
+### Autre
+
+Utilisation des entiers de taille définie `uint8_t`, `uint16_t`, `uint32_t` et
+`uint64_t` de la bibliothèque `<stdint.h>` au lieu des `char`, `short`, `int` et
+`long` dépendants de la plateforme.
+
+Norme utilisée du langage C++ la plus récente,
+[C++23](https://en.wikipedia.org/wiki/C23_(C_standard_revision)).
 
 ## Auteurs
 
