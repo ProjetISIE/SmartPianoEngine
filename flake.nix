@@ -39,14 +39,14 @@
             packages = with pkgs; [
               clang-tools # Clang CLIs, including LSP
               cmake-language-server # Cmake LSP
-              cppcheck # C++ Static analysis
+              # cppcheck # C++ Static analysis
               doxygen # Documentation generator
               fluidsynth # JACK Synthesizer
               soundfont-fluid # Soudfont for FluidSynth
-              gtest # Testing framework
-              lcov # Code coverage
+              # gtest # Testing framework
+              # lcov # Code coverage
               lldb # Clang debug adapter
-              valgrind # Debugging and profiling
+              # valgrind # Debugging and profiling
             ];
             nativeBuildInputs = self.packages.${pkgs.system}.smart-piano.nativeBuildInputs;
             buildInputs = self.packages.${pkgs.system}.smart-piano.buildInputs;
