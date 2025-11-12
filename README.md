@@ -2,17 +2,20 @@
 lang: fr
 ---
 
-# Piano Trainer (moteur)
+# Smart Piano (moteur de jeu)
 
-Piano Trainer est une application aidant à progresser au piano en s'entrainer
-intelligemment à jouer des **notes** et **accords** sur un **clavier MIDI**
-connecté.
+Smart Piano est une application aidant à progresser au piano en s'entrainant
+à en jouer d’une manière optimisant l’apprentissage grâce aux exercices
+intelligents de l’application.
 
-L'application propose plusieurs **modes de jeu** et évalue la performance du
-joueur en temps réel pour lui proposer les exercices les plus propices à le
+L’utilisateur interagit via un **clavier MIDI** connecté au dispositif
+Smart Piano.
+
+L'application propose plusieurs **modes de jeu** (notes, accords…) et évalue
+la performance en temps réel pour proposer les exercices les plus propices à
 faire progresser.
 
-Ce projet, développé dans un cadre scolaire (Polytech Tours), vise à être une
+Ce projet, développé dans le cadre du cursus de Polytech Tours, vise à être une
 plateforme ayant un intérêt **pédagogique** à la fois sur le piano et sur le
 développement (`C++`).
 
