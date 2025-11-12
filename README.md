@@ -4,16 +4,32 @@ lang: fr
 
 # Smart Piano (moteur de jeu)
 
-Smart Piano est une application aidant à progresser au piano en s'entrainant
-à en jouer d’une manière optimisant l’apprentissage grâce aux exercices
+<!--toc:start-->
+
+- [Smart Piano (moteur de jeu)](#smart-piano-moteur-de-jeu)
+  - [Matériel](#matériel)
+  - [Dépannage et résolution des problèmes](#dépannage-et-résolution-des-problèmes)
+  - [Contribution et conventions de code](#contribution-et-conventions-de-code)
+    - [Outils](#outils)
+    - [Documentation du code](#documentation-du-code)
+    - [Formatage du code (sauts de ligne, espaces)](#formatage-du-code-sauts-de-ligne-espaces)
+    - [Nommage des symboles (casse, tirets)](#nommage-des-symboles-casse-tirets)
+    - [Organisation](#organisation)
+    - [Autre](#autre)
+  - [Auteurs](#auteurs)
+
+<!--toc:end-->
+
+Smart Piano est une application aidant à progresser au piano en s'entrainant à
+en jouer d’une manière optimisant l’apprentissage grâce aux exercices
 intelligents de l’application.
 
-L’utilisateur interagit via un **clavier MIDI** connecté au dispositif
-Smart Piano.
+L’utilisateur interagit via un **clavier MIDI** connecté au dispositif Smart
+Piano.
 
-L'application propose plusieurs **modes de jeu** (notes, accords…) et évalue
-la performance en temps réel pour proposer les exercices les plus propices à
-faire progresser.
+L'application propose plusieurs **modes de jeu** (notes, accords…) et évalue la
+performance en temps réel pour proposer les exercices les plus propices à faire
+progresser.
 
 Ce projet, développé dans le cadre du cursus de Polytech Tours, vise à être une
 plateforme ayant un intérêt **pédagogique** à la fois sur le piano et sur le
@@ -34,8 +50,8 @@ De plus, la compilation peut requérir :
 - **Connexion internet** pour télécharger les dépendances
 - **Accès au terminal** pour l'installation et la configuration
 
-Il est néanmoins possible que l'application fonctionne sur d'autres
-systèmes d’exploitations ou architectures, sans garantie.
+Il est néanmoins possible que l'application fonctionne sur d'autres systèmes
+d’exploitations ou architectures, sans garantie.
 
 ## Dépannage et résolution des problèmes
 
@@ -43,16 +59,16 @@ systèmes d’exploitations ou architectures, sans garantie.
 | ------------------------------- | ------------------------------------------------------------------------------- |
 | **Aucune note n'est détectée**  | Vérifier que le **clavier MIDI est bien branché** et reconnu avec `aconnect -l` |
 | **Connexion au MDJ impossible** | S’assurer que le **Moteur de Jeu (MDJ)** est bien lancé : `./PianoTrainerMDJV1` |
-| **L'application plante**        | **Relancer l'application**, voire **redémarrer la Raspberry Pi** |
+| **L'application plante**        | **Relancer l'application**, voire **redémarrer la Raspberry Pi**                |
 
 ## Contribution et conventions de code
 
-Ce projet utilise [Nix](https://nixos.org) pour télécharger les
-(bonnes versions des) dépendances, configurer l’environnement, et permettre
-in-fine d’effectuer des compilations (croisées) reproductibles.
-L’environnement Nix est défini dans [`flake.nix`](./flake.nix) et s’active avec
-la commande `nix flake develop` (`nix` doit être installé) ou plus simplement
-via [`direnv`](https://direnv.net) (qui doit aussi être installé séparément).
+Ce projet utilise [Nix](https://nixos.org) pour télécharger les (bonnes versions
+des) dépendances, configurer l’environnement, et permettre in-fine d’effectuer
+des compilations (croisées) reproductibles. L’environnement Nix est défini dans
+[`flake.nix`](./flake.nix) et s’active avec la commande `nix flake develop`
+(`nix` doit être installé) ou plus simplement via [`direnv`](https://direnv.net)
+(qui doit aussi être installé séparément).
 
 Pour compiler le projet, il est possible (pour tester) d’utiliser
 [CMake](https://cmake.org) (`cmake` puis `cmake --build`) directement depuis un
@@ -62,26 +78,26 @@ l’architecture de la Raspberry Pi 4 (ARM64).
 
 ### Outils
 
-| Fonction                     | Outil                                     |
-| -----------------------------| ----------------------------------------- |
-| Compilation C++              | [Clang](https://clang.llvm.org)           |
-| Système de build             | [CMake](https://cmake.org) (+ Ninja)      |
-| Dépendances et environnement | [Nix](https://nixos.org)                  |
-| Versionnage et collaboration | [Git](https://git-scm.com) avec GitHub    |
-| Tests unitaires              | [doctest](https://github.com/doctest/doctest)|
-| Assistance langage C++       | [clangd](https://clangd.llvm.org) (LSP)   |
-| Documentation depuis le code | [Doxygen](https://www.doxygen.nl)         |
-| Formatage du C++             | [clang-format](https://clangd.llvm.org)   |
-| Contrôle qualité C++         | [clang-tidy](https://clangd.llvm.org)     |
-| Débogage C++                 | [lldb](https://lldb.llvm.org)             |
+| Fonction                     | Outil                                         |
+| ---------------------------- | --------------------------------------------- |
+| Compilation C++              | [Clang](https://clang.llvm.org)               |
+| Système de build             | [CMake](https://cmake.org) (+ Ninja)          |
+| Dépendances et environnement | [Nix](https://nixos.org)                      |
+| Versionnage et collaboration | [Git](https://git-scm.com) avec GitHub        |
+| Tests unitaires              | [doctest](https://github.com/doctest/doctest) |
+| Assistance langage C++       | [clangd](https://clangd.llvm.org) (LSP)       |
+| Documentation depuis le code | [Doxygen](https://www.doxygen.nl)             |
+| Formatage du C++             | [clang-format](https://clangd.llvm.org)       |
+| Contrôle qualité C++         | [clang-tidy](https://clangd.llvm.org)         |
+| Débogage C++                 | [lldb](https://lldb.llvm.org)                 |
 
 ### Documentation du code
 
 Documentation de toutes les méthodes / fonctions en français, suivant la syntaxe
 [Doxygen](https://www.doxygen.nl/manual), comportant au moins un (court) premier
-paragraphe expliquant rapidement la raison d’être de la fonction,
-ainsi qu’une ligne `@param` par paramètre,
-et `@return` si son type de retour n’est pas `void`.
+paragraphe expliquant rapidement la raison d’être de la fonction, ainsi qu’une
+ligne `@param` par paramètre, et `@return` si son type de retour n’est pas
+`void`.
 
 ```c++
 /**
@@ -100,7 +116,7 @@ plus compact (définis dans le fichier [`.clang-format`](./.clang-format)).
 
 ```yaml
 BasedOnStyle: LLVM # Se baser sur le style « officiel » de Clang
-IndentWidth: 4     # Indenter fortement pour décourager trop de sous-imbrication
+IndentWidth: 4 # Indenter fortement pour décourager trop de sous-imbrication
 ---
 Language: Cpp # Règles spécifiques au C++ (le projet pourrait utiliser plusieurs langages)
 AllowShortBlocksOnASingleLine: Empty # Code plus compact, ex. {}
@@ -119,42 +135,42 @@ de nommage définies dans le fichier [`.clang-tidy`](./.clang-tidy).
 
 ```yaml
 CheckOptions.readability-identifier-naming:
-  EnumConstantCase:      UPPER_CASE
+  EnumConstantCase: UPPER_CASE
   ConstexprVariableCase: UPPER_CASE
-  GlobalConstantCase:    UPPER_CASE
-  ClassCase:             CamelCase
-  StructCase:            CamelCase
-  EnumCase:              CamelCase
-  FunctionCase:          camelBack
-  GlobalFunctionCase:    camelBack
-  VariableCase:          camelBack
-  GlobalVariableCase:    camelBack
-  ParameterCase:         camelBack
-  NamespaceCase:         lower_case
+  GlobalConstantCase: UPPER_CASE
+  ClassCase: CamelCase
+  StructCase: CamelCase
+  EnumCase: CamelCase
+  FunctionCase: camelBack
+  GlobalFunctionCase: camelBack
+  VariableCase: camelBack
+  GlobalVariableCase: camelBack
+  ParameterCase: camelBack
+  NamespaceCase: lower_case
 ```
 
-| Symbole            | Convention                   |
-| ------------------ | ---------------------------- |
-| Enum constante     | `UPPER_CASE` (`MY_ENUM`)     |
-| Constexpr          | `UPPER_CASE` (`MY_CONSTEXPR`)|
-| Constante globale  | `UPPER_CASE` (`MY_CONST`)    |
-| Classe             | `CamelCase` (`MyClass`)      |
-| Struct             | `CamelCase` (`MyStruct`)     |
-| Enum               | `CamelCase` (`MyEnum`)       |
-| Fonction           | `camelBack` (`MyMethod`)     |
-| Fonction globale   | `camelBack` (`MyFunc`)       |
-| Variable / Objet   | `camelBack` (`myVar`)        |
-| Variable globale   | `camelBack` (`myGlobalVar`)  |
-| Paramètre          | `camelBack` (`myParam`)      |
-| Espace de nommage  | `snake_case` (`my_namespace`)|
-| Définition de type | `snake_case` suivi de `_t`   |
+| Symbole            | Convention                    |
+| ------------------ | ----------------------------- |
+| Enum constante     | `UPPER_CASE` (`MY_ENUM`)      |
+| Constexpr          | `UPPER_CASE` (`MY_CONSTEXPR`) |
+| Constante globale  | `UPPER_CASE` (`MY_CONST`)     |
+| Classe             | `CamelCase` (`MyClass`)       |
+| Struct             | `CamelCase` (`MyStruct`)      |
+| Enum               | `CamelCase` (`MyEnum`)        |
+| Fonction           | `camelBack` (`MyMethod`)      |
+| Fonction globale   | `camelBack` (`MyFunc`)        |
+| Variable / Objet   | `camelBack` (`myVar`)         |
+| Variable globale   | `camelBack` (`myGlobalVar`)   |
+| Paramètre          | `camelBack` (`myParam`)       |
+| Espace de nommage  | `snake_case` (`my_namespace`) |
+| Définition de type | `snake_case` suivi de `_t`    |
 
 ### Organisation
 
 | Fichier      | Contenu                                              |
 | ------------ | ---------------------------------------------------- |
 | `src/main.c` | Initialisation, boucle principale, fin et nettoyages |
-| `src/*`      | À compléter… |
+| `src/*`      | À compléter…                                         |
 
 ### Autre
 
