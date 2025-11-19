@@ -39,23 +39,20 @@
 IHM
 PianoTrainerMDJV1
 
-# Debug information files
+# Debug information & Log files
 *.dwo
+log*.txt
 
 # Generated build files
+build/
 Makefile*
-release/
 moc_*
+release/
 result
 
-# Environment
+# Environment & Editors
 .direnv/
 .qmake.stash
 .cache/
-
-# Editors
 .vscode
 .helix
-
-# Log files
-log_*.txt
