@@ -1,6 +1,6 @@
-#include "GenererNoteAleatoire.h"
-#include "BaseAccords.h"
-#include "Logger.h"
+#include "GenererNoteAleatoire.hpp"
+#include "BaseAccords.hpp"
+#include "Logger.hpp"
 #include <cstdlib>
 #include <ctime>
 #include <map>

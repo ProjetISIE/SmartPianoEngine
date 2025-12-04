@@ -1,5 +1,5 @@
-#include "ValidationNote.h"
-#include "Logger.h"
+#include "ValidationNote.hpp"
+#include "Logger.hpp"
 #include <algorithm>
 #include <map>
 #include <vector>

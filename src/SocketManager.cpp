@@ -1,5 +1,5 @@
-#include "SocketManager.h"
-#include "Logger.h"
+#include "SocketManager.hpp"
+#include "Logger.hpp"
 #include <QCoreApplication>
 #include <QJsonDocument>
 

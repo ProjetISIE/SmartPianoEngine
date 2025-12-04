@@ -1,5 +1,5 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "../include/ValidationNote.h"
+#include "../include/ValidationNote.hpp"
 #include <doctest/doctest.h>
 
 // Test de la validation d'une seule note

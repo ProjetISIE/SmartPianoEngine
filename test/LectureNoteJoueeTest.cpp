@@ -1,5 +1,5 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "../include/LectureNoteJouee.h"
+#include "../include/LectureNoteJouee.hpp"
 #include <doctest/doctest.h>
 #include <vector>
 

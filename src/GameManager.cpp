@@ -1,5 +1,5 @@
-#include "GameManager.h"
-#include "Logger.h"
+#include "GameManager.hpp"
+#include "Logger.hpp"
 #include <QDebug>
 #include <QJsonArray>
 #include <QJsonDocument>

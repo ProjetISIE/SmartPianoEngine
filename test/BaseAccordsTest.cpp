@@ -1,5 +1,5 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "BaseAccords.h"
+#include "BaseAccords.hpp"
 #include <doctest/doctest.h>
 
 TEST_CASE("BaseAccords - Validation des accords") {

@@ -1,5 +1,5 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "../include/SocketManager.h"
+#include "../include/SocketManager.hpp"
 #include <QByteArray>
 #include <QCoreApplication>
 #include <QJsonDocument>

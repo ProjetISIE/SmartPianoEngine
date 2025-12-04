@@ -1,6 +1,6 @@
 // Classe inutilisée, gardée pour référence
-#include "GestionSon.h"
-#include "Logger.h"
+#include "GestionSon.hpp"
+#include "Logger.hpp"
 #include <cstdlib>
 
 // Constructeur de la classe GestionSon

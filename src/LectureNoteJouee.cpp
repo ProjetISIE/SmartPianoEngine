@@ -1,5 +1,5 @@
-#include "LectureNoteJouee.h"
-#include "Logger.h"
+#include "LectureNoteJouee.hpp"
+#include "Logger.hpp"
 #include <QCoreApplication>
 #include <chrono>
 #include <map>

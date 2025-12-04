@@ -1,10 +1,10 @@
 #ifndef GAME_MANAGER_H
 #define GAME_MANAGER_H
 
-#include "GenererNoteAleatoire.h"
-#include "LectureNoteJouee.h"
-#include "SocketManager.h"
-#include "ValidationNote.h"
+#include "GenererNoteAleatoire.hpp"
+#include "LectureNoteJouee.hpp"
+#include "SocketManager.hpp"
+#include "ValidationNote.hpp"
 
 // Classe principale pour gerer le jeu
 class GameManager {

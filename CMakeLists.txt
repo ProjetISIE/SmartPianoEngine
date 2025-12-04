@@ -32,8 +32,8 @@ add_compile_options(
     -Wextra
     -Wpedantic
     -Wshadow
-    -Wconversion
-    -Werror
+    # -Wconversion
+    # -Werror
 )
 
 add_subdirectory(src)

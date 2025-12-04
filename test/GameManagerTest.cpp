@@ -1,5 +1,5 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "../include/GameManager.h"
+#include "../include/GameManager.hpp"
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QTcpSocket>
