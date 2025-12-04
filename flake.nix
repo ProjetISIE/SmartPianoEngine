@@ -35,28 +35,33 @@
       );
       devShells = systems (
         pkgs: crossPkgs: {
-          default = pkgs.mkShell {
-            packages = with pkgs; [
-              clang-tools # Clang CLIs, including LSP
-              cmake-language-server # Cmake LSP
-              # cppcheck # C++ Static analysis
-              doxygen # Documentation generator
-              fluidsynth # JACK Synthesizer
-              soundfont-fluid # Soudfont for FluidSynth
-              # gtest # Testing framework
-              # lcov # Code coverage
-              lldb # Clang debug adapter
-              # valgrind # Debugging and profiling
-            ];
-            nativeBuildInputs = self.packages.${pkgs.stdenv.hostPlatform.system}.smart-piano.nativeBuildInputs;
-            buildInputs = self.packages.${pkgs.stdenv.hostPlatform.system}.smart-piano.buildInputs;
-            # Export compile commands JSON for LSP and other tools
-            shellHook = ''
-              mkdir --verbose build
-              cd build
-              cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..
-            '';
-          };
+          default =
+            pkgs.mkShell.override
+              {
+                stdenv = pkgs.clangStdenv; # Clang instead of GCC
+              }
+              {
+                packages = with pkgs; [
+                  clang-tools # Clang CLIs, including LSP
+                  cmake-language-server # Cmake LSP
+                  # cppcheck # C++ Static analysis
+                  doxygen # Documentation generator
+                  fluidsynth # JACK Synthesizer
+                  soundfont-fluid # Soudfont for FluidSynth
+                  # gtest # Testing framework
+                  # lcov # Code coverage
+                  lldb # Clang debug adapter
+                  # valgrind # Debugging and profiling
+                ];
+                nativeBuildInputs = self.packages.${pkgs.stdenv.hostPlatform.system}.smart-piano.nativeBuildInputs;
+                buildInputs = self.packages.${pkgs.stdenv.hostPlatform.system}.smart-piano.buildInputs;
+                # Export compile commands JSON for LSP and other tools
+                shellHook = ''
+                  mkdir --verbose build
+                  cd build
+                  cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..
+                '';
+              };
         }
       );
     };
