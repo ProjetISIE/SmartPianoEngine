@@ -20,12 +20,9 @@ find_package(
   Qt5
   COMPONENTS Core Gui Network Multimedia MultimediaWidgets Test
   REQUIRED)
-find_package(ALSA REQUIRED) # Consider removing
 find_package(Threads REQUIRED)
 find_package(rtmidi REQUIRED)
 find_package(doctest REQUIRED)
-find_package(PkgConfig REQUIRED) # Consider removing
-pkg_check_modules(JACK REQUIRED jack)
 
 add_compile_options(
     -Wall
