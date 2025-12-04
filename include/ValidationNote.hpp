@@ -1,6 +1,7 @@
 #ifndef VALIDATION_NOTE_H
 #define VALIDATION_NOTE_H
 
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -54,7 +55,7 @@ class ValidationNote {
     bool
     validerAccordRenversement(const std::vector<std::string>& accordJoue,
                               const std::vector<std::string>& accordAttendu,
-                              int renversement);
+                              uint32_t renversement);
 };
 
 #endif // VALIDATION_NOTE_H

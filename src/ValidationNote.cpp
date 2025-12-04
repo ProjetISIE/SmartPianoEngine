@@ -1,7 +1,9 @@
 #include "ValidationNote.hpp"
 #include "Logger.hpp"
 #include <algorithm>
+#include <cstdint>
 #include <map>
+#include <sys/types.h>
 #include <vector>
 
 // Validation d'une seule note jouee par rapport a une note attendue
@@ -54,7 +56,7 @@ bool ValidationNote::validerAccordSR(
 // Validation d'un accord avec prise en compte du renversement
 bool ValidationNote::validerAccordRenversement(
     const std::vector<std::string>& accordJoue,
-    const std::vector<std::string>& accordAttendu, int renversement) {
+    const std::vector<std::string>& accordAttendu, uint32_t renversement) {
     Logger::log("[ValidationNote] Ligne 49 : Validation d'un accord avec "
                 "renversement. Renversement : " +
                 std::to_string(renversement));
@@ -81,14 +83,14 @@ bool ValidationNote::validerAccordRenversement(
     std::sort(joueMidi.begin(), joueMidi.end());
 
     std::vector<int> attenduRecalibre;
-    for (size_t i = renversement - 1; i < accordAttendu.size(); ++i) {
+    for (uint32_t i = renversement - 1; i < accordAttendu.size(); ++i) {
         attenduRecalibre.push_back(convertirEnMidi(accordAttendu[i]));
     }
-    for (size_t i = 0; i < renversement - 1; ++i) {
+    for (uint32_t i = 0; i < renversement - 1; ++i) {
         attenduRecalibre.push_back(convertirEnMidi(accordAttendu[i]));
     }
 
-    for (size_t i = 1; i < joueMidi.size(); ++i) {
+    for (uint32_t i = 1; i < joueMidi.size(); ++i) {
         if (joueMidi[i] - joueMidi[i - 1] > 12) {
             Logger::log("[ValidationNote] Ligne 82 : Une des notes est en "
                         "dehors de l'octave.",
@@ -97,7 +99,7 @@ bool ValidationNote::validerAccordRenversement(
         }
     }
 
-    for (size_t i = 0; i < attenduRecalibre.size(); ++i) {
+    for (uint32_t i = 0; i < attenduRecalibre.size(); ++i) {
         if (joueMidi[i] % 12 != attenduRecalibre[i] % 12) {
             Logger::log("[ValidationNote] Ligne 89 : Les hauteurs des notes ne "
                         "correspondent pas.",
