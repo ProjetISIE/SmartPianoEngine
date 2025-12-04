@@ -1,10 +1,10 @@
 {
-  description = "Nix-flake-based Qt/C++ development environment";
-  inputs.nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05";
+  description = "Nix flake Qt/C++ development environment";
+  inputs.nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
   outputs =
     { self, nixpkgs }:
     let
-      eachSystem =
+      systems =
         f:
         let
           localSystems = [
@@ -25,15 +25,15 @@
         );
     in
     {
-      packages = eachSystem (
+      packages = systems (
         pkgs: crossPkgs: {
           smart-piano = pkgs.qt5.callPackage ./smartPianoEngine.nix { inherit self; };
           cross-smart-piano = crossPkgs.qt5.callPackage ./smartPianoEngine.nix { inherit self; };
-          default = self.packages.${pkgs.system}.smart-piano;
-          cross = self.packages.${pkgs.system}.cross-smart-piano;
+          default = self.packages.${pkgs.stdenv.hostPlatform.system}.smart-piano;
+          cross = self.packages.${pkgs.stdenv.hostPlatform.system}.cross-smart-piano;
         }
       );
-      devShells = eachSystem (
+      devShells = systems (
         pkgs: crossPkgs: {
           default = pkgs.mkShell {
             packages = with pkgs; [
@@ -48,8 +48,8 @@
               lldb # Clang debug adapter
               # valgrind # Debugging and profiling
             ];
-            nativeBuildInputs = self.packages.${pkgs.system}.smart-piano.nativeBuildInputs;
-            buildInputs = self.packages.${pkgs.system}.smart-piano.buildInputs;
+            nativeBuildInputs = self.packages.${pkgs.stdenv.hostPlatform.system}.smart-piano.nativeBuildInputs;
+            buildInputs = self.packages.${pkgs.stdenv.hostPlatform.system}.smart-piano.buildInputs;
             # Export compile commands JSON for LSP and other tools
             shellHook = ''
               mkdir --verbose build
