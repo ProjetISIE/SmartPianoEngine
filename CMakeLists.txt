@@ -4,9 +4,14 @@ project(
   VERSION 0.0.0
   LANGUAGES CXX)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_C_STANDARD 23)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_EXTENSIONS OFF)
+# Qt specific
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
@@ -21,6 +26,15 @@ find_package(rtmidi REQUIRED)
 find_package(doctest REQUIRED)
 find_package(PkgConfig REQUIRED) # Consider removing
 pkg_check_modules(JACK REQUIRED jack)
+
+add_compile_options(
+    -Wall
+    -Wextra
+    -Wpedantic
+    -Wshadow
+    -Wconversion
+    -Werror
+)
 
 add_subdirectory(src)
 include(GNUInstallDirs)
