@@ -6,7 +6,7 @@ add_library(
   ValidationNote.cpp
   LectureNoteJouee.cpp
   BaseAccords.cpp
-  ${CMAKE_SOURCE_DIR}/include/SocketManager.h)
+  ${CMAKE_SOURCE_DIR}/include/SocketManager.hpp)
 target_include_directories(${PROJECT_NAME}Lib PUBLIC ${CMAKE_SOURCE_DIR}/include
                                                      ${JACK_INCLUDE_DIRS})
 target_link_libraries(
