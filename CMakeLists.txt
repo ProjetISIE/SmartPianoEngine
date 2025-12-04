@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 project(
-  SmartPiano
+  engine # Smart Piano Engine
   VERSION 0.0.0
   LANGUAGES CXX)
 

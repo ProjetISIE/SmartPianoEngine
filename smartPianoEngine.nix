@@ -11,8 +11,8 @@
   self,
 }:
 mkDerivation {
-  pname = "smart-piano-engine";
-  version = "0.1.0";
+  pname = "engine";
+  version = "0.0.0";
   src = self;
   doCheck = true; # Enable tests
   nativeBuildInputs = [
