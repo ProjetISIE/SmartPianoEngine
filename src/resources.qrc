@@ -1,0 +1,6 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+    <qresource prefix="/">
+        <file alias="piano.sf2">./piano.sf2</file>
+    </qresource>
+</RCC>

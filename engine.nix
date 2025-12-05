@@ -7,7 +7,6 @@
   miniaudio,
   qtmultimedia,
   rtmidi,
-  soundfont-fluid,
   self,
 }:
 mkDerivation {
@@ -15,9 +14,6 @@ mkDerivation {
   version = "0.0.0";
   src = self;
   doCheck = true; # Enable tests
-  cmakeFlags = [
-    "-DSOUNDFONT_PATH=${soundfont-fluid}/share/soundfonts/FluidR3_GM2-2.sf2"
-  ];
   nativeBuildInputs = [
     cmake # Modern build tool
     doctest # Testing framework
@@ -33,6 +29,6 @@ mkDerivation {
     miniaudio # Audio lib
     qtmultimedia # Qt Multimedia lib
     rtmidi # Lib
-    soundfont-fluid # Quality Piano SoundFont
+    # soundfont-fluid # Quality Piano SoundFont
   ];
 }

@@ -7,12 +7,25 @@
 #include <string>
 #include <vector>
 
+typedef struct tsf tsf;
+#include <miniaudio/miniaudio.h>
+
 /**
  * @brief Classe LectureNoteJouee
  * Lit les événements MIDI depuis un clavier physique
  * et synthétise le son (piano) en interne via TinySoundFont et Miniaudio
  */
 class LectureNoteJouee {
+  private:
+    RtMidiIn* midiIn;         ///< Entrée MIDI (Clavier physique)
+    tsf* g_tsf;               ///< L'instance du synthétiseur TinySoundFont
+    ma_device device;         ///< Le périphérique audio Miniaudio
+    bool audioInitialized;    ///< Flag pour savoir si l'audio est actif
+    std::string derniereNote; ///< Dernière note jouée
+    std::vector<std::string> dernierAccord; ///< Dernier accord joué
+    std::atomic<bool> noteDisponible;       ///< Jeu peut lire un résultat ?
+    std::mutex noteMutex; ///< Mutex pour protéger l'accès aux données du jeu
+
   public:
     /**
      * @brief Constructeur de la classe LectureNoteJouee
@@ -27,7 +40,7 @@ class LectureNoteJouee {
     /**
      * @brief Initialise le moteur audio et l'entrée MIDI
      *
-     * Charge le SoundFont, démarre le driver audio (ALSA/Pulse) et ouvre
+     * Charge le SoundFont, démarre le driver audio (Miniaudio) et ouvre
      * le port d'entrée MIDI.
      * @return true si tout s'est bien passé, false sinon.
      */
@@ -60,12 +73,12 @@ class LectureNoteJouee {
     std::vector<std::string> getDernierAccord() { return dernierAccord; }
 
   private:
-    RtMidiIn* midiIn; ///< Entrée MIDI (Clavier physique)
-
-    std::string derniereNote;               ///< Dernière note jouée
-    std::vector<std::string> dernierAccord; ///< Dernier accord joué
-    std::atomic<bool>
-        noteDisponible; ///< Indique si le jeu peut lire un résultat
+    /**
+     * @brief Callback audio statique appelé par Miniaudio
+     * C'est ici que les échantillons sonores sont générés.
+     */
+    static void data_callback(ma_device* pDevice, void* pOutput,
+                              const void* pInput, ma_uint32 frameCount);
 
     /**
      * @brief Thread de traitement MIDI
@@ -80,8 +93,6 @@ class LectureNoteJouee {
      * @brief Convertis une note MIDI en notation musicale (ex: 60 -> "C4")
      */
     std::string convertirNote(int noteMidi);
-
-    std::mutex noteMutex; ///< Mutex pour protéger l'accès aux données du jeu
 };
 
 #endif // LECTURENOTEJOUEE_H
