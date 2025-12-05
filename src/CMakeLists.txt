@@ -8,6 +8,7 @@ add_library(
   BaseAccords.cpp
   ${CMAKE_SOURCE_DIR}/include/SocketManager.hpp)
 target_include_directories(${PROJECT_NAME}Lib PUBLIC ${CMAKE_SOURCE_DIR}/include)
+
 target_link_libraries(
   ${PROJECT_NAME}Lib
   PUBLIC Qt5::Core # Qt5 library

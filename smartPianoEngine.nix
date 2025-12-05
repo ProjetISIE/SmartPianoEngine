@@ -5,7 +5,6 @@
   mkDerivation,
   ninja,
   miniaudio,
-  pkg-config,
   qtmultimedia,
   rtmidi,
   soundfont-fluid,
@@ -16,11 +15,14 @@ mkDerivation {
   version = "0.0.0";
   src = self;
   doCheck = true; # Enable tests
+  cmakeFlags = [
+    "-DSOUNDFONT_PATH=${soundfont-fluid}/share/soundfonts/FluidR3_GM2-2.sf2"
+  ];
   nativeBuildInputs = [
     cmake # Modern build tool
     doctest # Testing framework
     ninja # Modern build tool
-    pkg-config # Build tool
+    # pkg-config # Build tool
     # wrapQtAppsHook # Qt build tool, included by qt5.mkDerivation
   ];
   buildInputs = [
