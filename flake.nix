@@ -43,6 +43,7 @@
               {
                 packages = with pkgs; [
                   clang-tools # Clang CLIs, including LSP
+                  clang-uml # UML diagram generator
                   cmake-language-server # Cmake LSP
                   # cppcheck # C++ Static analysis
                   doxygen # Documentation generator
