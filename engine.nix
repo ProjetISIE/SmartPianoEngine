@@ -33,6 +33,6 @@ mkDerivation {
     miniaudio # Audio lib
     qtmultimedia # Qt Multimedia lib
     rtmidi # Lib
-    soundfont-fluid # SoundFont for FluidSynth
+    soundfont-fluid # Quality Piano SoundFont
   ];
 }

@@ -27,8 +27,8 @@
     {
       packages = systems (
         pkgs: crossPkgs: {
-          smart-piano = pkgs.qt5.callPackage ./smartPianoEngine.nix { inherit self; };
-          cross-smart-piano = crossPkgs.qt5.callPackage ./smartPianoEngine.nix { inherit self; };
+          smart-piano = pkgs.qt5.callPackage ./engine.nix { inherit self; };
+          cross-smart-piano = crossPkgs.qt5.callPackage ./engine.nix { inherit self; };
           default = self.packages.${pkgs.stdenv.hostPlatform.system}.smart-piano;
           cross = self.packages.${pkgs.stdenv.hostPlatform.system}.cross-smart-piano;
         }
@@ -47,10 +47,11 @@
                   cmake-language-server # Cmake LSP
                   # cppcheck # C++ Static analysis
                   doxygen # Documentation generator
-                  fluidsynth # JACK Synthesizer
+                  # fluidsynth # JACK Synthesizer
                   # gtest # Testing framework
                   # lcov # Code coverage
                   lldb # Clang debug adapter
+                  # qsynth # FluidSynth GUI
                   # valgrind # Debugging and profiling
                 ];
                 nativeBuildInputs = self.packages.${pkgs.stdenv.hostPlatform.system}.smart-piano.nativeBuildInputs;
