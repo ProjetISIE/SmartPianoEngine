@@ -30,7 +30,8 @@ LectureNoteJouee::~LectureNoteJouee() {
 }
 
 void LectureNoteJouee::data_callback(ma_device* pDevice, void* pOutput,
-                                     const void* pInput, ma_uint32 frameCount) {
+                                     [[maybe_unused]] const void* pInput,
+                                     ma_uint32 frameCount) {
     tsf* g_tsf = (tsf*)pDevice->pUserData;
     tsf_render_float(g_tsf, (float*)pOutput, frameCount, 0);
 }

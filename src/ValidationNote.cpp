@@ -22,8 +22,8 @@ bool ValidationNote::validerAccordSR(
                 "renversement.");
 
     if (accordJoue.size() != accordAttendu.size()) {
-        Logger::log(
-            "[ValidationNote] Ligne 18 : Taille des accords differente.", true);
+        Logger::log("[ValidationNote] Ligne 18 : Taille des accords différente",
+                    true);
         return false;
     }
 
