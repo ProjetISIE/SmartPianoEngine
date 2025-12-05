@@ -7,9 +7,6 @@
 #include <string>
 #include <vector>
 
-struct tsf;
-struct ma_device;
-
 /**
  * @brief Classe LectureNoteJouee
  * Lit les événements MIDI depuis un clavier physique
@@ -65,12 +62,6 @@ class LectureNoteJouee {
   private:
     RtMidiIn* midiIn; ///< Entrée MIDI (Clavier physique)
 
-    // --- Moteur Audio Interne ---
-    tsf* soundFont;         ///< Le synthétiseur (TinySoundFont)
-    ma_device* audioDevice; ///< Le périphérique audio (Miniaudio)
-    std::mutex
-        synthMutex; ///< Protège l'accès au synthé (Audio Thread vs MIDI Thread)
-
     std::string derniereNote;               ///< Dernière note jouée
     std::vector<std::string> dernierAccord; ///< Dernier accord joué
     std::atomic<bool>
@@ -84,17 +75,9 @@ class LectureNoteJouee {
      */
     void traiterMessagesMIDI();
 
-    /**
-     * @brief Callback Audio (Appelé par Miniaudio)
-     * * C'est ici que le son est généré en temps réel. Cette fonction est
-     * statique car c'est une callback C pure.
-     */
-    static void audioCallback(ma_device* pDevice, void* pOutput,
-                              const void* pInput, unsigned int frameCount);
-
   protected:
     /**
-     * @brief Convertit une note MIDI en notation musicale (ex: 60 -> "C4")
+     * @brief Convertis une note MIDI en notation musicale (ex: 60 -> "C4")
      */
     std::string convertirNote(int noteMidi);
 
