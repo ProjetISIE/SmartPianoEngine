@@ -2,10 +2,14 @@
 #include "Logger.hpp"
 #include <QCoreApplication>
 #include <QLoggingCategory>
-#include <alsa/asoundlib.h>
 #include <iostream>
 
+void init_resources() { Q_INIT_RESOURCE(resources); }
+
 int main(int argc, char* argv[]) {
+    // 1. Initialiser les ressources Qt (Obligatoire pour les lib statiques)
+    init_resources();
+
     // Initialisation des chemins de logs
     Logger::init("log_basique_MDJ.txt", "log_erreurs_MDJ.txt");
     Logger::log("[MAIN] Ligne 14 : Initialisation des logs");
