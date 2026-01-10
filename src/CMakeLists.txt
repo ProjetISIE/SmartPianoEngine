@@ -7,12 +7,12 @@ add_library(
   LectureNoteJouee.cpp
   BaseAccords.cpp
   ${CMAKE_SOURCE_DIR}/include/SocketManager.hpp)
-target_include_directories(${PROJECT_NAME}Lib PUBLIC ${CMAKE_SOURCE_DIR}/include)
+target_include_directories(${PROJECT_NAME}Lib PUBLIC ${CMAKE_SOURCE_DIR}/include ${RTMIDI_INCLUDE_DIRS} ${ALSA_INCLUDE_DIRS})
 target_link_libraries(
   ${PROJECT_NAME}Lib
   PUBLIC Threads::Threads # System library
-         ALSA::ALSA # System audio library
-         rtmidi # MIDI library
+         ${ALSA_LIBRARIES} # System audio library
+         ${RTMIDI_LIBRARIES} # MIDI library
          dl pthread m
 )
 
