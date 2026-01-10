@@ -12,8 +12,8 @@ class GameManager {
     // Constructeur par defaut
     GameManager();
 
-    // Methode pour initialiser le serveur sur un port specifique
-    bool initialiserServeur(int port);
+    // Methode pour initialiser le serveur sur un socket Unix
+    bool initialiserServeur(const std::string& socketPath);
 
     // Methode pour attendre la connexion d'un client
     void attendreConnexion();

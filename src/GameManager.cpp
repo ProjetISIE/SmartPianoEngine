@@ -1,10 +1,5 @@
 #include "GameManager.hpp"
 #include "Logger.hpp"
-#include <QDebug>
-#include <QJsonArray>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QString>
 #include <chrono>
 #include <cstdlib>
 #include <unistd.h>
@@ -16,12 +11,12 @@ GameManager::GameManager() {
     Logger::log("[GameManager] ligne 17 : Initialisation de GameManager");
 }
 
-// Initialiser le serveur sur un port specifique
-bool GameManager::initialiserServeur(int port) {
+// Initialiser le serveur sur un socket Unix
+bool GameManager::initialiserServeur(const std::string& socketPath) {
     Logger::log(
-        "[GameManager] ligne 23 : Initialisation du serveur sur le port " +
-        std::to_string(port));
-    return socketManager.initialiserServeur(port);
+        "[GameManager] ligne 23 : Initialisation du serveur sur le socket " +
+        socketPath);
+    return socketManager.initialiserServeur(socketPath);
 }
 
 // Attendre une connexion client
@@ -33,27 +28,19 @@ void GameManager::attendreConnexion() {
 // Fonction principale pour lancer le jeu
 void GameManager::lancerJeu() {
     Logger::log("[GameManager] ligne 37 : En attente des parametres du jeu...");
-    QString message = socketManager.recevoirMessage();
-    Logger::log("[GameManager] ligne 39 : Message brut recu : " +
-                message.toStdString());
+    std::string message = socketManager.recevoirMessage();
+    Logger::log("[GameManager] ligne 39 : Message brut recu : " + message);
 
-    QJsonDocument jsonDoc = QJsonDocument::fromJson(message.toUtf8());
-    if (jsonDoc.isNull()) {
+    auto params = socketManager.traiterMessage(message);
+    if (params.empty()) {
         Logger::log(
-            "[GameManager] ligne 44 : Erreur - Document JSON invalide ou vide",
-            true);
+            "[GameManager] ligne 44 : Erreur - Message invalide ou vide", true);
         return;
     }
 
-    QJsonObject jsonObj = jsonDoc.object();
-    Logger::log(
-        "[GameManager] ligne 49 : JSON deserialise : " +
-        QJsonDocument(jsonObj).toJson(QJsonDocument::Compact).toStdString());
-
-    std::string jeu = jsonObj.value("jeu").toString().toStdString();
-    std::string gamme = jsonObj.value("gamme").toString().toStdString();
-    std::string mode = jsonObj.value("mode").toString().toStdString();
-    // bool jouerSon = jsonObj.value("jouerSon").toBool();
+    std::string jeu = params["jeu"];
+    std::string gamme = params["gamme"];
+    std::string mode = params["mode"];
 
     Logger::log("[GameManager] ligne 57 : Parametres recus - Jeu : " + jeu +
                 ", Gamme : " + gamme + ", Mode : " + mode);
@@ -92,10 +79,9 @@ void GameManager::lancerJeuDaccordRenversement(const std::string& gamme,
             generateur.genererAccordRenversement(gamme, mode);
 
         std::string renversementStr = std::to_string(renversement - 1);
-        QJsonObject accordMessage = {
+        std::map<std::string, std::string> accordMessage = {
             {"type", "accord_a_jouer"},
-            {"nom_accord",
-             QString::fromStdString(nomAccord + " " + renversementStr)}};
+            {"nom_accord", nomAccord + " " + renversementStr}};
 
         socketManager.envoyerMessage(accordMessage);
         Logger::log("[GameManager] ligne 105 : Accord envoye : " + nomAccord +
@@ -129,8 +115,8 @@ void GameManager::lancerJeuDaccordRenversement(const std::string& gamme,
     auto end = high_resolution_clock::now();
     auto duration = duration_cast<seconds>(end - start).count();
 
-    QJsonObject finMessage = {{"type", "fin_du_jeu"},
-                              {"score", QString::number(duration)}};
+    std::map<std::string, std::string> finMessage = {
+        {"type", "fin_du_jeu"}, {"score", std::to_string(duration)}};
 
     socketManager.envoyerMessage(finMessage);
     Logger::log("[GameManager] ligne 142 : Jeu termine. Temps total : " +
@@ -159,9 +145,8 @@ void GameManager::lancerJeuDaccordSR(const std::string& gamme,
     while (accordsCorrects < maxAccords) {
         auto [nomAccord, notes] = generateur.genererAccord(gamme, mode);
 
-        QJsonObject accordMessage = {
-            {"type", "accord_a_jouer"},
-            {"nom_accord", QString::fromStdString(nomAccord)}};
+        std::map<std::string, std::string> accordMessage = {
+            {"type", "accord_a_jouer"}, {"nom_accord", nomAccord}};
 
         socketManager.envoyerMessage(accordMessage);
         Logger::log("[GameManager] ligne 172 : Accord envoye : " + nomAccord);
@@ -194,8 +179,8 @@ void GameManager::lancerJeuDaccordSR(const std::string& gamme,
     auto end = high_resolution_clock::now();
     auto duration = duration_cast<seconds>(end - start).count();
 
-    QJsonObject finMessage = {{"type", "fin_du_jeu"},
-                              {"score", QString::number(duration)}};
+    std::map<std::string, std::string> finMessage = {
+        {"type", "fin_du_jeu"}, {"score", std::to_string(duration)}};
 
     socketManager.envoyerMessage(finMessage);
     Logger::log("[GameManager] ligne 209 : Jeu termine. Temps total : " +
@@ -223,8 +208,8 @@ void GameManager::lancerJeuDeNote(const std::string& gamme,
     while (notesCorrectes < maxNotes) {
         std::string note = generateur.generer(gamme, mode);
 
-        QJsonObject noteMessage = {{"type", "note_a_jouer"},
-                                   {"note", QString::fromStdString(note)}};
+        std::map<std::string, std::string> noteMessage = {
+            {"type", "note_a_jouer"}, {"note", note}};
 
         socketManager.envoyerMessage(noteMessage);
         Logger::log("[GameManager] ligne 238 : Note envoyee : " + note);
@@ -257,8 +242,8 @@ void GameManager::lancerJeuDeNote(const std::string& gamme,
     auto end = high_resolution_clock::now();
     auto duration = duration_cast<seconds>(end - start).count();
 
-    QJsonObject finMessage = {{"type", "fin_du_jeu"},
-                              {"score", QString::number(duration)}};
+    std::map<std::string, std::string> finMessage = {
+        {"type", "fin_du_jeu"}, {"score", std::to_string(duration)}};
 
     socketManager.envoyerMessage(finMessage);
     Logger::log("[GameManager] ligne 275 : Jeu termine. Temps total : " +

@@ -10,12 +10,7 @@ add_library(
 target_include_directories(${PROJECT_NAME}Lib PUBLIC ${CMAKE_SOURCE_DIR}/include)
 target_link_libraries(
   ${PROJECT_NAME}Lib
-  PUBLIC Qt5::Core # Qt5 library
-         Qt5::Gui # Qt5 library
-         Qt5::Network # Qt5 library
-         Qt5::Multimedia # Qt5 library
-         Qt5::MultimediaWidgets # Qt5 library
-         Threads::Threads # System library
+  PUBLIC Threads::Threads # System library
          ALSA::ALSA # System audio library
          rtmidi # MIDI library
          dl pthread m
