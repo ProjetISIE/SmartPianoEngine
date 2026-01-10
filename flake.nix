@@ -26,11 +26,11 @@
     in
     {
       packages = systems (
-        pkgs: crossPkgs: {
+        pkgs: crossPkgs: rec {
           smart-piano = pkgs.callPackage ./engine.nix { inherit self; };
           cross-smart-piano = crossPkgs.callPackage ./engine.nix { inherit self; };
-          default = self.packages.${pkgs.stdenv.hostPlatform.system}.smart-piano;
-          cross = self.packages.${pkgs.stdenv.hostPlatform.system}.cross-smart-piano;
+          default = smart-piano;
+          cross = cross-smart-piano;
         }
       );
       devShells = systems (
@@ -44,6 +44,7 @@
                 packages = with pkgs; [
                   clang-tools # Clang CLIs, including LSP
                   clang-uml # UML diagram generator
+                  cmake-format # CMake formatter
                   cmake-language-server # Cmake LSP
                   # cppcheck # C++ Static analysis
                   doxygen # Documentation generator
@@ -51,6 +52,7 @@
                   # gtest # Testing framework
                   # lcov # Code coverage
                   lldb # Clang debug adapter
+                  # neocmakelsp # CMake LSP
                   # qsynth # FluidSynth GUI
                   # valgrind # Debugging and profiling
                 ];

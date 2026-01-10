@@ -13,20 +13,14 @@ find_package(Threads REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(RTMIDI REQUIRED rtmidi)
 pkg_check_modules(ALSA REQUIRED alsa)
-find_package(doctest REQUIRED)
 
 add_compile_options(
-    -Wall
-    -Wextra
-    -Wpedantic
-    -Wshadow
-    # -Wconversion
-    # -Werror
+  -Wall -Wextra -Wpedantic -Wshadow
+  # -Wconversion -Werror
 )
 
 add_subdirectory(src)
 include(GNUInstallDirs)
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-include(CTest) # TESTS
 add_subdirectory(test)
