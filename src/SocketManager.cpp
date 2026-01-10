@@ -1,123 +1,195 @@
 #include "SocketManager.hpp"
 #include "Logger.hpp"
-#include <QCoreApplication>
-#include <QJsonDocument>
+#include <cstring>
+#include <sstream>
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <unistd.h>
 
 // Constructeur de la classe SocketManager
-SocketManager::SocketManager(QObject* parent)
-    : QObject(parent), serveur(new QTcpServer(this)), clientSocket(nullptr) {
+SocketManager::SocketManager()
+    : serverSocket(-1), clientSocket(-1), socketPath("") {
     Logger::log("[SocketManager] Ligne 10 : Constructeur initialise.");
 }
 
 // Destructeur de la classe SocketManager
 SocketManager::~SocketManager() {
-    delete serveur;
+    if (clientSocket >= 0) {
+        close(clientSocket);
+    }
+    if (serverSocket >= 0) {
+        close(serverSocket);
+        if (!socketPath.empty()) {
+            unlink(socketPath.c_str());
+        }
+    }
     Logger::log(
         "[SocketManager] Ligne 17 : Destructeur appele, serveur supprime.");
 }
 
-// Initialisation du serveur sur un port specifique
-bool SocketManager::initialiserServeur(int port) {
-    connect(serveur, &QTcpServer::newConnection, this, [&]() {
-        clientSocket = serveur->nextPendingConnection();
-        Logger::log("[SocketManager] Ligne 26 : Nouvelle connexion detectee.");
-    });
+// Initialisation du serveur sur un socket Unix
+bool SocketManager::initialiserServeur(const std::string& socketPath) {
+    this->socketPath = socketPath;
 
-    if (!serveur->listen(QHostAddress::Any, port)) {
+    // Supprimer le socket existant s'il existe
+    unlink(socketPath.c_str());
+
+    // Creer le socket Unix
+    serverSocket = socket(AF_UNIX, SOCK_STREAM, 0);
+    if (serverSocket < 0) {
         Logger::log("[SocketManager] Ligne 31 : Erreur : Impossible de "
-                    "demarrer le serveur.",
+                    "creer le socket.",
                     true);
         return false;
     }
 
-    Logger::log("[SocketManager] Ligne 35 : Serveur demarre sur le port " +
-                std::to_string(port) + ".");
+    // Configurer l'adresse du socket
+    struct sockaddr_un addr;
+    memset(&addr, 0, sizeof(addr));
+    addr.sun_family = AF_UNIX;
+    strncpy(addr.sun_path, socketPath.c_str(), sizeof(addr.sun_path) - 1);
+
+    // Lier le socket
+    if (bind(serverSocket, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
+        Logger::log("[SocketManager] Ligne 46 : Erreur : Impossible de "
+                    "lier le socket.",
+                    true);
+        close(serverSocket);
+        serverSocket = -1;
+        return false;
+    }
+
+    // Ecouter les connexions
+    if (listen(serverSocket, 1) < 0) {
+        Logger::log("[SocketManager] Ligne 56 : Erreur : Impossible de "
+                    "mettre le socket en ecoute.",
+                    true);
+        close(serverSocket);
+        serverSocket = -1;
+        return false;
+    }
+
+    Logger::log("[SocketManager] Ligne 63 : Serveur demarre sur le socket " +
+                socketPath + ".");
     return true;
 }
 
 // Attente de la connexion d'un client
 void SocketManager::attendreConnexion() {
-    while (!clientSocket) {
-        QCoreApplication::processEvents(); // Traiter les evenements Qt pendant
-                                           // l'attente
+    if (serverSocket < 0) {
+        Logger::log("[SocketManager] Ligne 71 : Erreur : Serveur non "
+                    "initialise.",
+                    true);
+        return;
     }
-    Logger::log("[SocketManager] Ligne 46 : Connexion client etablie.");
+
+    clientSocket = accept(serverSocket, nullptr, nullptr);
+    if (clientSocket < 0) {
+        Logger::log("[SocketManager] Ligne 79 : Erreur : Echec de "
+                    "l'acceptation de la connexion.",
+                    true);
+        return;
+    }
+
+    Logger::log("[SocketManager] Ligne 85 : Connexion client etablie.");
 }
 
-// Envoi d'un message JSON au client
-void SocketManager::envoyerMessage(const QJsonObject& message) {
-    if (!clientSocket || !clientSocket->isOpen()) {
-        Logger::log("[SocketManager] Ligne 54 : Erreur : Aucun client connecte "
+// Envoi d'un message texte au client
+void SocketManager::envoyerMessage(
+    const std::map<std::string, std::string>& message) {
+    if (clientSocket < 0) {
+        Logger::log("[SocketManager] Ligne 93 : Erreur : Aucun client connecte "
                     "pour envoyer le message.",
                     true);
         return;
     }
 
-    QJsonDocument doc(message);
-    QByteArray data = doc.toJson(QJsonDocument::Compact);
-    clientSocket->write(data);
-    clientSocket->flush();
-    clientSocket->waitForBytesWritten();
-    Logger::log("[SocketManager] Ligne 63 : Message envoye : " +
-                data.toStdString());
-}
+    // Convertir la map en texte brut format "cle=valeur\n"
+    std::string data;
+    for (const auto& [key, value] : message) {
+        data += key + "=" + value + "\n";
+    }
+    data += "\n"; // Double newline pour marquer la fin du message
 
-// Reception d'un message JSON depuis le client
-QString SocketManager::recevoirMessage() {
-    if (!clientSocket) {
+    ssize_t sent = send(clientSocket, data.c_str(), data.length(), 0);
+    if (sent < 0) {
         Logger::log(
-            "[SocketManager] Ligne 71 : Erreur : Pas de client connecte.",
+            "[SocketManager] Ligne 110 : Erreur : Echec de l'envoi du message.",
             true);
-        return QString();
+        return;
     }
 
-    if (!clientSocket->isOpen()) {
-        Logger::log("[SocketManager] Ligne 77 : Erreur : Socket fermee.", true);
-        return QString();
-    }
-
-    if (!clientSocket->waitForReadyRead(3000)) {
-        Logger::log("[SocketManager] Ligne 83 : Aucun message recu apres delai "
-                    "de 3 secondes.");
-        return QString();
-    }
-
-    if (clientSocket->state() == QAbstractSocket::UnconnectedState) {
-        Logger::log("[SocketManager] Ligne 89 : Le client est deconnecte.",
-                    true);
-        return QString();
-    }
-
-    QByteArray data = clientSocket->readAll();
-    if (data.isEmpty()) {
-        Logger::log(
-            "[SocketManager] Ligne 96 : Avertissement : Message vide recu.");
-        return QString();
-    }
-
-    Logger::log("[SocketManager] Ligne 100 : Message recu : " +
-                data.toStdString());
-    return QString::fromUtf8(data);
+    Logger::log("[SocketManager] Ligne 115 : Message envoye : " + data);
 }
 
-// Traitement d'un message JSON recu et conversion en map
+// Reception d'un message texte depuis le client
+std::string SocketManager::recevoirMessage() {
+    if (clientSocket < 0) {
+        Logger::log(
+            "[SocketManager] Ligne 122 : Erreur : Pas de client connecte.",
+            true);
+        return "";
+    }
+
+    char buffer[4096];
+    std::string message;
+
+    while (true) {
+        ssize_t received = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
+        if (received < 0) {
+            Logger::log("[SocketManager] Ligne 134 : Erreur : Echec de la "
+                        "reception du message.",
+                        true);
+            return "";
+        }
+
+        if (received == 0) {
+            Logger::log("[SocketManager] Ligne 141 : Le client est deconnecte.",
+                        true);
+            return "";
+        }
+
+        buffer[received] = '\0';
+        message += buffer;
+
+        // Verifier si le message est complet (se termine par double newline)
+        if (message.find("\n\n") != std::string::npos) {
+            break;
+        }
+    }
+
+    Logger::log("[SocketManager] Ligne 156 : Message recu : " + message);
+    return message;
+}
+
+// Traitement d'un message texte recu et conversion en map
 std::map<std::string, std::string>
-SocketManager::traiterMessage(const QString& message) {
+SocketManager::traiterMessage(const std::string& message) {
     std::map<std::string, std::string> result;
-    QJsonDocument doc = QJsonDocument::fromJson(message.toUtf8());
 
-    if (doc.isNull() || !doc.isObject()) {
+    if (message.empty()) {
         Logger::log(
-            "[SocketManager] Ligne 113 : Erreur : Message JSON invalide.",
-            true);
+            "[SocketManager] Ligne 167 : Erreur : Message vide.", true);
         return result;
     }
 
-    QJsonObject jsonObj = doc.object();
-    for (auto it = jsonObj.begin(); it != jsonObj.end(); ++it) {
-        result[it.key().toStdString()] = it.value().toString().toStdString();
+    std::istringstream stream(message);
+    std::string line;
+
+    while (std::getline(stream, line)) {
+        if (line.empty()) {
+            break; // Double newline marque la fin du message
+        }
+
+        size_t pos = line.find('=');
+        if (pos != std::string::npos) {
+            std::string key = line.substr(0, pos);
+            std::string value = line.substr(pos + 1);
+            result[key] = value;
+        }
     }
 
-    Logger::log("[SocketManager] Ligne 123 : Message JSON traite avec succes.");
+    Logger::log(
+        "[SocketManager] Ligne 189 : Message texte traite avec succes.");
     return result;
 }

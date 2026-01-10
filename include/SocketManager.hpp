@@ -1,32 +1,22 @@
 #ifndef SOCKETMANAGER_H
 #define SOCKETMANAGER_H
 
-#include <QByteArray>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QString>
-#include <QTcpServer>
-#include <QTcpSocket>
 #include <map>
 #include <string>
 
 /**
  * @brief Classe SocketManager
  *
- * Cette classe gere les interactions reseau via des sockets TCP.
- * Elle permet de creer un serveur TCP, de gerer les connexions client,
- * et d'envoyer ou recevoir des messages JSON.
+ * Cette classe gere les interactions via des Unix Domain Sockets (UDS).
+ * Elle permet de creer un serveur UDS, de gerer les connexions client,
+ * et d'envoyer ou recevoir des messages en texte brut.
  */
-class SocketManager : public QObject {
-    Q_OBJECT
-
+class SocketManager {
   public:
     /**
      * @brief Constructeur de la classe SocketManager
-     *
-     * @param parent Pointeur vers l'objet parent (par defaut nullptr).
      */
-    SocketManager(QObject* parent = nullptr);
+    SocketManager();
 
     /**
      * @brief Destructeur de la classe SocketManager
@@ -36,14 +26,14 @@ class SocketManager : public QObject {
     ~SocketManager();
 
     /**
-     * @brief Initialise le serveur TCP
+     * @brief Initialise le serveur UDS
      *
-     * Configure le serveur pour ecouter les connexions sur un port specifique.
+     * Configure le serveur pour ecouter les connexions sur un socket Unix.
      *
-     * @param port Port sur lequel le serveur ecoute.
+     * @param socketPath Chemin du socket Unix (ex: "/tmp/smartpiano.sock")
      * @return true si le serveur demarre correctement, false sinon.
      */
-    bool initialiserServeur(int port);
+    bool initialiserServeur(const std::string& socketPath);
 
     /**
      * @brief Attend la connexion d'un client
@@ -53,36 +43,37 @@ class SocketManager : public QObject {
     void attendreConnexion();
 
     /**
-     * @brief Envoie un message JSON au client
+     * @brief Envoie un message texte au client
      *
-     * @param message Message au format QJsonObject a envoyer au client
-     * connecte.
+     * @param message Message sous forme de map cle-valeur a envoyer au client
+     * connecte. Format: "cle1=valeur1\ncle2=valeur2\n"
      */
-    void envoyerMessage(const QJsonObject& message);
+    void envoyerMessage(const std::map<std::string, std::string>& message);
 
     /**
-     * @brief Recoit un message JSON depuis le client
+     * @brief Recoit un message texte depuis le client
      *
      * Attend la reception d'un message depuis la socket client.
      *
-     * @return Le message recu sous forme de QString, ou une chaine vide en cas
+     * @return Le message recu sous forme de string, ou une chaine vide en cas
      * d'erreur.
      */
-    QString recevoirMessage();
+    std::string recevoirMessage();
 
     /**
-     * @brief Traite un message JSON recu
+     * @brief Traite un message texte recu
      *
-     * Convertit un message JSON au format QString en une map C++.
+     * Convertit un message texte au format "cle=valeur" en une map C++.
      *
-     * @param message Message JSON recu sous forme de QString.
-     * @return Une map contenant les cles et valeurs du message JSON.
+     * @param message Message texte recu sous forme de string.
+     * @return Une map contenant les cles et valeurs du message.
      */
-    std::map<std::string, std::string> traiterMessage(const QString& message);
+    std::map<std::string, std::string> traiterMessage(const std::string& message);
 
   private:
-    QTcpServer* serveur;      ///< Pointeur vers le serveur TCP
-    QTcpSocket* clientSocket; ///< Pointeur vers la socket client connectee
+    int serverSocket;  ///< Descripteur du serveur UDS
+    int clientSocket;  ///< Descripteur de la socket client connectee
+    std::string socketPath; ///< Chemin du socket Unix
 };
 
 #endif // SOCKETMANAGER_H

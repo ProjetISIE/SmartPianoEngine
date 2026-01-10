@@ -1,6 +1,5 @@
 #include "LectureNoteJouee.hpp"
 #include "Logger.hpp"
-#include <QCoreApplication>
 #include <chrono>
 #include <map>
 #include <thread>
@@ -55,14 +54,6 @@ void LectureNoteJouee::traiterMessagesMIDI() {
     bool isAccordEnCours = false;
     std::vector<std::string> notesAccord;
     while (midiIn) { // Tant que le message existe
-    // while (true) {
-    //     if (isAccordEnCours && duration_cast<milliseconds>(
-    //                                system_clock::now().time_since_epoch()) -
-    //                                    startAccord >
-    //                                delaiAccord) {
-    //         isAccordEnCours = false;
-    //         notesAccord.clear();
-    //     }
         try {
             if (!midiIn) break;
             midiIn->getMessage(&message);
@@ -74,29 +65,6 @@ void LectureNoteJouee::traiterMessagesMIDI() {
                     std::string noteStr = convertirNote(noteMidi);
                     notesAccord.push_back(noteStr);
                     Logger::log("[LectureNoteJouee] Note reçue : " + noteStr);
-            // if (!message.empty()) {
-            //     if (midiOut) {
-            //         midiOut->sendMessage(&message);
-            //     }
-            //     if (message.size() >= 3) {
-            //         int status = message[0] & 0xF0;
-            //         int noteMidi = message[1];
-            //         int velocite = message[2];
-            //         if (status == 0x90 && velocite > 0) {
-            //             if (!isAccordEnCours) {
-            //                 isAccordEnCours = true;
-            //                 startAccord = duration_cast<milliseconds>(
-            //                     system_clock::now().time_since_epoch());
-            //             }
-            //             std::string note = convertirNote(noteMidi);
-            //             notesAccord.push_back(note);
-            //             Logger::log("[LectureNoteJouee] Note recue : " + note);
-            //             {
-            //                 std::lock_guard<std::mutex> lock(noteMutex);
-            //                 dernierAccord = notesAccord;
-            //                 noteDisponible = true;
-            //             }
-            //         }
                 }
             }
         } catch (const std::exception& e) {
