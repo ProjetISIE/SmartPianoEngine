@@ -2,11 +2,12 @@
   alsa-lib,
   cmake,
   doctest,
-  stdenv,
+  libjack2,
   ninja,
   pkg-config,
   rtmidi,
   self,
+  stdenv,
 }:
 stdenv.mkDerivation {
   pname = "engine";
@@ -21,7 +22,7 @@ stdenv.mkDerivation {
   ];
   buildInputs = [
     alsa-lib # Audio lib
-    # libjack2 # Audio interconnection lib
+    libjack2 # Audio interconnection lib
     rtmidi # MIDI lib
   ];
 }

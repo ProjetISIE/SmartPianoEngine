@@ -1,20 +1,18 @@
 add_library(
   ${PROJECT_NAME}Lib STATIC
-  GameManager.cpp
-  SocketManager.cpp
-  GenererNoteAleatoire.cpp
-  ValidationNote.cpp
-  LectureNoteJouee.cpp
-  BaseAccords.cpp
-  ${CMAKE_SOURCE_DIR}/include/SocketManager.hpp)
-target_include_directories(${PROJECT_NAME}Lib PUBLIC ${CMAKE_SOURCE_DIR}/include ${RTMIDI_INCLUDE_DIRS} ${ALSA_INCLUDE_DIRS})
+  GameManager.cpp SocketManager.cpp GenererNoteAleatoire.cpp ValidationNote.cpp
+  LectureNoteJouee.cpp BaseAccords.cpp)
+target_include_directories(
+  ${PROJECT_NAME}Lib PUBLIC ${CMAKE_SOURCE_DIR}/include ${RTMIDI_INCLUDE_DIRS}
+                            ${ALSA_INCLUDE_DIRS})
 target_link_libraries(
   ${PROJECT_NAME}Lib
   PUBLIC Threads::Threads # System library
          ${ALSA_LIBRARIES} # System audio library
          ${RTMIDI_LIBRARIES} # MIDI library
-         dl pthread m
-)
+         dl
+         pthread
+         m)
 
 add_executable(${PROJECT_NAME} main.cpp)
 target_link_libraries(${PROJECT_NAME} ${PROJECT_NAME}Lib)
