@@ -1,57 +1,54 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "../include/SocketManager.hpp"
-#include <QByteArray>
-#include <QCoreApplication>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QTcpSocket>
 #include <doctest/doctest.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <thread>
+#include <unistd.h>
 
 // Test de l'initialisation du serveur
 TEST_CASE("SocketManager - Initialisation du serveur") {
     SocketManager serveur;
-    CHECK(serveur.initialiserServeur(8080) == true);
+    std::string socketPath = "/tmp/test_smartpiano.sock";
+    CHECK(serveur.initialiserServeur(socketPath) == true);
+    unlink(socketPath.c_str());
 }
 
 // Test de la connexion d'un client
 TEST_CASE("SocketManager - Connexion client") {
     SocketManager serveur;
-    CHECK(serveur.initialiserServeur(8080) == true);
+    std::string socketPath = "/tmp/test_smartpiano2.sock";
+    CHECK(serveur.initialiserServeur(socketPath) == true);
 
-    QTcpSocket client;
-    client.connectToHost("127.0.0.1", 8080);
-    CHECK(client.waitForConnected(3000) == true);
+    // Creer un thread pour accepter la connexion
+    std::thread serverThread([&serveur]() { serveur.attendreConnexion(); });
+
+    // Attendre un peu pour que le serveur soit pret
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+    // Client se connecte
+    int clientSock = socket(AF_UNIX, SOCK_STREAM, 0);
+    CHECK(clientSock >= 0);
+
+    struct sockaddr_un addr;
+    memset(&addr, 0, sizeof(addr));
+    addr.sun_family = AF_UNIX;
+    strncpy(addr.sun_path, socketPath.c_str(), sizeof(addr.sun_path) - 1);
+
+    int result = connect(clientSock, (struct sockaddr*)&addr, sizeof(addr));
+    CHECK(result == 0);
+
+    close(clientSock);
+    serverThread.join();
+    unlink(socketPath.c_str());
 }
 
-// Test de l'envoi d'un message JSON
-TEST_CASE("SocketManager - Envoi d'un message") {
+// Test du traitement d'un message texte
+TEST_CASE("SocketManager - Traitement texte") {
     SocketManager serveur;
-    CHECK(serveur.initialiserServeur(8080) == true);
-
-    QTcpSocket client;
-    client.connectToHost("127.0.0.1", 8080);
-    CHECK(client.waitForConnected(3000) == true);
-
-    QJsonObject message = {{"type", "test"}, {"content", "Hello"}};
-    serveur.envoyerMessage(message);
-}
-
-// Test de la reception d'un message JSON
-TEST_CASE("SocketManager - Reception d'un message") {
-    SocketManager serveur;
-    CHECK(serveur.initialiserServeur(8080) == true);
-
-    QTcpSocket client;
-    client.connectToHost("127.0.0.1", 8080);
-    CHECK(client.waitForConnected(3000) == true);
-}
-
-// Test du traitement d'un message JSON
-TEST_CASE("SocketManager - Traitement JSON") {
-    SocketManager serveur;
-    QString jsonString = R"({"key1":"value1", "key2":"value2"})";
+    std::string message = "key1=value1\nkey2=value2\n\n";
     std::map<std::string, std::string> resultat =
-        serveur.traiterMessage(jsonString);
+        serveur.traiterMessage(message);
 
     CHECK(resultat["key1"] == "value1");
     CHECK(resultat["key2"] == "value2");

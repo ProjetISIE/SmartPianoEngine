@@ -10,7 +10,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 find_package(Threads REQUIRED)
-find_package(rtmidi REQUIRED)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(RTMIDI REQUIRED rtmidi)
+pkg_check_modules(ALSA REQUIRED alsa)
 find_package(doctest REQUIRED)
 
 add_compile_options(

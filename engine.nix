@@ -2,13 +2,13 @@
   alsa-lib,
   cmake,
   doctest,
-  mkDerivation,
+  stdenv,
   ninja,
   pkg-config,
   rtmidi,
   self,
 }:
-mkDerivation {
+stdenv.mkDerivation {
   pname = "engine";
   version = "0.0.0";
   src = self;
@@ -18,12 +18,10 @@ mkDerivation {
     doctest # Testing framework
     ninja # Modern build tool
     pkg-config # Build tool
-    # wrapQtAppsHook # Qt build tool, included by qt5.mkDerivation
   ];
   buildInputs = [
     alsa-lib # Audio lib
     # libjack2 # Audio interconnection lib
-    # qtmultimedia # Qt Multimedia lib
-    rtmidi # Lib
+    rtmidi # MIDI lib
   ];
 }

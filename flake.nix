@@ -1,5 +1,5 @@
 {
-  description = "Nix flake Qt/C++ development environment";
+  description = "Nix flake C++23 development environment";
   inputs.nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
   outputs =
     { self, nixpkgs }:
@@ -27,8 +27,8 @@
     {
       packages = systems (
         pkgs: crossPkgs: {
-          smart-piano = pkgs.qt5.callPackage ./engine.nix { inherit self; };
-          cross-smart-piano = crossPkgs.qt5.callPackage ./engine.nix { inherit self; };
+          smart-piano = pkgs.callPackage ./engine.nix { inherit self; };
+          cross-smart-piano = crossPkgs.callPackage ./engine.nix { inherit self; };
           default = self.packages.${pkgs.stdenv.hostPlatform.system}.smart-piano;
           cross = self.packages.${pkgs.stdenv.hostPlatform.system}.cross-smart-piano;
         }
