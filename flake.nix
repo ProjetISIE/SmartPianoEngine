@@ -61,7 +61,6 @@
                   mkdir --verbose build
                   cd build
                   cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..
-                  echo ${pkgs.soundfont-fluid}
                 '';
               };
         }

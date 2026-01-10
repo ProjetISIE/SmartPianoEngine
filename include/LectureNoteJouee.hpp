@@ -9,79 +9,102 @@
 
 /**
  * @brief Classe LectureNoteJouee
- * Lit les événements MIDI depuis un clavier physique
- * et synthétise le son (piano) en interne via TinySoundFont et Miniaudio
+ *
+ * Cette classe permet de lire les notes ou accords joues sur un peripherique
+ * MIDI. Elle gère la connexion au peripherique, la lecture des messages MIDI et
+ * leur conversion en notation musicale standard.
  */
 class LectureNoteJouee {
   public:
     /**
      * @brief Constructeur de la classe LectureNoteJouee
+     *
+     * Initialise les membres de la classe et prepare l'environnement MIDI.
      */
     LectureNoteJouee();
 
     /**
      * @brief Destructeur de la classe LectureNoteJouee
+     *
+     * Libère les ressources MIDI utilisées.
      */
     ~LectureNoteJouee();
 
     /**
-     * @brief Initialise le moteur audio et l'entrée MIDI
+     * @brief Initialise le peripherique MIDI
      *
-     * Charge le SoundFont, démarre le driver audio (ALSA/Pulse) et ouvre
-     * le port d'entrée MIDI.
-     * @return true si tout s'est bien passé, false sinon.
+     * Configure le peripherique MIDI pour la lecture des messages.
+     * @return true si l'initialisation reussit, false sinon.
      */
     bool initialiser();
 
     /**
-     * @brief Lit une ou plusieurs notes jouées (Interface Jeu)
+     * @brief Lit une ou plusieurs notes jouees
      *
-     * Bloque jusqu'à ce qu'une note ou un accord soit disponible.
-     * Cette fonction est utilisée par le GameManager.
-     * @return Un vecteur de chaînes représentant les notes jouées.
+     * Bloque jusqu'a ce qu'une note ou un accord soit disponible.
+     * @return Un vecteur de chaines representant les notes jouees.
      */
     std::vector<std::string> lireNote();
 
     /**
-     * @brief Libère les ressources (Audio et MIDI)
+     * @brief Libere les ressources MIDI
+     *
+     * Ferme la connexion au peripherique MIDI et nettoie les ressources.
      */
     void fermer();
 
     /**
-     * @brief Teste la conversion (Debug)
+     * @brief Teste les APIs MIDI disponibles
+     *
+     * Affiche les APIs MIDI compilees et les ports disponibles pour debug.
+     */
+    void test();
+
+    /**
+     * @brief Fonction pour les tests unitaires pour tester la convertion des
+     * notes
+     *
      */
     std::string testerConvertirNote(int noteMidi) {
         return convertirNote(noteMidi);
     }
 
     /**
-     * @brief Accesseur pour les tests unitaires
+     * @brief Fonction pour les tests unitaires pour tester la lecture du
+     * dernier accord.
+     *
      */
     std::vector<std::string> getDernierAccord() { return dernierAccord; }
 
   private:
-    RtMidiIn* midiIn; ///< Entrée MIDI (Clavier physique)
-
-    std::string derniereNote;               ///< Dernière note jouée
-    std::vector<std::string> dernierAccord; ///< Dernier accord joué
-    std::atomic<bool>
-        noteDisponible; ///< Indique si le jeu peut lire un résultat
+    RtMidiIn* midiIn;         ///< Pointeur sur l’entrée MIDI
+    RtMidiOut* midiOut;       ///< Pointeur sur la sortie MIDI
 
     /**
-     * @brief Thread de traitement MIDI
+     * @brief Traite les messages MIDI recus
      *
-     * Lit les messages MIDI entrants, déclenche le son dans le synthé,
-     * et met à jour l'état du jeu (notes jouées).
+     * Fonction executee dans un thread separe pour gerer les messages MIDI.
      */
     void traiterMessagesMIDI();
 
   protected:
     /**
-     * @brief Convertis une note MIDI en notation musicale (ex: 60 -> "C4")
+     * @brief Convertis une note MIDI en notation musicale
+     *
+     * Prend une valeur MIDI et la convertit en une chaine representant la note
+     * (ex: "C4" pour le Do de la 4eme octave).
+     *
+     * @param noteMidi Valeur MIDI de la note
+     * @return La note en notation musicale.
      */
     std::string convertirNote(int noteMidi);
 
-    std::mutex noteMutex; ///< Mutex pour protéger l'accès aux données du jeu
+    std::string derniereNote; ///< Derniere note jouee
+    std::vector<std::string> dernierAccord; ///< Dernier accord joué
+    std::atomic<bool>
+        noteDisponible; ///< Indique si le jeu peut lire un résultat
+
+    std::mutex noteMutex; ///< Mutex pour proteger l'acces aux notes
 };
 
 #endif // LECTURENOTEJOUEE_H

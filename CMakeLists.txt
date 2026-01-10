@@ -38,4 +38,4 @@ include(GNUInstallDirs)
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 include(CTest) # TESTS
-# add_subdirectory(test)
+add_subdirectory(test)
