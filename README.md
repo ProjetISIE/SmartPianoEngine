@@ -61,6 +61,18 @@ d’exploitations ou architectures, sans garantie.
 | **Connexion au MDJ impossible** | S’assurer que le **Moteur de Jeu (MDJ)** est bien lancé : `./PianoTrainerMDJV1` |
 | **L'application plante**        | **Relancer l'application**, voire **redémarrer la Raspberry Pi**                |
 
+## Architecture
+
+Voir [ARCHITECTURE.md](ARCHITECTURE.md) pour les détails complets de
+l'architecture.
+
+- **Couche Application** : Point d'entrée (`main.cpp`)
+- **Couche Domaine** : Logique de jeu (GameEngine, modes de jeu, logique
+  musicale)
+- **Couche Infrastructure** : Transport UDS, entrée MIDI, logs
+
+Voir [PROTOCOL.md](PROTOCOL.md) pour la spécification complète du protocole.
+
 ## Contribution et conventions de code
 
 Ce projet utilise [Nix](https://nixos.org) pour télécharger les (bonnes versions
@@ -75,6 +87,71 @@ Pour compiler le projet, il est possible (pour tester) d’utiliser
 environnement Nix activé, mais la solution préconisée (car reproductible) est
 d’utiliser `nix build` ; ou `nix build .#cross` pour compiler en ciblant
 l’architecture de la Raspberry Pi 4 (ARM64).
+
+Le serveur peut être lancé avec `./result/bin/engine`, ou `./build/engine` si
+compilé avec CMake.
+
+Le moteur démarre et écoute sur `/tmp/smartpiano.sock`.
+
+### Tester avec un client simple
+
+Exemple avec `socat` :
+
+```bash
+# Dans un autre terminal
+socat - UNIX-CONNECT:/tmp/smartpiano.sock
+```
+
+Puis envoyer des commandes :
+
+```
+config
+game=note
+scale=c
+mode=maj
+```
+
+Le moteur répond (normalement) avec :
+
+```
+ack
+status=ok
+```
+
+Puis envoyer `ready` pour commencer :
+
+```
+ready
+```
+
+Le moteur envoie un « challenge » :
+
+```
+note
+note=c4
+id=1
+```
+
+Jouer la note sur le clavier MIDI, le moteur répond :
+
+```
+result
+id=1
+correct=c4
+duration=1234
+```
+
+### Ajouter un nouveau mode de jeu
+
+1. Créer une classe héritant de `IGameMode`
+2. Implémenter `start()`, `play()`, `stop()`
+3. Enregistrer dans `GameEngine::createGameMode()`
+
+### Ajouter un nouveau transport
+
+1. Créer une classe héritant de `ITransport`
+2. Implémenter les méthodes de communication
+3. Injecter dans le `main.cpp`
 
 ### Outils
 
@@ -201,3 +278,71 @@ Norme utilisée du langage C++ la plus récente (stable),
 Fankam Jisele, Fauré Guilhem
 
 > L’auteur original est Mahut Vivien
+
+## Configuration
+
+### Modes de jeu disponibles
+
+1. Notes `note` : Reconnaissance de notes individuelles
+   - Le joueur doit jouer la note affichée
+
+2. Accords `chord` : Accords simples (sans renversement)
+   - Le joueur doit jouer les 3 notes de l'accord dans n'importe quel ordre
+
+3. Accords renversés `inversed` : Accords avec renversements
+   - Le joueur doit jouer l'accord, mais il est renversé
+
+### Gammes supportées
+
+- `c` : Do
+- `d` : Ré
+- `e` : Mi
+- `f` : Fa
+- `g` : Sol
+- `a` : La
+- `b` : Si
+
+### Modes supportés
+
+- `maj` : Majeur
+- `min` : Mineur
+
+## Logs
+
+Le moteur génère deux fichiers de logs:
+
+- `smartpiano.log` : Logs normaux
+- `smartpiano.err.log` : Logs d'erreurs
+
+## Dépannage
+
+### Le socket existe déjà
+
+Si le socket `/tmp/smartpiano.sock` existe déjà, le supprimer :
+
+```bash
+rm -f /tmp/smartpiano.sock
+```
+
+### MIDI non détecté
+
+Vérifier que JACK est démarré et que le périphérique MIDI est connecté :
+
+```bash
+aconnect -l
+```
+
+## Tests
+
+Les tests unitaires peuvent être exécutés avec :
+
+```bash
+cd build
+ctest
+```
+
+Ils sont automatiquement exécutés lors des builds avec Nix.
+
+## Licence
+
+Voir [LICENSE](LICENSE)

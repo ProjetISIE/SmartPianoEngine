@@ -27,8 +27,6 @@ add_test(NAME LectureNoteJouee COMMAND LectureNoteJouee)
 add_executable(SocketManager SocketManagerTest.cpp)
 target_include_directories(SocketManager PRIVATE ${CMAKE_SOURCE_DIR}/include)
 target_link_libraries(SocketManager PRIVATE ${PROJECT_NAME}Lib doctest::doctest)
-# FIXME Seems like log files can’t be written or found in nix build env
-# add_test(NAME SocketManager COMMAND SocketManager)
 
 add_executable(ValidationNote ValidationNoteTest.cpp)
 target_include_directories(ValidationNote PRIVATE ${CMAKE_SOURCE_DIR}/include)

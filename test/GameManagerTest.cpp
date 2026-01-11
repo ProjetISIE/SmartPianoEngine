@@ -51,6 +51,6 @@ TEST_CASE("GameManager - Attente de connexion") {
     unlink(socketPath.c_str());
 }
 
-// Note: Tests for game modes (lancerJeuDeNote, lancerJeuDaccordSR, 
+// Note: Tests for game modes (lancerJeuDeNote, lancerJeuDaccordSR,
 // lancerJeuDaccordRenversement) require MIDI hardware and cannot be run
 // in automated test environment without mocking

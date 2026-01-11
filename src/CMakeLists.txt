@@ -1,6 +1,5 @@
-add_library(
-  ${PROJECT_NAME}Lib STATIC
-  UdsTransport.cpp RtMidiInput.cpp GameEngine.cpp NoteGame.cpp ChordGame.cpp)
+add_library(${PROJECT_NAME}Lib STATIC UdsTransport.cpp RtMidiInput.cpp
+                                      GameEngine.cpp NoteGame.cpp ChordGame.cpp)
 target_include_directories(
   ${PROJECT_NAME}Lib PUBLIC ${CMAKE_SOURCE_DIR}/include ${RTMIDI_INCLUDE_DIRS}
                             ${ALSA_INCLUDE_DIRS})
@@ -13,5 +12,5 @@ target_link_libraries(
          pthread
          m)
 
-add_executable(${PROJECT_NAME} main_new.cpp)
+add_executable(${PROJECT_NAME} main.cpp)
 target_link_libraries(${PROJECT_NAME} ${PROJECT_NAME}Lib)

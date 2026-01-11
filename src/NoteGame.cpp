@@ -1,12 +1,13 @@
 #include "NoteGame.hpp"
 #include "Logger.hpp"
-#include <chrono>
 #include <algorithm>
+#include <chrono>
 
 using namespace std::chrono;
 
-NoteGame::NoteGame(ITransport& transport, IMidiInput& midi, const GameConfig& config)
-    : transport_(transport), midi_(midi), config_(config), 
+NoteGame::NoteGame(ITransport& transport, IMidiInput& midi,
+                   const GameConfig& config)
+    : transport_(transport), midi_(midi), config_(config),
       rng_(std::random_device{}()), challengeId_(0) {
     Logger::log("[NoteGame] Instance créée");
 }
@@ -19,7 +20,7 @@ void NoteGame::start() {
 GameResult NoteGame::play() {
     GameResult result = {0, 0, 0, 0};
     auto startTime = high_resolution_clock::now();
-    
+
     int perfectCount = 0;
     const int maxChallenges = config_.maxChallenges;
 
@@ -34,15 +35,16 @@ GameResult NoteGame::play() {
         challenge.addField("id", std::to_string(challengeId_));
         transport_.send(challenge);
 
-        Logger::log("[NoteGame] Challenge " + std::to_string(challengeId_) + 
+        Logger::log("[NoteGame] Challenge " + std::to_string(challengeId_) +
                     ": " + targetNote.toString());
 
         // Attendre les notes jouées
         auto challengeStart = high_resolution_clock::now();
         std::vector<Note> playedNotes = midi_.readNotes();
         auto challengeEnd = high_resolution_clock::now();
-        
-        auto duration = duration_cast<milliseconds>(challengeEnd - challengeStart).count();
+
+        auto duration =
+            duration_cast<milliseconds>(challengeEnd - challengeStart).count();
 
         // Vérifier si correct
         Message resultMsg("result");
@@ -65,7 +67,8 @@ GameResult NoteGame::play() {
 
         transport_.send(resultMsg);
 
-        Logger::log("[NoteGame] Résultat: " + (correct ? "correct" : "incorrect"));
+        Logger::log("[NoteGame] Résultat: " +
+                    (correct ? "correct" : "incorrect"));
 
         // Attendre le message "ready" pour le prochain challenge
         if (i < maxChallenges - 1) {
@@ -78,22 +81,21 @@ GameResult NoteGame::play() {
     }
 
     auto endTime = high_resolution_clock::now();
-    auto totalDuration = duration_cast<milliseconds>(endTime - startTime).count();
+    auto totalDuration =
+        duration_cast<milliseconds>(endTime - startTime).count();
 
     result.duration = totalDuration;
     result.perfect = perfectCount;
     result.partial = 0;
     result.total = maxChallenges;
 
-    Logger::log("[NoteGame] Partie terminée: " + std::to_string(perfectCount) + 
+    Logger::log("[NoteGame] Partie terminée: " + std::to_string(perfectCount) +
                 "/" + std::to_string(maxChallenges));
 
     return result;
 }
 
-void NoteGame::stop() {
-    Logger::log("[NoteGame] Arrêt du jeu");
-}
+void NoteGame::stop() { Logger::log("[NoteGame] Arrêt du jeu"); }
 
 Note NoteGame::generateRandomNote() {
     std::vector<std::string> scaleNotes = getScaleNotes();
@@ -109,7 +111,7 @@ Note NoteGame::generateRandomNote() {
 std::vector<std::string> NoteGame::getScaleNotes() {
     // Notes de base pour chaque gamme
     std::map<std::string, std::vector<std::string>> scales;
-    
+
     // Gamme majeure (ex: Do majeur = C D E F G A B)
     scales["c_maj"] = {"c", "d", "e", "f", "g", "a", "b"};
     scales["d_maj"] = {"d", "e", "f#", "g", "a", "b", "c#"};
@@ -130,7 +132,7 @@ std::vector<std::string> NoteGame::getScaleNotes() {
 
     std::string key = config_.scale + "_" + config_.mode;
     auto it = scales.find(key);
-    
+
     if (it != scales.end()) {
         return it->second;
     }
