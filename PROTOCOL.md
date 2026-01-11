@@ -100,10 +100,9 @@ ready
 
 Aucun **champ**, seulement le type valant `ready`, suivi d’une fin de message.
 
-#### 1.3 Abandon ou sortie `quit`
+#### 1.3 Abandon `quit`
 
-Demande l'arrêt de la session de configuration (si aucun jeu en cours) ou du jeu
-en cours.
+Demande l'arrêt de la session : retourne dans l’état non configuré.
 
 ```
 quit
@@ -178,6 +177,9 @@ id=<ID>
 **Champs** :
 
 - `name` : Nom (affiché) de l'accord (ex : `Do majeur`, `Re mineur`)
+  - Commence par le nom de la fondamentale en notation syllabique
+  - Suivi de l’adjectif `majeur` ou `mineur`
+  - Éventuellement suivi par un chiffre arabe indiquant le renversement
 - `notes` : Notes de l'accord (ex : `c4 e4 g4`)
   - Une note commence par une lettre minuscule entre `a` et `g`
   - Suivie éventuellement d’un dièse (`#`) ou bémol (`b`)
@@ -244,11 +246,10 @@ incorrect=d4
 
 #### 2.5 Fin de partie `over`
 
-Indique la fin de la session de jeu avec le score.
+Indique la fin de la session de jeu avec un récapitulatif.
 
 ```
 over
-score=<SCORE>
 duration=<DURATION>
 perfect=<CORRECT>
 partial=<PARTIAL>
@@ -257,7 +258,6 @@ total=<TOTAL>
 
 **Champs** :
 
-- `score` : Nombre entier, interprétation non définie par le protocole
 - `duration` : Durée depuis le dernier message `config` en millisecondes
 - `perfect` : Éventuel nombre de challenges sans notes `incorrect`
 - `partial` : Éventuel nombre de challenges avec au moins une note `correct` et
@@ -268,7 +268,6 @@ total=<TOTAL>
 
 ```
 over
-score=158
 duration=45
 perfect=10
 total=10
@@ -276,7 +275,7 @@ total=10
 
 #### 2.6 Erreur `error`
 
-Signale une erreur générale.
+Signale une erreur détectée par le serveur.
 
 ```
 error
@@ -287,11 +286,19 @@ message=<MESSAGE>
 **Champs** :
 
 - `code` : Code d'erreur
+  - `internal` : Erreur interne du serveur
   - `protocol` : Erreur de protocole (message mal formé)
   - `state` : État invalide (ex : ready sans config)
   - `midi` : Erreur MIDI
-  - `internal` : Erreur interne du serveur
 - `message` : Message d'erreur descriptif
+
+Smart Piano essaie d’être tolérant aux erreurs. Seule l’erreur interne engendre
+un retour en état sûr. Les autres erreurs engendrent simplement un avertissement
+du client (qui avertit l’utilisateur si besoin) et un maintien de l’état actuel.
+
+Par exemple, en cas de périphérique MIDI indisponible, le serveur envoie une
+erreur pour indiquer à l’utilisateur de reconnecter son piano, mais la session
+de jeu peut continuer une fois le piano reconnecté.
 
 **Exemple** :
 
@@ -328,8 +335,6 @@ Client                       Serveur
   |                             |
   |<-- over --------------------|
   |                             |
-  |--- quit ------------------->|
-  |                             |
 ```
 
 ### Gestion d'erreur
@@ -362,13 +367,13 @@ Client           Serveur
 ```
 DISCONNECTED --[client connect]--> CONNECTED
 CONNECTED --[config + ack]--> CONFIGURED
-CONFIGURED --[ready]--> PLAYING
-PLAYING --[challenge + notes played]--> PLAYED
+CONFIGURED --[ready + challenge]--> PLAYING
+PLAYING --[note(s) played]--> PLAYED
 PLAYED --[ready]--> PLAYING
 PLAYING --[last challenge done + result]--> CONFIGURED
-PLAYING --[quit / error]--> CONFIGURED
-CONFIGURED --[quit / error]--> CONNECTED
-CONNECTED --[quit / error]--> DISCONNECTED
+CONFIGURED --[quit / internal error]--> CONNECTED
+PLAYING --[quit / internal error]--> CONNECTED
+PLAYED --[quit / internal error]--> CONNECTED
 ```
 
 ## Règles de validation
@@ -440,14 +445,10 @@ invalide), le serveur doit :
 [... après 10 challenges ...]
 
 ← over
-← score=234
 ← duration=32
 ← perfect=10
 ← total=10
 ←
-
-→ quit
-→
 ```
 
 ### Exemple 2 : Jeu d'accords avec erreur

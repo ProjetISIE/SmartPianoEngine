@@ -168,8 +168,7 @@ public:
 7. `GameMode` valide l'input
 8. `GameMode` envoie le résultat au client
 9. Répéter 4-8 jusqu'à fin du jeu
-10. `GameMode` envoie le score final
-11. `GameEngine` attend une nouvelle configuration ou déconnexion
+10. `GameEngine` attend une nouvelle configuration ou déconnexion
 
 ## Avantages de cette architecture
 
