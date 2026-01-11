@@ -3,64 +3,73 @@
 
 #include "GenererNoteAleatoire.hpp"
 #include "LectureNoteJouee.hpp"
+#include "Logger.hpp"
 #include "SocketManager.hpp"
 #include "ValidationNote.hpp"
 
-// Classe principale pour gerer le jeu
+// Classe représentant l’essentiel de l’état de Smart Piano
 class GameManager {
   public:
-    // Constructeur par defaut
-    GameManager();
+    // Constructeur par défaut, ajout log
+    GameManager() {
+        Logger::log("[GameManager] Initialisation de GameManager");
+    }
 
-    // Methode pour initialiser le serveur sur un socket Unix
-    bool initialiserServeur(const std::string& socketPath);
+    // Initialiser le serveur sur un socket Unix
+    bool initialiserServeur(const std::string& socketPath) {
+        Logger::log("[GameManager] Initialisation serveur sur " + socketPath);
+        return socketManager.initialiserServeur(socketPath);
+    }
 
-    // Methode pour attendre la connexion d'un client
-    void attendreConnexion();
+    // Attendre une connexion client
+    void attendreConnexion() {
+        Logger::log("[GameManager] En attente de connexion client");
+        socketManager.attendreConnexion();
+    }
 
-    // Methode principale pour lancer le jeu
+    // Lancer le jeu
     void lancerJeu();
 
-    // Methode pour relancer le jeu avec des parametres definis
+    // Relancer le jeu, avec des parametres definis
     void rejouer(const std::string& gamme, const std::string& mode);
 
-    // Methode pour retourner a l'accueil (remet le jeu a l'etat initial)
+    // Remettre le jeu a l'état initial "retourner à l'accueil"
     void retourAccueil();
 
-    // Methode pour redemarrer le programme
+    // Redémarrer le programme
     void restartProgram();
 
-    // Permet d'acceder a socketManager dans les tests unitaires
-    SocketManager& getSocketManager() { return socketManager; }
+    // Accéder a socketManager (pour les tests unitaires)
+    // SocketManager& getSocketManager() { return socketManager; }
 
   protected:
-    // Methode pour lancer le mode de jeu "Jeu de note"
+    // Lancer le "Jeu de note"
     void lancerJeuDeNote(const std::string& gamme, const std::string& mode);
 
-    // Methode pour lancer le mode de jeu "Jeu d'accords simples"
+    // Lancer le "Jeu d'accords simples"
     void lancerJeuDaccordSR(const std::string& gamme, const std::string& mode);
 
-    // Methode pour lancer le mode de jeu "Jeu d'accords avec renversements"
+    // Lancer le "Jeu d'accords renversés"
     void lancerJeuDaccordRenversement(const std::string& gamme,
                                       const std::string& mode);
 
   private:
-    // Gestion des communications reseau avec le client
+    // Communications réseau avec le client
     SocketManager socketManager;
 
-    // Generation de notes et d'accords aleatoires
+    // Génération de notes et d'accords aléatoires
     GenererNoteAleatoire generateur;
 
-    // Validation des notes et accords joues
+    // Validation des notes et accords joués
     ValidationNote validateur;
 
-    // Lecture des notes jouees par le client
+    // Lecture des notes jouées par le client
     LectureNoteJouee lectureNote;
 
-    // Variables pour stocker les parametres du jeu actuel
+    // Paramètres du jeu actuel
     std::string jeuActuel;     // Type de jeu en cours (ex: "Jeu de note")
-    std::string gammeActuelle; // Gamme musicale utilisee (ex: "Do")
-    std::string modeActuel;    // Mode utilise (ex: "Majeur" ou "Mineur")
+    std::string gammeActuelle; // Gamme musicale utilisée (ex: "Do")
+    std::string modeActuel;    // Mode utilisé (ex: "Majeur" ou "Mineur")
 };
 
 #endif // GAME_MANAGER_H
