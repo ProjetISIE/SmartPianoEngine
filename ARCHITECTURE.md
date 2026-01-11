@@ -185,7 +185,8 @@ public:
    car impossible de continuer
 2. **Erreurs de session** : Log + fin de la session en cours (ex : client
    déconnecté) ; le moteur attend une nouvelle connexion client
-3. **Erreurs de jeu** : Log + retour d'erreur au client (ex : note invalide)
+3. **Erreurs de jeu en cours** : Log + retour d'erreur au client (ex : note non
+   reconnue)
 
 ## Configuration
 

@@ -1,313 +1,296 @@
 # Smart Piano UDS Protocol Specification
 
-## Version
-Protocol Version: 1.0.0
+> Version : 1.0.0
 
-## Overview
-
-Smart Piano utilise un protocole texte simple sur Unix Domain Socket (UDS) pour la communication entre le moteur de jeu (serveur) et l'interface utilisateur (client).
+Smart Piano utilise un protocole texte simple sur Unix Domain Socket (UDS) pour
+la communication entre le moteur de jeu (serveur) et l'interface utilisateur
+(client).
 
 ## Transport
 
-- **Type**: Unix Domain Socket (UDS)
-- **Chemin par défaut**: `/tmp/smartpiano.sock`
-- **Mode**: SOCK_STREAM (orienté connexion)
-- **Encodage**: UTF-8
+- **Type** : Unix Domain Socket (UDS)
+- **Chemin par défaut** : `/tmp/smartpiano.sock`
+- **Mode** : SOCK_STREAM (orienté connexion)
+- **Encodage** : UTF-8
 
 ## Format des messages
 
-### Structure générale
-
-Chaque message est composé de lignes de texte au format `clé=valeur`, terminé par une ligne vide (`\n\n`).
+Chaque message débute par son type, comporte d’éventuelles lignes de texte au
+format `clé=valeur`, et se termine par une ligne vide (`\n\n`).
 
 ```
+type du message
 clé1=valeur1
 clé2=valeur2
-clé3=valeur3
-
+# ligne vide ici <--
 ```
 
-**Règles syntaxiques**:
-- Chaque ligne contient une paire `clé=valeur`
-- La clé ne peut pas contenir `=` ou `\n`
-- La valeur peut contenir des espaces mais pas de `\n`
-- Les lignes sont séparées par `\n` (LF uniquement)
-- Le message se termine par `\n\n` (double ligne vide)
-- Pas d'espaces autour du `=`
-- Encodage UTF-8 pour les caractères accentués
+- Le type du message peut contenir des espaces, mais pas de `\n` (retour ligne)
+- Le type du message se termine par `\n` (LF uniquement)
+- Les éventuelles lignes subséquentes contiennent une (seule) paire `clé=valeur`
+- Clé et valeur ne peuvent pas contenir `=` ou `\n`
+- La valeur peut contenir des espaces, mais pas de `\n` (nouvelle ligne)
+- Les lignes se terminent par `\n` (LF uniquement)
+- Le message se termine par `\n` après une ligne déjà finie, résultant en `\n\n`
+- Pas d'espaces autour du `=` séparant clé et valeur
+- Encodage UTF-8, support des caractères accentués, spéciaux…
 
-### Exemple
-```
-type=game_config
-game_type=note
-scale=Do
-mode=Majeur
+**Exemple** :
 
 ```
+config
+game=note
+scale=c
+mode=maj
+# ligne vide indiquant la fin du message <--
+```
+
+Ci-dessous, la fin d’un bloc de code est considérée comme une ligne vide.
 
 ## Types de messages
 
-### 1. Client → Serveur
+### 1. Client (interface utilisateur) → Serveur (moteur de jeu)
 
-#### 1.1 Configuration de jeu
+#### 1.1 Configuration de jeu `config`
 
-Démarre une nouvelle session de jeu.
+Commence une nouvelle session de jeu en la configurant.
 
-**Message: `game_config`**
 ```
-type=game_config
-game_type=<TYPE>
+config
+game=<TYPE>
 scale=<GAMME>
 mode=<MODE>
-
 ```
 
-**Champs**:
-- `type`: Toujours `"game_config"`
-- `game_type`: Type de jeu
-  - `"note"` : Jeu de reconnaissance de notes
-  - `"chord_simple"` : Jeu d'accords sans renversement
-  - `"chord_inversions"` : Jeu d'accords avec renversements
-- `scale`: Gamme musicale
-  - Valeurs: `"Do"`, `"Re"`, `"Mi"`, `"Fa"`, `"Sol"`, `"La"`, `"Si"`
-- `mode`: Mode de la gamme
-  - Valeurs: `"Majeur"`, `"Mineur"`
+**Champs** :
 
-**Exemple**:
-```
-type=game_config
-game_type=note
-scale=Do
-mode=Majeur
+- `game` : Type de jeu
+  - `note` : Jeu de reconnaissance de notes
+  - `chord` : Jeu d'accords sans renversement
+  - `chord inversed` : Jeu d'accords avec renversements
+- `scale` : Éventuelle gamme musicale voulue (sinon le serveur choisit)
+  - Valeurs : `c`, `d`, `e`, `f`, `g`, `a`, `b`
+  - Cela équivaut en français à "Do", "Ré", "Mi", "Fa", "Sol", "La", "Si"
+- `mode` : Éventuel mode de la gamme voulu (sinon le serveur choisit)
+  - Valeurs : `maj` pour Majeur, `min` pour mineur
+
+**Exemple** :
 
 ```
-
-#### 1.2 Prêt pour le challenge suivant
-
-Indique que le client est prêt à recevoir le prochain challenge.
-
-**Message: `ready`**
-```
-type=ready
-
+config
+game=note
+scale=c
+mode=maj
 ```
 
-**Champs**:
-- `type`: Toujours `"ready"`
+#### 1.2 Prêt pour le challenge suivant `ready`
 
-#### 1.3 Abandon de partie
+Indique que le client est prêt à recevoir le prochain challenge, à poursuivre le
+jeu en cours.
+
+```
+ready
+```
+
+Aucun **champ**, seulement le type valant `ready`, suivi d’une fin de message.
+
+#### 1.3 Abandon de partie `stop`
 
 Demande l'arrêt de la session en cours.
 
-**Message: `quit`**
 ```
-type=quit
-
+stop
 ```
 
-**Champs**:
-- `type`: Toujours `"quit"`
+Aucun **champ**, uniquement le type valant `stop`, suivi d’une fin de message.
 
-### 2. Serveur → Client
+### 2. Serveur (moteur de jeu) → Client (interface utilisateur)
 
-#### 2.1 Accusé de réception de configuration
+#### 2.1 Accusé de réception (de configuration) `ack`
 
 Confirme la réception de la configuration.
 
-**Message: `config_ack`**
 ```
-type=config_ack
+ack
 status=ok
-
 ```
 
-**ou en cas d'erreur**:
+**Exemple en cas d'erreur** :
+
 ```
-type=config_ack
+ack
 status=error
-error_code=<CODE>
-error_message=<MESSAGE>
-
+code=<CODE>
+message=<MESSAGE>
 ```
 
-**Champs**:
-- `type`: Toujours `"config_ack"`
-- `status`: `"ok"` ou `"error"`
-- `error_code`: (optionnel) Code d'erreur
-  - `"invalid_game_type"` : Type de jeu invalide
-  - `"invalid_scale"` : Gamme invalide
-  - `"invalid_mode"` : Mode invalide
-  - `"midi_not_ready"` : Périphérique MIDI non disponible
-- `error_message`: (optionnel) Message d'erreur descriptif
+**Champs** :
 
-#### 2.2 Challenge note
+- `status` : `ok` ou `error`
+- `code` : Code d'erreur éventuel
+  - `game` : Type de jeu invalide
+  - `scale` : Gamme invalide
+  - `mode` : Mode invalide
+  - `midi` : Périphérique MIDI non disponible
+- `message` : Éventuel message d'erreur descriptif
+
+#### 2.2 Challenge note `note`
 
 Demande au joueur de jouer une note spécifique.
 
-**Message: `challenge_note`**
 ```
-type=challenge_note
+note
 note=<NOTE>
-challenge_id=<ID>
-
+id=<ID>
 ```
 
-**Champs**:
-- `type`: Toujours `"challenge_note"`
-- `note`: Note à jouer (ex: `"C4"`, `"D#5"`, `"Gb3"`)
-- `challenge_id`: Identifiant unique du challenge (entier positif)
+**Champs** :
 
-**Exemple**:
-```
-type=challenge_note
-note=C4
-challenge_id=1
+- `note` : Note à jouer (ex : `c4`, `d#5`, `gb3`)
+- `id` : Identifiant unique du challenge (entier positif)
+
+**Exemple** :
 
 ```
+note
+note=c4
+id=1
+```
 
-#### 2.3 Challenge accord
+#### 2.3 Challenge accord `chord`
 
 Demande au joueur de jouer un accord spécifique.
 
-**Message: `challenge_chord`**
 ```
-type=challenge_chord
-chord_name=<NOM>
-chord_notes=<NOTES>
+chord
+name=<NOM>
+notes=<NOTES>
 inversion=<INVERSION>
-challenge_id=<ID>
-
+id=<ID>
 ```
 
-**Champs**:
-- `type`: Toujours `"challenge_chord"`
-- `chord_name`: Nom de l'accord (ex: `"Do majeur"`, `"Re mineur"`)
-- `chord_notes`: Notes de l'accord séparées par des espaces (ex: `"C4 E4 G4"`)
-- `inversion`: Numéro de renversement
-  - `"0"` : Position fondamentale
-  - `"1"` : Premier renversement
-  - `"2"` : Deuxième renversement
-  - `"-1"` : Renversement non spécifié (accord simple)
-- `challenge_id`: Identifiant unique du challenge
+**Champs** :
 
-**Exemple (position fondamentale)**:
+- `name` : Nom (affiché) de l'accord (ex : `"Do majeur"`, `"Re mineur"`)
+- `notes` : Notes de l'accord séparées par des espaces (ex : `"c4 e4 g4"`)
+- `inversion` : Éventuel numéro de renversement
+  - `0` : Position fondamentale, pas de renversement
+  - `1` : Premier renversement, tierce à la basse, tonique à l’octave
+  - `2` : Deuxième renversement, quinte à la basse, tonique et tierce à l’octave
+- `id` : Identifiant unique du challenge
+
+**Exemple (position fondamentale)** :
+
 ```
-type=challenge_chord
-chord_name=Do majeur
-chord_notes=C4 E4 G4
+chord
+name=Do majeur
+notes=c4 e4 g4
 inversion=0
-challenge_id=5
-
+id=5
 ```
 
-**Exemple (premier renversement)**:
+**Exemple (premier renversement)** :
+
 ```
-type=challenge_chord
-chord_name=Do majeur 1
-chord_notes=E4 G4 C5
+chord
+name=Do majeur 1
+notes=e4 g4 c5
 inversion=1
-challenge_id=6
-
+id=6
 ```
 
-#### 2.4 Résultat du challenge
+#### 2.4 Résultat du challenge `result`
 
 Informe le joueur du résultat de sa tentative.
 
-**Message: `challenge_result`**
 ```
-type=challenge_result
-challenge_id=<ID>
+result
+id=<ID>
 result=<RESULT>
-notes_played=<NOTES>
-
+notes=<NOTES>
 ```
 
-**Champs**:
-- `type`: Toujours `"challenge_result"`
-- `challenge_id`: Identifiant du challenge correspondant
-- `result`: Résultat
-  - `"correct"` : Réponse correcte
-  - `"incorrect"` : Réponse incorrecte
-  - `"partial"` : Réponse partiellement correcte (optionnel pour accords)
-- `notes_played`: Notes jouées par l'utilisateur (séparées par des espaces)
+**Champs** :
 
-**Exemple (correct)**:
+- `id` : Identifiant du challenge correspondant
+- `result` : Résultat
+  - `correct` : Réponse correcte
+  - `incorrect` : Réponse incorrecte
+  - `partial` : Réponse partiellement correcte (optionnel pour accords)
+- `notes` : Notes jouées par l'utilisateur (séparées par des espaces)
+
+**Exemple (correct)** :
+
 ```
-type=challenge_result
-challenge_id=1
+result
+id=1
 result=correct
-notes_played=C4
-
+notes=c4
 ```
 
-**Exemple (incorrect)**:
+**Exemple (incorrect)** :
+
 ```
-type=challenge_result
-challenge_id=2
+result
+id=2
 result=incorrect
-notes_played=D4
-
+notes=d4
 ```
 
-#### 2.5 Fin de partie
+#### 2.5 Fin de partie `over`
 
 Indique la fin de la session de jeu avec le score.
 
-**Message: `game_over`**
 ```
-type=game_over
+over
 score=<SCORE>
 duration=<DURATION>
-total_challenges=<TOTAL>
-correct_challenges=<CORRECT>
-
+total=<TOTAL>
+correct=<CORRECT>
 ```
 
-**Champs**:
-- `type`: Toujours `"game_over"`
-- `score`: Score final (temps total en secondes)
-- `duration`: Durée totale de la partie en secondes
-- `total_challenges`: Nombre total de challenges
-- `correct_challenges`: Nombre de challenges réussis
+**Champs** :
 
-**Exemple**:
+- `score` : Score final (temps total en secondes)
+- `duration` : Durée totale de la partie en secondes
+- `total` : Nombre total de challenges
+- `correct` : Nombre de challenges réussis
+
+**Exemple** :
+
 ```
-type=game_over
+over
 score=45
 duration=45
-total_challenges=10
-correct_challenges=10
-
+total=10
+correct=10
 ```
 
-#### 2.6 Erreur
+#### 2.6 Erreur `error`
 
 Signale une erreur générale.
 
-**Message: `error`**
 ```
-type=error
-error_code=<CODE>
-error_message=<MESSAGE>
-
+error
+code=<CODE>
+message=<MESSAGE>
 ```
 
-**Champs**:
-- `type`: Toujours `"error"`
-- `error_code`: Code d'erreur
-  - `"protocol_error"` : Erreur de protocole (message mal formé)
-  - `"invalid_state"` : État invalide (ex: ready sans config)
-  - `"midi_error"` : Erreur MIDI
-  - `"internal_error"` : Erreur interne du serveur
-- `error_message`: Message d'erreur descriptif
+**Champs** :
 
-**Exemple**:
+- `code` : Code d'erreur
+  - `protocol` : Erreur de protocole (message mal formé)
+  - `state` : État invalide (ex : ready sans config)
+  - `midi` : Erreur MIDI
+  - `internal` : Erreur interne du serveur
+- `message` : Message d'erreur descriptif
+
+**Exemple** :
+
 ```
-type=error
-error_code=protocol_error
-error_message=Message mal formé: champ 'type' manquant
-
+error
+code=protocol
+message=Message mal formé: champ 'id' manquant
 ```
 
 ## Diagramme de séquence
@@ -315,57 +298,57 @@ error_message=Message mal formé: champ 'type' manquant
 ### Session complète
 
 ```
-Client                          Serveur
-  |                                |
-  |--- game_config ---------------->|
-  |                                |
-  |<-- config_ack (ok) ------------|
-  |                                |
-  |--- ready ---------------------->|
-  |                                |
-  |<-- challenge_note -------------|
-  |                                |
-  | [Joueur joue une note]         |
-  |                                |
-  |<-- challenge_result -----------|
-  |                                |
-  |--- ready ---------------------->|
-  |                                |
-  |<-- challenge_note -------------|
-  |                                |
-  | [Répéter pour N challenges]    |
-  |                                |
-  |<-- game_over ------------------|
-  |                                |
-  |--- quit ----------------------->|
-  |                                |
+Client                        Serveur
+  |                              |
+  |--- game_config ------------->|
+  |                              |
+  |<-- config_ack (ok) ----------|
+  |                              |
+  |--- ready ------------------->|
+  |                              |
+  |<-- challenge_note -----------|
+  |                              |
+  | [Joueur joue une note]       |
+  |                              |
+  |<-- challenge_result ---------|
+  |                              |
+  |--- ready ------------------->|
+  |                              |
+  |<-- challenge_note -----------|
+  |                              |
+  | [Répéter pour N challenges]  |
+  |                              |
+  |<-- game_over ----------------|
+  |                              |
+  |--- quit -------------------->|
+  |                              |
 ```
 
 ### Gestion d'erreur
 
 ```
-Client                          Serveur
-  |                                |
-  |--- game_config ---------------->|
-  |   (invalide)                   |
-  |                                |
-  |<-- config_ack (error) ---------|
-  |                                |
-  |--- game_config ---------------->|
-  |   (valide)                     |
-  |                                |
-  |<-- config_ack (ok) ------------|
-  |                                |
+Client                  Serveur
+  |                        |
+  |--- game_config ------->|
+  |    (invalide)          |
+  |                        |
+  |<-- config_ack (error) -|
+  |                        |
+  |--- game_config ------->|
+  |   (valide)             |
+  |                        |
+  |<-- config_ack (ok) ----|
+  |                        |
 ```
 
 ## États de la connexion
 
-1. **DISCONNECTED**: Aucune connexion établie
-2. **CONNECTED**: Client connecté mais pas de configuration
-3. **CONFIGURED**: Configuration reçue et validée
-4. **PLAYING**: Session de jeu en cours
-5. **WAITING**: En attente du prochain challenge (après un `ready`)
-6. **FINISHED**: Partie terminée
+1. **DISCONNECTED** : Aucune connexion établie
+2. **CONNECTED** : Client connecté, mais pas de configuration
+3. **CONFIGURED** : Configuration reçue et validée
+4. **PLAYING** : Session de jeu en cours
+5. **WAITING** : En attente du prochain challenge (après un `ready`)
+6. **FINISHED** : Partie terminée
 
 ## Transitions d'états
 
@@ -383,26 +366,19 @@ ANY --[error]--> DISCONNECTED
 
 ## Règles de validation
 
-### Messages Client
-
-1. Tous les champs obligatoires doivent être présents
+1. Tous les champs obligatoires (non "éventuels") doivent être présents
 2. Les valeurs des champs doivent être dans les ensembles autorisés
 3. Le message doit se terminer par `\n\n`
-4. Longueur maximale d'un message : 4096 octets
-5. Timeout de réception : 30 secondes
+4. Timeout de réception après 1 seconde
 
-### Messages Serveur
-
-1. Tous les champs obligatoires doivent être présents
-2. Le `challenge_id` doit être unique et croissant
-3. Le message doit se terminer par `\n\n`
-4. Longueur maximale d'un message : 4096 octets
+Le serveur doit aussi s’assurer que le challenge `id` est unique et croissant.
 
 ## Gestion des erreurs de protocole
 
-En cas d'erreur de protocole (message mal formé, champ manquant, valeur invalide), le serveur doit :
+En cas d'erreur de protocole (message mal formé, champ manquant, valeur
+invalide), le serveur doit :
 
-1. Logger l'erreur
+1. Journaliser (log) l'erreur
 2. Envoyer un message `error` avec le code et message appropriés
 3. Fermer la connexion si l'erreur est critique
 4. Continuer la session si l'erreur est récupérable
@@ -547,6 +523,9 @@ En cas d'erreur de protocole (message mal formé, champ manquant, valeur invalid
 
 ## Compatibilité
 
-- Le serveur DOIT refuser les connexions de clients avec un protocole incompatible
-- Le client DOIT vérifier la compatibilité du protocole avant d'envoyer des commandes
-- Version du protocole : Inclure dans les logs mais pas dans les messages (v1.0.0)
+- Le serveur DOIT refuser les connexions de clients avec un protocole
+  incompatible
+- Le client DOIT vérifier la compatibilité du protocole avant d'envoyer des
+  commandes
+- Version du protocole : Inclure dans les logs mais pas dans les messages
+  (v1.0.0)
