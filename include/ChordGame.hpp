@@ -2,11 +2,11 @@
 #define CHORDGAME_HPP
 
 #include "IGameMode.hpp"
-#include "ITransport.hpp"
 #include "IMidiInput.hpp"
+#include "ITransport.hpp"
+#include <random>
 #include <string>
 #include <vector>
-#include <random>
 
 /**
  * @brief Jeu d'accords simples (sans renversement)
@@ -22,8 +22,8 @@ class ChordGame : public IGameMode {
      * @param config Configuration du jeu
      * @param withInversions true pour mode avec renversements
      */
-    ChordGame(ITransport& transport, IMidiInput& midi, 
-              const GameConfig& config, bool withInversions = false);
+    ChordGame(ITransport& transport, IMidiInput& midi, const GameConfig& config,
+              bool withInversions = false);
 
     /**
      * @brief Démarre le jeu
@@ -42,12 +42,12 @@ class ChordGame : public IGameMode {
     void stop() override;
 
   private:
-    ITransport& transport_;      ///< Référence au transport
-    IMidiInput& midi_;           ///< Référence à l'entrée MIDI
-    GameConfig config_;          ///< Configuration du jeu
-    bool withInversions_;        ///< Mode avec renversements?
-    std::mt19937 rng_;           ///< Générateur aléatoire
-    int challengeId_;            ///< ID du challenge actuel
+    ITransport& transport_; ///< Référence au transport
+    IMidiInput& midi_;      ///< Référence à l'entrée MIDI
+    GameConfig config_;     ///< Configuration du jeu
+    bool withInversions_;   ///< Mode avec renversements?
+    std::mt19937 rng_;      ///< Générateur aléatoire
+    int challengeId_;       ///< ID du challenge actuel
 
     /**
      * @brief Structure représentant un accord
@@ -92,7 +92,7 @@ class ChordGame : public IGameMode {
      * @param expected Notes attendues
      * @return Nombre de notes correctes
      */
-    int validateChord(const std::vector<Note>& played, 
+    int validateChord(const std::vector<Note>& played,
                       const std::vector<Note>& expected);
 };
 

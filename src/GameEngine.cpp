@@ -1,7 +1,7 @@
 #include "GameEngine.hpp"
-#include "NoteGame.hpp"
 #include "ChordGame.hpp"
 #include "Logger.hpp"
+#include "NoteGame.hpp"
 
 GameEngine::GameEngine(ITransport& transport, IMidiInput& midi)
     : transport_(transport), midi_(midi), running_(false) {
@@ -21,7 +21,8 @@ void GameEngine::run() {
         try {
             handleClientConnection();
         } catch (const std::exception& e) {
-            Logger::log("[GameEngine] Exception: " + std::string(e.what()), true);
+            Logger::log("[GameEngine] Exception: " + std::string(e.what()),
+                        true);
         }
     }
 
@@ -44,7 +45,7 @@ void GameEngine::handleClientConnection() {
 
         if (msg.type == "config") {
             GameConfig config = parseConfig(msg);
-            
+
             // Valider la configuration
             if (config.gameType.empty()) {
                 sendAck(false, "game", "Type de jeu manquant");
@@ -54,11 +55,14 @@ void GameEngine::handleClientConnection() {
             // Initialiser MIDI si nécessaire (erreur non fatale)
             if (!midi_.isReady()) {
                 if (!midi_.initialize()) {
-                    Logger::log("[GameEngine] MIDI non disponible, en attente...", true);
+                    Logger::log(
+                        "[GameEngine] MIDI non disponible, en attente...",
+                        true);
                     // Envoyer une erreur mais continuer
                     Message error("error");
                     error.addField("code", "midi");
-                    error.addField("message", "Périphérique MIDI non disponible");
+                    error.addField("message",
+                                   "Périphérique MIDI non disponible");
                     transport_.send(error);
                     // Ne pas envoyer ack - attendre que MIDI soit prêt
                     continue;
@@ -69,7 +73,8 @@ void GameEngine::handleClientConnection() {
             processGameSession(config);
 
         } else if (msg.type == "quit") {
-            Logger::log("[GameEngine] Client demande retour à l'état non configuré");
+            Logger::log(
+                "[GameEngine] Client demande retour à l'état non configuré");
             // quit ne déconnecte pas, il reset juste la config
             // Continue la boucle pour attendre une nouvelle config
             continue;
@@ -103,15 +108,17 @@ void GameEngine::processGameSession(const GameConfig& config) {
     while (sessionActive) {
         // Attendre que le client soit prêt (ou quit)
         Message readyMsg = transport_.receive();
-        
+
         if (readyMsg.type == "quit") {
             Logger::log("[GameEngine] Client demande arrêt de session");
             currentGame_->stop();
             return; // Retour à l'état CONFIGURED
         }
-        
+
         if (readyMsg.type != "ready") {
-            Logger::log("[GameEngine] Erreur: ready attendu, reçu " + readyMsg.type, true);
+            Logger::log("[GameEngine] Erreur: ready attendu, reçu " +
+                            readyMsg.type,
+                        true);
             Message error("error");
             error.addField("code", "state");
             error.addField("message", "Message 'ready' ou 'quit' attendu");
@@ -138,7 +145,8 @@ void GameEngine::processGameSession(const GameConfig& config) {
     }
 }
 
-std::unique_ptr<IGameMode> GameEngine::createGameMode(const GameConfig& config) {
+std::unique_ptr<IGameMode>
+GameEngine::createGameMode(const GameConfig& config) {
     if (config.gameType == "note") {
         return std::make_unique<NoteGame>(transport_, midi_, config);
     } else if (config.gameType == "chord") {
@@ -146,7 +154,7 @@ std::unique_ptr<IGameMode> GameEngine::createGameMode(const GameConfig& config) 
     } else if (config.gameType == "inversed") {
         return std::make_unique<ChordGame>(transport_, midi_, config, true);
     }
-    
+
     Logger::log("[GameEngine] Mode de jeu inconnu: " + config.gameType, true);
     return nullptr;
 }
@@ -156,23 +164,23 @@ GameConfig GameEngine::parseConfig(const Message& msg) {
     config.gameType = msg.getField("game");
     config.scale = msg.getField("scale");
     config.mode = msg.getField("mode");
-    
+
     // Valeurs par défaut
     if (config.scale.empty()) config.scale = "c";
     if (config.mode.empty()) config.mode = "maj";
     config.maxChallenges = 10;
 
-    Logger::log("[GameEngine] Config: game=" + config.gameType + 
+    Logger::log("[GameEngine] Config: game=" + config.gameType +
                 " scale=" + config.scale + " mode=" + config.mode);
-    
+
     return config;
 }
 
-void GameEngine::sendAck(bool ok, const std::string& errorCode, 
+void GameEngine::sendAck(bool ok, const std::string& errorCode,
                          const std::string& errorMessage) {
     Message ack("ack");
     ack.addField("status", ok ? "ok" : "error");
-    
+
     if (!ok) {
         if (!errorCode.empty()) {
             ack.addField("code", errorCode);
@@ -181,6 +189,6 @@ void GameEngine::sendAck(bool ok, const std::string& errorCode,
             ack.addField("message", errorMessage);
         }
     }
-    
+
     transport_.send(ack);
 }

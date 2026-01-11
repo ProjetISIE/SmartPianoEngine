@@ -10,22 +10,21 @@
  * Un message est composé d'un type et de champs optionnels key=value
  */
 struct Message {
-    std::string type;                           ///< Type du message
-    std::map<std::string, std::string> fields;  ///< Champs du message
+    std::string type;                          ///< Type du message
+    std::map<std::string, std::string> fields; ///< Champs du message
 
     /**
      * @brief Constructeur avec type uniquement
      * @param messageType Type du message
      */
-    explicit Message(std::string messageType) 
-        : type(std::move(messageType)) {}
+    explicit Message(std::string messageType) : type(std::move(messageType)) {}
 
     /**
      * @brief Constructeur avec type et champs
      * @param messageType Type du message
      * @param messageFields Champs du message
      */
-    Message(std::string messageType, 
+    Message(std::string messageType,
             std::map<std::string, std::string> messageFields)
         : type(std::move(messageType)), fields(std::move(messageFields)) {}
 

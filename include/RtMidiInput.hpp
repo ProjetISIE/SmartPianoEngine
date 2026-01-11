@@ -2,9 +2,9 @@
 #define RTMIDIINPUT_HPP
 
 #include "IMidiInput.hpp"
-#include <rtmidi/RtMidi.h>
 #include <atomic>
 #include <mutex>
+#include <rtmidi/RtMidi.h>
 #include <vector>
 
 /**
@@ -48,11 +48,11 @@ class RtMidiInput : public IMidiInput {
     bool isReady() const override;
 
   private:
-    RtMidiIn* midiIn_;                    ///< Instance RTMidi
-    RtMidiOut* midiOut_;                  ///< Sortie MIDI (pour écho)
-    std::vector<Note> lastNotes_;         ///< Dernières notes jouées
-    std::atomic<bool> notesAvailable_;    ///< Notes disponibles?
-    std::mutex notesMutex_;               ///< Mutex pour accès aux notes
+    RtMidiIn* midiIn_;                 ///< Instance RTMidi
+    RtMidiOut* midiOut_;               ///< Sortie MIDI (pour écho)
+    std::vector<Note> lastNotes_;      ///< Dernières notes jouées
+    std::atomic<bool> notesAvailable_; ///< Notes disponibles?
+    std::mutex notesMutex_;            ///< Mutex pour accès aux notes
 
     /**
      * @brief Traite les messages MIDI reçus (thread séparé)

@@ -57,8 +57,8 @@ class UdsTransport : public ITransport {
     bool isClientConnected() const override;
 
   private:
-    int serverSocket_;     ///< Descripteur du socket serveur
-    int clientSocket_;     ///< Descripteur du socket client
+    int serverSocket_;       ///< Descripteur du socket serveur
+    int clientSocket_;       ///< Descripteur du socket client
     std::string socketPath_; ///< Chemin du socket Unix
 
     /**

@@ -1,9 +1,9 @@
 #ifndef GAMEENGINE_HPP
 #define GAMEENGINE_HPP
 
-#include "ITransport.hpp"
-#include "IMidiInput.hpp"
 #include "IGameMode.hpp"
+#include "IMidiInput.hpp"
+#include "ITransport.hpp"
 #include <memory>
 
 /**
@@ -36,10 +36,10 @@ class GameEngine {
     void stop();
 
   private:
-    ITransport& transport_;                   ///< Référence au transport
-    IMidiInput& midi_;                        ///< Référence à l'entrée MIDI
-    std::unique_ptr<IGameMode> currentGame_;  ///< Mode de jeu actuel
-    bool running_;                            ///< État du moteur
+    ITransport& transport_;                  ///< Référence au transport
+    IMidiInput& midi_;                       ///< Référence à l'entrée MIDI
+    std::unique_ptr<IGameMode> currentGame_; ///< Mode de jeu actuel
+    bool running_;                           ///< État du moteur
 
     /**
      * @brief Gère la connexion d'un client
@@ -72,7 +72,7 @@ class GameEngine {
      * @param errorCode Code d'erreur éventuel
      * @param errorMessage Message d'erreur éventuel
      */
-    void sendAck(bool ok, const std::string& errorCode = "", 
+    void sendAck(bool ok, const std::string& errorCode = "",
                  const std::string& errorMessage = "");
 };
 

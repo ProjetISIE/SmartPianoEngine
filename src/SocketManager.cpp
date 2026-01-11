@@ -168,8 +168,7 @@ SocketManager::traiterMessage(const std::string& message) {
     std::map<std::string, std::string> result;
 
     if (message.empty()) {
-        Logger::log(
-            "[SocketManager] Ligne 167 : Erreur : Message vide.", true);
+        Logger::log("[SocketManager] Ligne 167 : Erreur : Message vide.", true);
         return result;
     }
 

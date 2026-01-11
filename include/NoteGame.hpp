@@ -2,11 +2,11 @@
 #define NOTEGAME_HPP
 
 #include "IGameMode.hpp"
-#include "ITransport.hpp"
 #include "IMidiInput.hpp"
+#include "ITransport.hpp"
+#include <random>
 #include <string>
 #include <vector>
-#include <random>
 
 /**
  * @brief Jeu de reconnaissance de notes individuelles
@@ -40,11 +40,11 @@ class NoteGame : public IGameMode {
     void stop() override;
 
   private:
-    ITransport& transport_;    ///< Référence au transport
-    IMidiInput& midi_;         ///< Référence à l'entrée MIDI
-    GameConfig config_;        ///< Configuration du jeu
-    std::mt19937 rng_;         ///< Générateur aléatoire
-    int challengeId_;          ///< ID du challenge actuel
+    ITransport& transport_; ///< Référence au transport
+    IMidiInput& midi_;      ///< Référence à l'entrée MIDI
+    GameConfig config_;     ///< Configuration du jeu
+    std::mt19937 rng_;      ///< Générateur aléatoire
+    int challengeId_;       ///< ID du challenge actuel
 
     /**
      * @brief Génère une note aléatoire dans la gamme

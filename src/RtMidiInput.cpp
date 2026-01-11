@@ -16,12 +16,14 @@ RtMidiInput::~RtMidiInput() {
 
 bool RtMidiInput::initialize() {
     Logger::log("[RtMidiInput] Initialisation MIDI (JACK)...");
-    
+
     try {
         midiIn_ = new RtMidiIn(RtMidi::Api::UNIX_JACK, "SmartPianoEngine");
         midiOut_ = new RtMidiOut(RtMidi::Api::UNIX_JACK, "SmartPianoEngine");
     } catch (RtMidiError& error) {
-        Logger::log("[RtMidiInput] Erreur création RtMidi: " + error.getMessage(), true);
+        Logger::log("[RtMidiInput] Erreur création RtMidi: " +
+                        error.getMessage(),
+                    true);
         return false;
     }
 
@@ -37,7 +39,9 @@ bool RtMidiInput::initialize() {
         return true;
 
     } catch (RtMidiError& error) {
-        Logger::log("[RtMidiInput] Erreur ouverture ports: " + error.getMessage(), true);
+        Logger::log("[RtMidiInput] Erreur ouverture ports: " +
+                        error.getMessage(),
+                    true);
         return false;
     }
 }
@@ -61,12 +65,12 @@ std::vector<Note> RtMidiInput::readNotes() {
 
 void RtMidiInput::close() {
     Logger::log("[RtMidiInput] Fermeture des ressources...");
-    
+
     if (midiIn_) {
         delete midiIn_;
         midiIn_ = nullptr;
     }
-    
+
     if (midiOut_) {
         delete midiOut_;
         midiOut_ = nullptr;
@@ -79,20 +83,20 @@ bool RtMidiInput::isReady() const {
 
 void RtMidiInput::processMidiMessages() {
     Logger::log("[RtMidiInput] Thread MIDI démarré");
-    
+
     constexpr int CHORD_TIMEOUT_MS = 100; // Timeout pour accumulation d'accord
-    
+
     std::vector<unsigned char> message;
     std::vector<Note> currentNotes;
     auto lastNoteTime = std::chrono::steady_clock::now();
     bool chordInProgress = false;
-    
+
     while (midiIn_) {
         try {
             if (!midiIn_) break;
-            
+
             midiIn_->getMessage(&message);
-            
+
             if (!message.empty() && message.size() >= 3) {
                 int status = message[0] & 0xF0;
                 int midiNote = message[1];
@@ -107,13 +111,15 @@ void RtMidiInput::processMidiMessages() {
                     Logger::log("[RtMidiInput] Note reçue: " + note.toString());
                 }
             }
-            
+
             // Vérifier le timeout pour finaliser l'accord
             if (chordInProgress) {
                 auto now = std::chrono::steady_clock::now();
-                auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
-                    now - lastNoteTime).count();
-                
+                auto elapsed =
+                    std::chrono::duration_cast<std::chrono::milliseconds>(
+                        now - lastNoteTime)
+                        .count();
+
                 if (elapsed >= CHORD_TIMEOUT_MS && !currentNotes.empty()) {
                     // Timeout expiré - finaliser l'accord
                     {
@@ -123,24 +129,24 @@ void RtMidiInput::processMidiMessages() {
                     }
                     currentNotes.clear();
                     chordInProgress = false;
-                    Logger::log("[RtMidiInput] Accord finalisé (" + 
+                    Logger::log("[RtMidiInput] Accord finalisé (" +
                                 std::to_string(lastNotes_.size()) + " notes)");
                 }
             }
-            
+
         } catch (const std::exception& e) {
-            Logger::log("[RtMidiInput] Exception: " + std::string(e.what()), true);
+            Logger::log("[RtMidiInput] Exception: " + std::string(e.what()),
+                        true);
         }
-        
+
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 }
 
 Note RtMidiInput::convertMidiToNote(int midiNote) const {
     static const std::map<int, std::string> noteNames = {
-        {0, "c"}, {1, "c#"}, {2, "d"}, {3, "d#"}, {4, "e"}, {5, "f"},
-        {6, "f#"}, {7, "g"}, {8, "g#"}, {9, "a"}, {10, "a#"}, {11, "b"}
-    };
+        {0, "c"},  {1, "c#"}, {2, "d"},  {3, "d#"}, {4, "e"},   {5, "f"},
+        {6, "f#"}, {7, "g"},  {8, "g#"}, {9, "a"},  {10, "a#"}, {11, "b"}};
 
     int octave = (midiNote / 12) - 1;
     int noteIndex = midiNote % 12;

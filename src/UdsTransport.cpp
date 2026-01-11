@@ -25,7 +25,8 @@ bool UdsTransport::start(const std::string& endpoint) {
     // Créer le socket Unix
     serverSocket_ = socket(AF_UNIX, SOCK_STREAM, 0);
     if (serverSocket_ < 0) {
-        Logger::log("[UdsTransport] Erreur: Impossible de créer le socket", true);
+        Logger::log("[UdsTransport] Erreur: Impossible de créer le socket",
+                    true);
         return false;
     }
 
@@ -37,7 +38,8 @@ bool UdsTransport::start(const std::string& endpoint) {
 
     // Lier le socket
     if (bind(serverSocket_, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
-        Logger::log("[UdsTransport] Erreur: Impossible de lier le socket", true);
+        Logger::log("[UdsTransport] Erreur: Impossible de lier le socket",
+                    true);
         close(serverSocket_);
         serverSocket_ = -1;
         return false;
@@ -45,7 +47,9 @@ bool UdsTransport::start(const std::string& endpoint) {
 
     // Écouter les connexions
     if (listen(serverSocket_, 1) < 0) {
-        Logger::log("[UdsTransport] Erreur: Impossible de mettre le socket en écoute", true);
+        Logger::log(
+            "[UdsTransport] Erreur: Impossible de mettre le socket en écoute",
+            true);
         close(serverSocket_);
         serverSocket_ = -1;
         return false;
@@ -63,7 +67,8 @@ void UdsTransport::waitForClient() {
 
     clientSocket_ = accept(serverSocket_, nullptr, nullptr);
     if (clientSocket_ < 0) {
-        Logger::log("[UdsTransport] Erreur: Échec de l'acceptation de connexion", true);
+        Logger::log(
+            "[UdsTransport] Erreur: Échec de l'acceptation de connexion", true);
         return;
     }
 
@@ -78,7 +83,7 @@ void UdsTransport::send(const Message& msg) {
 
     std::string data = serializeMessage(msg);
     ssize_t sent = ::send(clientSocket_, data.c_str(), data.length(), 0);
-    
+
     if (sent < 0) {
         Logger::log("[UdsTransport] Erreur: Échec de l'envoi du message", true);
         return;
@@ -99,7 +104,7 @@ Message UdsTransport::receive() {
     // Lire jusqu'à trouver double newline
     while (true) {
         ssize_t received = recv(clientSocket_, buffer, sizeof(buffer) - 1, 0);
-        
+
         if (received < 0) {
             Logger::log("[UdsTransport] Erreur: Échec de réception", true);
             return Message("error");
@@ -130,11 +135,11 @@ void UdsTransport::stop() {
         close(clientSocket_);
         clientSocket_ = -1;
     }
-    
+
     if (serverSocket_ >= 0) {
         close(serverSocket_);
         serverSocket_ = -1;
-        
+
         if (!socketPath_.empty()) {
             unlink(socketPath_.c_str());
         }
@@ -143,9 +148,7 @@ void UdsTransport::stop() {
     Logger::log("[UdsTransport] Serveur arrêté");
 }
 
-bool UdsTransport::isClientConnected() const {
-    return clientSocket_ >= 0;
-}
+bool UdsTransport::isClientConnected() const { return clientSocket_ >= 0; }
 
 std::string UdsTransport::serializeMessage(const Message& msg) const {
     std::string result = msg.type + "\n";

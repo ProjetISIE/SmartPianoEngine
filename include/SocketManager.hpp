@@ -68,11 +68,12 @@ class SocketManager {
      * @param message Message texte recu sous forme de string.
      * @return Une map contenant les cles et valeurs du message.
      */
-    std::map<std::string, std::string> traiterMessage(const std::string& message);
+    std::map<std::string, std::string>
+    traiterMessage(const std::string& message);
 
   private:
-    int serverSocket;  ///< Descripteur du serveur UDS
-    int clientSocket;  ///< Descripteur de la socket client connectee
+    int serverSocket;       ///< Descripteur du serveur UDS
+    int clientSocket;       ///< Descripteur de la socket client connectee
     std::string socketPath; ///< Chemin du socket Unix
 };
 
