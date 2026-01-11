@@ -1,0 +1,62 @@
+#ifndef NOTEGAME_HPP
+#define NOTEGAME_HPP
+
+#include "IGameMode.hpp"
+#include "ITransport.hpp"
+#include "IMidiInput.hpp"
+#include <string>
+#include <vector>
+#include <random>
+
+/**
+ * @brief Jeu de reconnaissance de notes individuelles
+ *
+ * Le joueur doit jouer la note affichée
+ */
+class NoteGame : public IGameMode {
+  public:
+    /**
+     * @brief Constructeur
+     * @param transport Transport pour communication
+     * @param midi Entrée MIDI
+     * @param config Configuration du jeu
+     */
+    NoteGame(ITransport& transport, IMidiInput& midi, const GameConfig& config);
+
+    /**
+     * @brief Démarre le jeu
+     */
+    void start() override;
+
+    /**
+     * @brief Exécute une partie
+     * @return Résultat de la partie
+     */
+    GameResult play() override;
+
+    /**
+     * @brief Arrête le jeu
+     */
+    void stop() override;
+
+  private:
+    ITransport& transport_;    ///< Référence au transport
+    IMidiInput& midi_;         ///< Référence à l'entrée MIDI
+    GameConfig config_;        ///< Configuration du jeu
+    std::mt19937 rng_;         ///< Générateur aléatoire
+    int challengeId_;          ///< ID du challenge actuel
+
+    /**
+     * @brief Génère une note aléatoire dans la gamme
+     * @return Note générée
+     */
+    Note generateRandomNote();
+
+    /**
+     * @brief Obtient les notes de la gamme configurée
+     * @return Vecteur de notes possibles
+     */
+    std::vector<std::string> getScaleNotes();
+};
+
+#endif // NOTEGAME_HPP
