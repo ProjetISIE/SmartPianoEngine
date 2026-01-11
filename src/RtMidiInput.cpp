@@ -80,8 +80,12 @@ bool RtMidiInput::isReady() const {
 void RtMidiInput::processMidiMessages() {
     Logger::log("[RtMidiInput] Thread MIDI démarré");
     
+    constexpr int CHORD_TIMEOUT_MS = 100; // Timeout pour accumulation d'accord
+    
     std::vector<unsigned char> message;
     std::vector<Note> currentNotes;
+    auto lastNoteTime = std::chrono::steady_clock::now();
+    bool chordInProgress = false;
     
     while (midiIn_) {
         try {
@@ -98,14 +102,29 @@ void RtMidiInput::processMidiMessages() {
                 if (status == 0x90 && velocity > 0) {
                     Note note = convertMidiToNote(midiNote);
                     currentNotes.push_back(note);
+                    lastNoteTime = std::chrono::steady_clock::now();
+                    chordInProgress = true;
                     Logger::log("[RtMidiInput] Note reçue: " + note.toString());
-                    
-                    // Mettre à jour les notes disponibles
+                }
+            }
+            
+            // Vérifier le timeout pour finaliser l'accord
+            if (chordInProgress) {
+                auto now = std::chrono::steady_clock::now();
+                auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+                    now - lastNoteTime).count();
+                
+                if (elapsed >= CHORD_TIMEOUT_MS && !currentNotes.empty()) {
+                    // Timeout expiré - finaliser l'accord
                     {
                         std::lock_guard<std::mutex> lock(notesMutex_);
                         lastNotes_ = currentNotes;
                         notesAvailable_ = true;
                     }
+                    currentNotes.clear();
+                    chordInProgress = false;
+                    Logger::log("[RtMidiInput] Accord finalisé (" + 
+                                std::to_string(lastNotes_.size()) + " notes)");
                 }
             }
             
@@ -113,7 +132,7 @@ void RtMidiInput::processMidiMessages() {
             Logger::log("[RtMidiInput] Exception: " + std::string(e.what()), true);
         }
         
-        std::this_thread::sleep_for(std::chrono::microseconds(100));
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 }
 

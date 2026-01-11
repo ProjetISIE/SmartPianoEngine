@@ -9,7 +9,6 @@
  * @brief Structure contenant le résultat d'une partie
  */
 struct GameResult {
-    int score;              ///< Score final
     int duration;           ///< Durée en millisecondes
     int perfect;            ///< Nombre de challenges parfaits
     int partial;            ///< Nombre de challenges partiels
