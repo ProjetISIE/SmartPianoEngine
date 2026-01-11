@@ -1,5 +1,6 @@
 #include "GameEngine.hpp"
 #include "NoteGame.hpp"
+#include "ChordGame.hpp"
 #include "Logger.hpp"
 
 GameEngine::GameEngine(ITransport& transport, IMidiInput& midi)
@@ -106,6 +107,9 @@ void GameEngine::processGameSession(const GameConfig& config) {
     overMsg.addField("score", std::to_string(result.score));
     overMsg.addField("duration", std::to_string(result.duration));
     overMsg.addField("perfect", std::to_string(result.perfect));
+    if (result.partial > 0) {
+        overMsg.addField("partial", std::to_string(result.partial));
+    }
     overMsg.addField("total", std::to_string(result.total));
     transport_.send(overMsg);
 
@@ -115,8 +119,11 @@ void GameEngine::processGameSession(const GameConfig& config) {
 std::unique_ptr<IGameMode> GameEngine::createGameMode(const GameConfig& config) {
     if (config.gameType == "note") {
         return std::make_unique<NoteGame>(transport_, midi_, config);
+    } else if (config.gameType == "chord") {
+        return std::make_unique<ChordGame>(transport_, midi_, config, false);
+    } else if (config.gameType == "inversed") {
+        return std::make_unique<ChordGame>(transport_, midi_, config, true);
     }
-    // TODO: Ajouter chord et inversed
     
     Logger::log("[GameEngine] Mode de jeu inconnu: " + config.gameType, true);
     return nullptr;
