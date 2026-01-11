@@ -21,7 +21,7 @@ void ChordGame::start() {
 }
 
 GameResult ChordGame::play() {
-    GameResult result = {0, 0, 0, 0, 0};
+    GameResult result = {0, 0, 0, 0};
     auto startTime = high_resolution_clock::now();
     
     int perfectCount = 0;
@@ -118,7 +118,6 @@ GameResult ChordGame::play() {
     auto endTime = high_resolution_clock::now();
     auto totalDuration = duration_cast<milliseconds>(endTime - startTime).count();
 
-    result.score = totalDuration;
     result.duration = totalDuration;
     result.perfect = perfectCount;
     result.partial = partialCount;

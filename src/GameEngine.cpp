@@ -51,10 +51,16 @@ void GameEngine::handleClientConnection() {
                 continue;
             }
 
-            // Initialiser MIDI si nécessaire
+            // Initialiser MIDI si nécessaire (erreur non fatale)
             if (!midi_.isReady()) {
                 if (!midi_.initialize()) {
-                    sendAck(false, "midi", "Périphérique MIDI non disponible");
+                    Logger::log("[GameEngine] MIDI non disponible, en attente...", true);
+                    // Envoyer une erreur mais continuer
+                    Message error("error");
+                    error.addField("code", "midi");
+                    error.addField("message", "Périphérique MIDI non disponible");
+                    transport_.send(error);
+                    // Ne pas envoyer ack - attendre que MIDI soit prêt
                     continue;
                 }
             }
@@ -63,13 +69,15 @@ void GameEngine::handleClientConnection() {
             processGameSession(config);
 
         } else if (msg.type == "quit") {
-            Logger::log("[GameEngine] Client demande déconnexion");
-            break;
+            Logger::log("[GameEngine] Client demande retour à l'état non configuré");
+            // quit ne déconnecte pas, il reset juste la config
+            // Continue la boucle pour attendre une nouvelle config
+            continue;
 
         } else {
             Logger::log("[GameEngine] Message inattendu: " + msg.type, true);
             Message error("error");
-            error.addField("code", "protocol");
+            error.addField("code", "state");
             error.addField("message", "Message inattendu: " + msg.type);
             transport_.send(error);
         }
@@ -85,35 +93,49 @@ void GameEngine::processGameSession(const GameConfig& config) {
     currentGame_ = createGameMode(config);
     if (!currentGame_) {
         Message error("error");
-        error.addField("code", "game");
+        error.addField("code", "internal");
         error.addField("message", "Mode de jeu non supporté");
         transport_.send(error);
         return;
     }
 
-    // Attendre que le client soit prêt
-    Message readyMsg = transport_.receive();
-    if (readyMsg.type != "ready") {
-        Logger::log("[GameEngine] Erreur: ready attendu, reçu " + readyMsg.type, true);
-        return;
+    bool sessionActive = true;
+    while (sessionActive) {
+        // Attendre que le client soit prêt (ou quit)
+        Message readyMsg = transport_.receive();
+        
+        if (readyMsg.type == "quit") {
+            Logger::log("[GameEngine] Client demande arrêt de session");
+            currentGame_->stop();
+            return; // Retour à l'état CONFIGURED
+        }
+        
+        if (readyMsg.type != "ready") {
+            Logger::log("[GameEngine] Erreur: ready attendu, reçu " + readyMsg.type, true);
+            Message error("error");
+            error.addField("code", "state");
+            error.addField("message", "Message 'ready' ou 'quit' attendu");
+            transport_.send(error);
+            continue;
+        }
+
+        // Lancer la partie
+        currentGame_->start();
+        GameResult result = currentGame_->play();
+
+        // Envoyer le résultat final (sans score)
+        Message overMsg("over");
+        overMsg.addField("duration", std::to_string(result.duration));
+        overMsg.addField("perfect", std::to_string(result.perfect));
+        if (result.partial > 0) {
+            overMsg.addField("partial", std::to_string(result.partial));
+        }
+        overMsg.addField("total", std::to_string(result.total));
+        transport_.send(overMsg);
+
+        Logger::log("[GameEngine] Session terminée");
+        sessionActive = false; // Une seule partie puis retour à CONFIGURED
     }
-
-    // Lancer la partie
-    currentGame_->start();
-    GameResult result = currentGame_->play();
-
-    // Envoyer le résultat final
-    Message overMsg("over");
-    overMsg.addField("score", std::to_string(result.score));
-    overMsg.addField("duration", std::to_string(result.duration));
-    overMsg.addField("perfect", std::to_string(result.perfect));
-    if (result.partial > 0) {
-        overMsg.addField("partial", std::to_string(result.partial));
-    }
-    overMsg.addField("total", std::to_string(result.total));
-    transport_.send(overMsg);
-
-    Logger::log("[GameEngine] Session terminée");
 }
 
 std::unique_ptr<IGameMode> GameEngine::createGameMode(const GameConfig& config) {
