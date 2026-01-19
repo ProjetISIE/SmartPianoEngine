@@ -2,14 +2,16 @@
 lang: fr
 ---
 
-# Smart Piano (moteur de jeu)
-
 <!--toc:start-->
 
 - [Smart Piano (moteur de jeu)](#smart-piano-moteur-de-jeu)
   - [Matériel](#matériel)
   - [Dépannage et résolution des problèmes](#dépannage-et-résolution-des-problèmes)
+  - [Architecture](#architecture)
   - [Contribution et conventions de code](#contribution-et-conventions-de-code)
+    - [Tester avec un client simple](#tester-avec-un-client-simple)
+    - [Ajouter un nouveau mode de jeu](#ajouter-un-nouveau-mode-de-jeu)
+    - [Ajouter un nouveau transport](#ajouter-un-nouveau-transport)
     - [Outils](#outils)
     - [Documentation du code](#documentation-du-code)
     - [Formatage du code (sauts de ligne, espaces)](#formatage-du-code-sauts-de-ligne-espaces)
@@ -17,8 +19,20 @@ lang: fr
     - [Organisation](#organisation)
     - [Autre](#autre)
   - [Auteurs](#auteurs)
+  - [Configuration](#configuration)
+    - [Modes de jeu disponibles](#modes-de-jeu-disponibles)
+    - [Gammes supportées](#gammes-supportées)
+    - [Modes supportés](#modes-supportés)
+  - [Logs](#logs)
+  - [Dépannage](#dépannage)
+    - [Le socket existe déjà](#le-socket-existe-déjà)
+    - [MIDI non détecté](#midi-non-détecté)
+  - [Tests](#tests)
+  - [Licence](#licence)
 
 <!--toc:end-->
+
+# Smart Piano (moteur de jeu)
 
 Smart Piano est une application aidant à progresser au piano en s'entrainant à
 en jouer d’une manière optimisant l’apprentissage grâce aux exercices
@@ -71,7 +85,8 @@ l'architecture.
   musicale)
 - **Couche Infrastructure** : Transport UDS, entrée MIDI, logs
 
-Voir [PROTOCOL.md](PROTOCOL.md) pour la spécification complète du protocole.
+Voir [PROTOCOL.md](PROTOCOL.md) pour la spécification complète du protocole
+entre le moteur de jeu et l’interface utilisateur.
 
 ## Contribution et conventions de code
 
