@@ -67,8 +67,8 @@ GameResult NoteGame::play() {
 
         transport_.send(resultMsg);
 
-        Logger::log("[NoteGame] Résultat: " +
-                    (correct ? "correct" : "incorrect"));
+        Logger::log(std::format("[NoteGame] Résultat: {}",
+                                correct ? "correct" : "incorrect"));
 
         // Attendre le message "ready" pour le prochain challenge
         if (i < maxChallenges - 1) {
