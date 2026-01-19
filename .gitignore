@@ -42,6 +42,7 @@ PianoTrainerMDJV1
 # Debug information & Log files
 *.dwo
 log*.txt
+*.log
 
 # Generated build files
 build/

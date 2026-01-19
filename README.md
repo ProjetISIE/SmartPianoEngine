@@ -98,7 +98,8 @@ l'architecture.
 - **Couche Application** : Point d'entrée (`main.cpp`)
 - **Couche Domaine** : Logique de jeu (GameEngine, modes de jeu, logique
   musicale)
-- **Couche Infrastructure** : Transport UDS, entrée MIDI, logs
+- **Couche Infrastructure** : Transport Unix Domain Socket (UDS), entrée MIDI,
+  logs
 
 Voir [PROTOCOL.md](PROTOCOL.md) pour la spécification complète du protocole
 entre le moteur de jeu et l’interface utilisateur.
@@ -138,10 +139,10 @@ compilé avec [CMake]. Le moteur démarre et écoute sur `/tmp/smartpiano.sock`.
 
 ### Test Manuel
 
-Exemple avec `socat` :
+Il est possible de tester le moteur de jeu manuellement avec un client UDS tel
+que `socat`.
 
 ```bash
-# Dans un autre terminal
 socat - UNIX-CONNECT:/tmp/smartpiano.sock
 ```
 
