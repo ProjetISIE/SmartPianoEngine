@@ -1,5 +1,16 @@
-add_library(${PROJECT_NAME} STATIC RtMidiInput.cpp GameEngine.cpp NoteGame.cpp
-                                   ChordGame.cpp UdsTransport.cpp)
+add_library(
+  ${PROJECT_NAME} STATIC
+  RtMidiInput.cpp
+  GameEngine.cpp
+  NoteGame.cpp
+  ChordGame.cpp
+  UdsTransport.cpp
+  BaseAccords.cpp
+  GenererNoteAleatoire.cpp
+  LectureNoteJouee.cpp
+  GameManager.cpp
+  SocketManager.cpp
+  ValidationNote.cpp)
 target_include_directories(
   ${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include ${RTMIDI_INCLUDE_DIRS}
                          ${ALSA_INCLUDE_DIRS})

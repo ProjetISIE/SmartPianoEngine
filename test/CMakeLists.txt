@@ -90,4 +90,3 @@ add_executable(${T15} ${T15}.cpp)
 target_include_directories(${T15} PRIVATE ${CMAKE_SOURCE_DIR}/include)
 target_link_libraries(${T15} PRIVATE ${PROJECT_NAME} doctest::doctest)
 add_test(NAME ${T15} COMMAND ${T15})
-
