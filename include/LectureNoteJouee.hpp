@@ -1,6 +1,7 @@
 #ifndef LECTURENOTEJOUEE_H
 #define LECTURENOTEJOUEE_H
 
+#include "Logger.hpp"
 #include <atomic>
 #include <mutex>
 #include <rtmidi/RtMidi.h>
@@ -10,101 +11,81 @@
 /**
  * @brief Classe LectureNoteJouee
  *
- * Cette classe permet de lire les notes ou accords joues sur un peripherique
- * MIDI. Elle gère la connexion au peripherique, la lecture des messages MIDI et
+ * Cette classe permet de lire les notes ou accords joués sur un périphérique
+ * MIDI. Elle gère la connexion au périphérique, la lecture des messages MIDI et
  * leur conversion en notation musicale standard.
  */
 class LectureNoteJouee {
-  public:
-    /**
-     * @brief Constructeur de la classe LectureNoteJouee
-     *
-     * Initialise les membres de la classe et prepare l'environnement MIDI.
-     */
-    LectureNoteJouee();
-
-    /**
-     * @brief Destructeur de la classe LectureNoteJouee
-     *
-     * Libère les ressources MIDI utilisées.
-     */
-    ~LectureNoteJouee();
-
-    /**
-     * @brief Initialise le peripherique MIDI
-     *
-     * Configure le peripherique MIDI pour la lecture des messages.
-     * @return true si l'initialisation reussit, false sinon.
-     */
-    bool initialiser();
-
-    /**
-     * @brief Lit une ou plusieurs notes jouees
-     *
-     * Bloque jusqu'a ce qu'une note ou un accord soit disponible.
-     * @return Un vecteur de chaines representant les notes jouees.
-     */
-    std::vector<std::string> lireNote();
-
-    /**
-     * @brief Libere les ressources MIDI
-     *
-     * Ferme la connexion au peripherique MIDI et nettoie les ressources.
-     */
-    void fermer();
-
-    /**
-     * @brief Teste les APIs MIDI disponibles
-     *
-     * Affiche les APIs MIDI compilees et les ports disponibles pour debug.
-     */
-    void test();
-
-    /**
-     * @brief Fonction pour les tests unitaires pour tester la convertion des
-     * notes
-     *
-     */
-    std::string testerConvertirNote(int noteMidi) {
-        return convertirNote(noteMidi);
-    }
-
-    /**
-     * @brief Fonction pour les tests unitaires pour tester la lecture du
-     * dernier accord.
-     *
-     */
-    std::vector<std::string> getDernierAccord() { return dernierAccord; }
+  private:
+    RtMidiIn* midiIn{nullptr};   ///< Pointeur sur l’entrée MIDI
+    RtMidiOut* midiOut{nullptr}; ///< Pointeur sur la sortie MIDI
 
   private:
-    RtMidiIn* midiIn;   ///< Pointeur sur l’entrée MIDI
-    RtMidiOut* midiOut; ///< Pointeur sur la sortie MIDI
-
     /**
-     * @brief Traite les messages MIDI recus
+     * @brief Traite les messages MIDI reçus
      *
-     * Fonction executee dans un thread separe pour gerer les messages MIDI.
+     * Fonction exécutée dans un thread séparé pour gérer les messages MIDI.
      */
     void traiterMessagesMIDI();
 
   protected:
+    std::string derniereNote;                ///< Dernière note jouée
+    std::vector<std::string> dernierAccord;  ///< Dernier accord joué
+    std::atomic<bool> noteDisponible{false}; ///< Jeu peut lire un résultat ?
+    std::mutex noteMutex; ///< Mutex pour protéger l'accès aux notes
+
+  protected:
     /**
-     * @brief Convertis une note MIDI en notation musicale
+     * @brief Convertit une note MIDI en notation musicale
      *
-     * Prend une valeur MIDI et la convertit en une chaine representant la note
-     * (ex: "C4" pour le Do de la 4eme octave).
+     * Prend une valeur MIDI et la convertit en une chaîne représentant la note
+     * (ex: "C4" pour le Do de la 4ème octave).
      *
      * @param noteMidi Valeur MIDI de la note
      * @return La note en notation musicale.
      */
     std::string convertirNote(int noteMidi);
 
-    std::string derniereNote;               ///< Derniere note jouee
-    std::vector<std::string> dernierAccord; ///< Dernier accord joué
-    std::atomic<bool>
-        noteDisponible; ///< Indique si le jeu peut lire un résultat
+  public:
+    LectureNoteJouee() { Logger::log("[LectureNoteJouee] Instance créée"); }
 
-    std::mutex noteMutex; ///< Mutex pour proteger l'acces aux notes
+    ~LectureNoteJouee() {
+        Logger::log("[LectureNoteJouee] Instance détruite");
+        fermer();
+    }
+
+    /**
+     * @brief Initialise le périphérique MIDI
+     *
+     * Configure le périphérique MIDI pour la lecture des messages.
+     * @return true si l'initialisation reussit, false sinon.
+     */
+    bool initialiser();
+
+    /**
+     * @brief Lit une ou plusieurs notes jouées
+     *
+     * Bloque jusqu'à ce qu'une note ou un accord soit disponible.
+     * @return Un vecteur de chaînes représentant les notes jouées.
+     */
+    std::vector<std::string> lireNote();
+
+    /**
+     * @brief Libère les ressources MIDI
+     */
+    void fermer();
+
+    /**
+     * @brief Tester la convertion des notes
+     */
+    std::string testerConvertirNote(int noteMidi) {
+        return convertirNote(noteMidi);
+    }
+
+    /**
+     * @brief Tester la lecture du dernier accord
+     */
+    std::vector<std::string> getDernierAccord() { return dernierAccord; }
 };
 
 #endif // LECTURENOTEJOUEE_H

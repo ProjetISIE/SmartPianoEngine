@@ -4,25 +4,27 @@ lang: fr
 
 <!--toc:start-->
 
-- [Modes de Jeu](#modes-de-jeu)
-  - [Gammes Supportées](#gammes-supportées)
-  - [Modes Supportés](#modes-supportés)
-- [Matériel](#matériel)
-- [Dépannage et Résolution des Problèmes](#dépannage-et-résolution-des-problèmes)
-- [Architecture](#architecture)
-- [Contribution et Conventions de Code](#contribution-et-conventions-de-code)
-  - [Développement et Build](#développement-et-build)
-  - [Test Manuel](#test-manuel)
-- [Tests Automatiques](#tests-automatiques)
-  - [Documentation du Code](#documentation-du-code)
-  - [Nommage des Symboles (casse, tirets)](#nommage-des-symboles-casse-tirets)
-  - [Formatage du Code (sauts de ligne, espaces)](#formatage-du-code-sauts-de-ligne-espaces)
-  - [Autre](#autre)
-  - [Ajout d’un Mode de Jeu](#ajout-dun-mode-de-jeu)
-  - [Ajout d’un Transport](#ajout-dun-transport)
-- [Journalisation](#journalisation)
-- [Auteurs](#auteurs)
-- [Licence](#licence)
+- [Smart Piano (moteur de jeu)](#smart-piano-moteur-de-jeu)
+  - [Modes de Jeu](#modes-de-jeu)
+    - [Gammes Supportées](#gammes-supportées)
+    - [Modes Supportés](#modes-supportés)
+  - [Matériel](#matériel)
+  - [Dépannage et Résolution des Problèmes](#dépannage-et-résolution-des-problèmes)
+  - [Architecture](#architecture)
+  - [Outillage](#outillage)
+  - [Compilation & Exécution](#compilation-exécution)
+    - [Test Manuel](#test-manuel)
+    - [Tests Automatiques](#tests-automatiques)
+  - [Conventions de Code](#conventions-de-code)
+    - [Documentation Doxygen](#documentation-doxygen)
+    - [Nommage des Symboles (casse, tirets)](#nommage-des-symboles-casse-tirets)
+    - [Formatage du Code (sauts de ligne, espaces)](#formatage-du-code-sauts-de-ligne-espaces)
+    - [Autres](#autres)
+  - [Journalisation](#journalisation)
+  - [Auteurs & Licence](#auteurs-licence)
+  - [Contribution](#contribution)
+    - [Ajout d’un Mode de Jeu](#ajout-dun-mode-de-jeu)
+    - [Ajout d’un Transport](#ajout-dun-transport)
 
 <!--toc:end-->
 
@@ -90,21 +92,7 @@ d’exploitations, architectures ou configurations, sans garantie.
 | Connexion au MDJ impossible | S’assurer que le **moteur de jeu** est bien lancé : `./engine`                      |
 | L'application plante        | **Relancer l'application**, voire **redémarrer la Raspberry Pi**                    |
 
-## Architecture
-
-Voir [ARCHITECTURE.md](ARCHITECTURE.md) pour les détails complets de
-l'architecture.
-
-- **Couche Application** : Point d'entrée (`main.cpp`)
-- **Couche Domaine** : Logique de jeu (GameEngine, modes de jeu, logique
-  musicale)
-- **Couche Infrastructure** : Transport Unix Domain Socket (UDS), entrée MIDI,
-  logs
-
-Voir [PROTOCOL.md](PROTOCOL.md) pour la spécification complète du protocole
-entre le moteur de jeu et l’interface utilisateur.
-
-## Contribution et Conventions de Code
+## Outillage
 
 | Fonction                     | Outil             |
 | ---------------------------- | ----------------- |
@@ -119,7 +107,7 @@ entre le moteur de jeu et l’interface utilisateur.
 | Contrôle qualité C++         | [clang-tidy]      |
 | Débogage C++                 | [lldb]            |
 
-### Développement et Build
+## Compilation & Exécution
 
 Ce projet utilise [Nix] pour télécharger les (bonnes versions des) dépendances,
 configurer l’environnement, et permettre in-fine d’effectuer des compilations
@@ -185,21 +173,29 @@ correct=c4
 duration=1234
 ```
 
-## Tests Automatiques
+### Tests Automatiques
 
 Les tests unitaires et tests d’intégration peuvent être exécutés manuellement
 avec la commande `ctest` depuis `build/`.
 
 Ils sont automatiquement exécutés lors des builds avec [Nix].
 
-### Documentation du Code
+## Conventions de Code
 
-Documentation de toutes les méthodes ou fonctions en français, suivant la
-syntaxe [Doxygen], comportant au moins un (court) premier paragraphe expliquant
-rapidement la raison d’être de la fonction, ainsi qu’une ligne `@param` par
-paramètre, et `@return` si son type de retour n’est pas `void`.
+Norme utilisée du langage C++ la plus récente (stable), `C++23`. Utilisation de
+ses fonctionnalités modernes et respect des meilleures pratiques. Par exemple,
+`std::println()` est préféré à `std::cout <<` ou `std::cerr <<`.
+
+### Documentation Doxygen
+
+Documentation des attributs, méthodes et fonctions en _français_ (correct),
+suivant la syntaxe [Doxygen], comportant au moins un (concis) premier paragraphe
+expliquant rapidement la raison d’être de la fonction, ainsi qu’une ligne
+`@param` par paramètre, et `@return` si son type de retour n’est pas `void`.
 
 ```c++
+const std::string message; ///< Message intéressant
+
 /**
  * Ne fais rien, mis à part être une fonction d’exemple
  * @param firstArg Le premier argument
@@ -207,6 +203,9 @@ paramètre, et `@return` si son type de retour n’est pas `void`.
  */
 void myFunc(uint32_t firstArg, uint16_t secondArg);
 ```
+
+Ne pas commenter les éléments évidents tels que les getters/setters simples ou
+constructeurs/destructeurs simples.
 
 ### Nommage des Symboles (casse, tirets)
 
@@ -229,21 +228,21 @@ CheckOptions.readability-identifier-naming:
   NamespaceCase: lower_case
 ```
 
-| Symbole            | Convention                    |
-| ------------------ | ----------------------------- |
-| Enum constante     | `UPPER_CASE` (`MY_ENUM`)      |
-| Constexpr          | `UPPER_CASE` (`MY_CONSTEXPR`) |
-| Constante globale  | `UPPER_CASE` (`MY_CONST`)     |
-| Classe             | `CamelCase` (`MyClass`)       |
-| Struct             | `CamelCase` (`MyStruct`)      |
-| Enum               | `CamelCase` (`MyEnum`)        |
-| Fonction           | `camelBack` (`MyMethod`)      |
-| Fonction globale   | `camelBack` (`MyFunc`)        |
-| Variable / Objet   | `camelBack` (`myVar`)         |
-| Variable globale   | `camelBack` (`myGlobalVar`)   |
-| Paramètre          | `camelBack` (`myParam`)       |
-| Espace de nommage  | `snake_case` (`my_namespace`) |
-| Définition de type | `snake_case` suivi de `_t`    |
+| Symbole           | Convention                    |
+| ----------------- | ----------------------------- |
+| Enum constante    | `UPPER_CASE` (`MY_ENUM`)      |
+| Constexpr         | `UPPER_CASE` (`MY_CONSTEXPR`) |
+| Constante globale | `UPPER_CASE` (`MY_CONST`)     |
+| Classe            | `CamelCase` (`MyClass`)       |
+| Struct            | `CamelCase` (`MyStruct`)      |
+| Enum              | `CamelCase` (`MyEnum`)        |
+| Fonction          | `camelBack` (`MyMethod`)      |
+| Fonction globale  | `camelBack` (`MyFunc`)        |
+| Variable / Objet  | `camelBack` (`myVar`)         |
+| Variable globale  | `camelBack` (`myGlobalVar`)   |
+| Paramètre         | `camelBack` (`myParam`)       |
+| Espace de nommage | `snake_case` (`my_namespace`) |
+| Type C (à éviter) | `snake_case` suivi de `_t`    |
 
 ### Formatage du Code (sauts de ligne, espaces)
 
@@ -265,11 +264,36 @@ DerivePointerAlignment: false # Tout le temps…
 PointerAlignment: Left # afficher le marquer de pointeur * collé au type
 ```
 
-### Autre
+### Autres
 
 Utilisation des entiers de taille strictement définie `uint8_t`, `uint16_t`,
 `uint32_t` et `uint64_t` de la bibliothèque `<stdint.h>` au lieu des `char`,
 `short`, `int` et `long` variant selon la plateforme ou l’environnement.
+
+- Structure des classes en quatre blocs
+  1. Attributs privés
+  2. Éventuels attributs publics
+  3. Éventuelles méthodes privées
+  4. Méthodes publiques
+- Utilisation de `this->` pour identifier attributs
+  - Pas de préfixe ou postfixe tel que `_`
+- Pas d’attributs initialisés avec valeurs littérales dans le constructeur
+  - Initialiser à la déclaration, ex. `type name{value};`
+- Méthodes de moins de trois lignes dans le `.hpp` uniquement
+  - Ex. getters/setters simples, constructeurs/destructeurs simples
+- Commentaires et strings concis
+  - Pas de verbe ni déterminants si compréhensible sans
+  - Pas de points finaux
+  - Pas d’espace avant les `:`
+- Pas de blocs `{}` pour une seule instruction
+- Limiter les lignes vides au sein d’une même méthode
+  - Préférer la séparation en blocs logiques avec des commentaires
+- Limiter l’imbrication des blocs
+  - Préférer les retours anticipés (`early return`)
+  - Préférer les ET `&&` aux imbrications `if` multiples
+  - Privilégier les `switch case` lorsque possible
+- Toujours expliciter strictement le comportement des attributs et des méthodes
+  - `const`, `noexcept`, `override`, `final`, `nodiscard`, …
 
 Vérification automatique de nombreuses règles de qualité de code par
 [clang-tidy] (définies dans [`.clang-tidy`](./.clang-tidy)).
@@ -286,7 +310,28 @@ Checks: >
   readability-*,
 ```
 
-Norme utilisée du langage C++ la plus récente (stable) : `C++23`.
+## Journalisation
+
+Le moteur génère deux fichiers de journaux (« logs ») qu’il est possible
+d’utiliser pour vérifier le bon fonctionnement de Smart Piano ou comprendre
+l’origine des erreurs.
+
+- `smartpiano.log` : Logs normaux (tout ce qu’il se passe)
+- `smartpiano.err.log` : Logs d'erreurs
+
+## Auteurs & Licence
+
+- Fankam Jisele
+- Fauré Guilhem
+
+> Initiateur du projet : Mahut Vivien
+
+L’entièreté de Smart Piano est sous GNU GPL v3, voir [LICENSE](LICENSE).
+
+## Contribution
+
+Respecter les instructions des sections précédentes pour contribuer, en
+particulier celles des [Conventions de Code](#conventions-de-code).
 
 ### Ajout d’un Mode de Jeu
 
@@ -300,25 +345,30 @@ Norme utilisée du langage C++ la plus récente (stable) : `C++23`.
 2. Implémenter les méthodes de communication
 3. Injecter dans le `main.cpp`
 
-## Journalisation
+## Architecture
 
-Le moteur génère deux fichiers de journaux (« logs ») qu’il est possible
-d’utiliser pour vérifier le bon fonctionnement de Smart Piano ou comprendre
-l’origine des erreurs.
+Voir [PROTOCOL](PROTOCOL.md) pour la spécification complète du protocole de
+communication entre le moteur de jeu et l’interface utilisateur.
 
-- `smartpiano.log` : Logs normaux
-- `smartpiano.err.log` : Logs d'erreurs
-
-## Auteurs
-
-- Fankam Jisele
-- Fauré Guilhem
-
-> Initiateur du projet : Mahut Vivien
-
-## Licence
-
-Voir [LICENSE](LICENSE)
+- [`main`](src/main.cpp) Configure l’application, instancie les composants,
+  lance `GameEngine`
+- [`GameEngine`](include/GameEngine.hpp) Orchestre les différents composants
+  - [`BaseAccords`](include/BaseAccords.hpp)
+  - [`GameManager`](include/GameManager.hpp)
+  - [`GenererNoteAleatoire`](include/GenererNoteAleatoire.hpp)
+  - [`LectureNoteJouee`](include/LectureNoteJouee.hpp)
+  - [`Logger`](include/Logger.hpp)
+  - [`Message`](include/Message.hpp)
+  - [`Note`](include/Note.hpp)
+  - [`SocketManager`](include/SocketManager.hpp)
+  - [`ValidationNote`](include/ValidationNote.hpp)
+- [`IGameMode`](include/IGameMode.hpp) Définit le contrat des modes de jeu
+  - [`ChordGame`](include/ChordGame.hpp) Mode de jeu accords
+  - [`NoteGame`](include/NoteGame.hpp) Mode de jeu notes
+- [`ITransport`](include/ITransport.hpp) Abstraction de la communication
+  - [`UdsTransport`](include/UdsTransport.hpp) Transport Unix Domain Socket
+- [`IMidiInput`](include/IMidiInput.hpp) Abstraction de l’entrée MIDI
+  - [`RtMidiInput`](include/RtMidiInput.hpp) Entrée MIDI avec RtMidi
 
 [CMake]: https://cmake.org
 [Clang]: https://clang.llvm.org

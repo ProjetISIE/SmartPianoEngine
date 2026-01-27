@@ -10,9 +10,11 @@
  * Un message est composé d'un type et de champs optionnels key=value
  */
 struct Message {
-    std::string type;                          ///< Type du message
-    std::map<std::string, std::string> fields; ///< Champs du message
+  private:
+    const std::string type;                          ///< Type du message
+    const std::map<std::string, std::string> fields; ///< Champs du message
 
+  public:
     /**
      * @brief Constructeur avec type uniquement
      * @param messageType Type du message
@@ -29,22 +31,13 @@ struct Message {
         : type(std::move(messageType)), fields(std::move(messageFields)) {}
 
     /**
-     * @brief Ajoute un champ au message
-     * @param key Clé du champ
-     * @param value Valeur du champ
-     */
-    void addField(const std::string& key, const std::string& value) {
-        fields[key] = value;
-    }
-
-    /**
-     * @brief Récupère la valeur d'un champ
+     * @brief Récupère valeur d'un champ
      * @param key Clé du champ
      * @return Valeur du champ ou chaîne vide si inexistant
      */
     std::string getField(const std::string& key) const {
-        auto it = fields.find(key);
-        return (it != fields.end()) ? it->second : "";
+        auto it = this->fields.find(key);
+        return (it != this->fields.end()) ? it->second : "";
     }
 
     /**
@@ -53,7 +46,12 @@ struct Message {
      * @return true si le champ existe
      */
     bool hasField(const std::string& key) const {
-        return fields.find(key) != fields.end();
+        return this->fields.find(key) != this->fields.end();
+    }
+
+    std::string getType() const { return this->type; }
+    std::map<std::string, std::string> getFields() const {
+        return this->fields;
     }
 };
 

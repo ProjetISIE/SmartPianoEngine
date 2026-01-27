@@ -2,31 +2,47 @@
 #define UDSTRANSPORT_HPP
 
 #include "ITransport.hpp"
+#include "Logger.hpp"
 #include <string>
 
 /**
- * @brief Implémentation du transport via Unix Domain Socket
- *
+ * @brief Implémentation de la communication UI/moteur via Unix Domain Socket
  * Gère la communication via socket Unix en respectant le protocole défini
  */
 class UdsTransport : public ITransport {
-  public:
+  private:
+    const std::string sockPath{"/tmp/smartpiano.sock"}; ///< Chemin socket Unix
+    int serverSock{-1}; ///< Descripteur socket serveur
+    int clientSock{-1}; ///< Descripteur socket client
+
+  private:
     /**
-     * @brief Constructeur
+     * @brief Sérialise un message en chaîne selon le protocole
+     * @param msg Message à sérialiser
+     * @return Chaîne sérialisée
      */
-    UdsTransport();
+    std::string serializeMessage(const Message& msg) const;
 
     /**
-     * @brief Destructeur - nettoie les ressources
+     * @brief Parse une chaîne en message selon le protocole
+     * @param data Données à parser
+     * @return Message parsé
      */
-    ~UdsTransport() override;
+    Message parseMessage(const std::string& data) const;
+
+  public:
+    UdsTransport() { Logger::log("[UdsTransport] Instance créée"); }
+
+    ~UdsTransport() {
+        stop();
+        Logger::log("[UdsTransport] Instance détruite");
+    }
 
     /**
      * @brief Démarre le serveur UDS
-     * @param endpoint Chemin du socket Unix (ex: "/tmp/smartpiano.sock")
      * @return true si démarrage réussi
      */
-    bool start(const std::string& endpoint) override;
+    bool start() override;
 
     /**
      * @brief Attend la connexion d'un client (bloquant)
@@ -56,24 +72,11 @@ class UdsTransport : public ITransport {
      */
     bool isClientConnected() const override;
 
-  private:
-    int serverSocket_;       ///< Descripteur du socket serveur
-    int clientSocket_;       ///< Descripteur du socket client
-    std::string socketPath_; ///< Chemin du socket Unix
-
     /**
-     * @brief Sérialise un message en chaîne selon le protocole
-     * @param msg Message à sérialiser
-     * @return Chaîne sérialisée
+     * @brief Obtient le chemin de la socket Unix
+     * @return Chemin de la socket (string)
      */
-    std::string serializeMessage(const Message& msg) const;
-
-    /**
-     * @brief Parse une chaîne en message selon le protocole
-     * @param data Données à parser
-     * @return Message parsé
-     */
-    Message parseMessage(const std::string& data) const;
+    std::string getSocketPath() const override { return this->sockPath; }
 };
 
 #endif // UDSTRANSPORT_HPP

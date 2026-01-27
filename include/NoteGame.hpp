@@ -14,6 +14,26 @@
  * Le joueur doit jouer la note affichée
  */
 class NoteGame : public IGameMode {
+  private:
+    ITransport& transport; ///< Référence au transport
+    IMidiInput& midi;      ///< Référence à l'entrée MIDI
+    GameConfig config;     ///< Configuration du jeu
+    std::mt19937 rng;      ///< Générateur aléatoire
+    int challengeId;       ///< ID du challenge actuel
+
+  private:
+    /**
+     * @brief Génère une note aléatoire dans la gamme
+     * @return Note générée
+     */
+    Note generateRandomNote();
+
+    /**
+     * @brief Obtient les notes de la gamme configurée
+     * @return Vecteur de notes possibles
+     */
+    std::vector<std::string> getScaleNotes();
+
   public:
     /**
      * @brief Constructeur
@@ -38,25 +58,6 @@ class NoteGame : public IGameMode {
      * @brief Arrête le jeu
      */
     void stop() override;
-
-  private:
-    ITransport& transport_; ///< Référence au transport
-    IMidiInput& midi_;      ///< Référence à l'entrée MIDI
-    GameConfig config_;     ///< Configuration du jeu
-    std::mt19937 rng_;      ///< Générateur aléatoire
-    int challengeId_;       ///< ID du challenge actuel
-
-    /**
-     * @brief Génère une note aléatoire dans la gamme
-     * @return Note générée
-     */
-    Note generateRandomNote();
-
-    /**
-     * @brief Obtient les notes de la gamme configurée
-     * @return Vecteur de notes possibles
-     */
-    std::vector<std::string> getScaleNotes();
 };
 
 #endif // NOTEGAME_HPP

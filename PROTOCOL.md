@@ -1,12 +1,42 @@
+---
+lang: fr
+---
+
+<!--toc:start-->
+
+- [Smart Piano UDS Protocol Specification](#smart-piano-uds-protocol-specification)
+  - [Format des messages](#format-des-messages)
+  - [Types de messages](#types-de-messages)
+    - [1. Client (interface utilisateur) → Serveur (moteur de jeu)](#1-client-interface-utilisateur-serveur-moteur-de-jeu)
+      - [1.1 Configuration de jeu `config`](#11-configuration-de-jeu-config)
+      - [1.2 Prêt pour le challenge suivant `ready`](#12-prêt-pour-le-challenge-suivant-ready)
+      - [1.3 Abandon `quit`](#13-abandon-quit)
+    - [2. Serveur (moteur de jeu) → Client (interface utilisateur)](#2-serveur-moteur-de-jeu-client-interface-utilisateur)
+      - [2.1 Accusé de réception (de configuration) `ack`](#21-accusé-de-réception-de-configuration-ack)
+      - [2.2 Challenge note `note`](#22-challenge-note-note)
+      - [2.3 Challenge accord `chord`](#23-challenge-accord-chord)
+      - [2.4 Résultat du challenge `result`](#24-résultat-du-challenge-result)
+      - [2.5 Fin de partie `over`](#25-fin-de-partie-over)
+      - [2.6 Erreur `error`](#26-erreur-error)
+  - [Diagramme de séquence](#diagramme-de-séquence)
+    - [Session complète](#session-complète)
+    - [Gestion d'erreur](#gestion-derreur)
+  - [États de la connexion](#états-de-la-connexion)
+  - [Transitions d'états](#transitions-détats)
+  - [Règles de validation](#règles-de-validation)
+  - [Gestion des erreurs de protocole](#gestion-des-erreurs-de-protocole)
+  - [Exemple de Jeu de notes réussi](#exemple-de-jeu-de-notes-réussi)
+  - [Exemple de Jeu d'accords avec erreur](#exemple-de-jeu-daccords-avec-erreur)
+
+<!--toc:end-->
+
 # Smart Piano UDS Protocol Specification
 
-> Version : 1.0.0
+> Version: 0.0.0
 
 Smart Piano utilise un protocole texte simple sur Unix Domain Socket (UDS) pour
 la communication entre le moteur de jeu (serveur) et l'interface utilisateur
 (client).
-
-## Transport
 
 - **Type** : Unix Domain Socket (UDS)
 - **Chemin par défaut** : `/tmp/smartpiano.sock`
@@ -397,9 +427,7 @@ invalide), le serveur doit :
 3. Fermer la connexion si l'erreur est critique
 4. Continuer la session si l'erreur est récupérable
 
-## Exemples d'échanges complets
-
-### Exemple 1 : Jeu de notes réussi
+## Exemple de Jeu de notes réussi
 
 ```
 → config
@@ -451,7 +479,7 @@ invalide), le serveur doit :
 ←
 ```
 
-### Exemple 2 : Jeu d'accords avec erreur
+## Exemple de Jeu d'accords avec erreur
 
 ```
 → config

@@ -2,6 +2,7 @@
 #define RTMIDIINPUT_HPP
 
 #include "IMidiInput.hpp"
+#include "Logger.hpp"
 #include <atomic>
 #include <mutex>
 #include <rtmidi/RtMidi.h>
@@ -13,16 +14,33 @@
  * Gère la réception des notes MIDI depuis un périphérique
  */
 class RtMidiInput : public IMidiInput {
-  public:
+  private:
+    RtMidiIn* midiIn{nullptr};               ///< Instance RTMidi
+    RtMidiOut* midiOut{nullptr};             ///< Sortie MIDI (pour écho)
+    std::vector<Note> lastNotes;             ///< Dernières notes jouées
+    std::atomic<bool> notesAvailable{false}; ///< Notes disponibles?
+    std::mutex notesMutex;                   ///< Mutex pour accès aux notes
+
+  private:
     /**
-     * @brief Constructeur
+     * @brief Traite les messages MIDI reçus (thread séparé)
      */
-    RtMidiInput();
+    void processMidiMessages();
 
     /**
-     * @brief Destructeur
+     * @brief Convertit un numéro MIDI en Note
+     * @param midiNote Numéro MIDI (0-127)
+     * @return Note correspondante
      */
-    ~RtMidiInput() override;
+    Note convertMidiToNote(int midiNote) const;
+
+  public:
+    RtMidiInput() { Logger::log("[RtMidiInput] Instance créée"); }
+
+    ~RtMidiInput() {
+        close();
+        Logger::log("[RtMidiInput] Instance détruite");
+    }
 
     /**
      * @brief Initialise l'entrée MIDI
@@ -46,25 +64,6 @@ class RtMidiInput : public IMidiInput {
      * @return true si MIDI est prêt
      */
     bool isReady() const override;
-
-  private:
-    RtMidiIn* midiIn_;                 ///< Instance RTMidi
-    RtMidiOut* midiOut_;               ///< Sortie MIDI (pour écho)
-    std::vector<Note> lastNotes_;      ///< Dernières notes jouées
-    std::atomic<bool> notesAvailable_; ///< Notes disponibles?
-    std::mutex notesMutex_;            ///< Mutex pour accès aux notes
-
-    /**
-     * @brief Traite les messages MIDI reçus (thread séparé)
-     */
-    void processMidiMessages();
-
-    /**
-     * @brief Convertit un numéro MIDI en Note
-     * @param midiNote Numéro MIDI (0-127)
-     * @return Note correspondante
-     */
-    Note convertMidiToNote(int midiNote) const;
 };
 
 #endif // RTMIDIINPUT_HPP

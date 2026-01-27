@@ -6,15 +6,14 @@
 
 using namespace std::chrono;
 
-// Fonction principale: lancement du jeu
 void GameManager::lancerJeu() {
-    Logger::log("[GameManager] En attente des paramètres du jeu...");
+    Logger::log("[GameManager] En attente des paramètres du jeu");
     std::string message = socketManager.recevoirMessage();
-    Logger::log("[GameManager] Message brut recu: " + message);
+    Logger::log("[GameManager] Message brut reçu: {}", message);
 
     auto params = socketManager.traiterMessage(message);
     if (params.empty()) {
-        Logger::log("[GameManager] Erreur: Message invalide ou vide", true);
+        Logger::err("[GameManager] Message invalide ou vide");
         return;
     }
 
@@ -22,26 +21,21 @@ void GameManager::lancerJeu() {
     std::string gamme = params["gamme"];
     std::string mode = params["mode"];
 
-    Logger::log("[GameManager] Paramètres recus: Jeu=" + jeu +
-                "  Gamme=" + gamme + "  Mode=" + mode);
+    Logger::log("[GameManager] Paramètres reçus: Jeu={}  Gamme={}  Mode={}",
+                jeu, gamme, mode);
 
-    if (jeu == "Jeu de note") {
-        lancerJeuDeNote(gamme, mode);
-    } else if (jeu == "Jeu d'accord SR") {
-        lancerJeuDaccordSR(gamme, mode);
-    } else if (jeu == "Jeu d'accord AR") {
+    if (jeu == "Jeu de note") lancerJeuDeNote(gamme, mode);
+    else if (jeu == "Jeu d'accord SR") lancerJeuDaccordSR(gamme, mode);
+    else if (jeu == "Jeu d'accord AR")
         lancerJeuDaccordRenversement(gamme, mode);
-    } else {
-        Logger::log("[GameManager] Type de jeu non supporté: " + jeu, true);
-    }
+    else Logger::err("[GameManager] Type de jeu non supporté: {}", jeu);
 }
 
-// Jeu d'accords renversés
 void GameManager::lancerJeuDaccordRenversement(const std::string& gamme,
                                                const std::string& mode) {
     Logger::log("[GameManager] Lancement du jeu d'accords renversés");
     if (!lectureNote.initialiser()) {
-        Logger::log("[GameManager] Erreur: Lecture MIDI impossible", true);
+        Logger::err("[GameManager] Lecture MIDI impossible");
         return;
     }
 
@@ -59,7 +53,7 @@ void GameManager::lancerJeuDaccordRenversement(const std::string& gamme,
             {"nom_accord", nomAccord + " " + renverStr}};
 
         socketManager.envoyerMessage(accordMessage);
-        Logger::log("[GameManager] Accord: " + nomAccord + " " + renverStr);
+        Logger::log("[GameManager] Accord: {} {}", nomAccord, renverStr);
 
         bool accordCorrect = false;
         while (!accordCorrect) {
@@ -71,11 +65,11 @@ void GameManager::lancerJeuDaccordRenversement(const std::string& gamme,
                     accordsCorrects++;
                     accordCorrect = true;
                 } else {
-                    Logger::log("[GameManager] Accord incorrect joué", true);
+                    Logger::err("[GameManager] Accord incorrect joué");
                     socketManager.envoyerMessage(accordMessage);
                 }
             } else {
-                Logger::log("[GameManager] Nombre incorrect de notes", true);
+                Logger::err("[GameManager] Nombre incorrect de notes");
                 socketManager.envoyerMessage(accordMessage);
             }
         }
@@ -87,18 +81,16 @@ void GameManager::lancerJeuDaccordRenversement(const std::string& gamme,
     std::map<std::string, std::string> finMessage = {
         {"type", "fin_du_jeu"}, {"score", std::to_string(duration)}};
     socketManager.envoyerMessage(finMessage);
-    Logger::log("[GameManager] Jeu terminé, temps total: " +
-                std::to_string(duration) + "s");
+    Logger::log("[GameManager] Jeu terminé, temps total: {}s", duration);
 
     restartProgram();
 }
 
-// Jeu d'accords standards
 void GameManager::lancerJeuDaccordSR(const std::string& gamme,
                                      const std::string& mode) {
     Logger::log("[GameManager] Lancement du jeu d'accords standards");
     if (!lectureNote.initialiser()) {
-        Logger::log("[GameManager] Erreur: Lecture MIDI impossible", true);
+        Logger::err("[GameManager] Lecture MIDI impossible");
         return;
     }
 
@@ -113,7 +105,7 @@ void GameManager::lancerJeuDaccordSR(const std::string& gamme,
             {"type", "accord_a_jouer"}, {"nom_accord", nomAccord}};
 
         socketManager.envoyerMessage(accordMessage);
-        Logger::log("[GameManager] Accord envoyé: " + nomAccord);
+        Logger::log("[GameManager] Accord envoyé: {}", nomAccord);
 
         bool accordCorrect = false;
         while (!accordCorrect) {
@@ -125,11 +117,11 @@ void GameManager::lancerJeuDaccordSR(const std::string& gamme,
                     accordsCorrects++;
                     accordCorrect = true;
                 } else {
-                    Logger::log("[GameManager] Accord incorrect joué", true);
+                    Logger::err("[GameManager] Accord incorrect joué");
                     socketManager.envoyerMessage(accordMessage);
                 }
             } else {
-                Logger::log("[GameManager] Nombre incorrect de notes", true);
+                Logger::err("[GameManager] Nombre incorrect de notes");
                 socketManager.envoyerMessage(accordMessage);
             }
         }
@@ -141,18 +133,16 @@ void GameManager::lancerJeuDaccordSR(const std::string& gamme,
     std::map<std::string, std::string> finMessage = {
         {"type", "fin_du_jeu"}, {"score", std::to_string(duration)}};
     socketManager.envoyerMessage(finMessage);
-    Logger::log("[GameManager] Jeu terminé, temps total: " +
-                std::to_string(duration) + "s");
+    Logger::log("[GameManager] Jeu terminé, temps total: {}s", duration);
 
     restartProgram();
 }
 
-// Jeu de notes
 void GameManager::lancerJeuDeNote(const std::string& gamme,
                                   const std::string& mode) {
     Logger::log("[GameManager] Lancement du jeu de notes");
     if (!lectureNote.initialiser()) {
-        Logger::log("[GameManager] Erreur: Lecture MIDI impossible", true);
+        Logger::err("[GameManager] Lecture MIDI impossible");
         return;
     }
 
@@ -165,21 +155,21 @@ void GameManager::lancerJeuDeNote(const std::string& gamme,
         std::map<std::string, std::string> noteMessage = {
             {"type", "note_a_jouer"}, {"note", note}};
         socketManager.envoyerMessage(noteMessage);
-        Logger::log("[GameManager] Note envoyée: " + note);
+        Logger::log("[GameManager] Note envoyée: {}", note);
         bool noteCorrecte = false;
         while (!noteCorrecte) {
             std::vector<std::string> notesJouees = lectureNote.lireNote();
             if (notesJouees.size() == 1) {
                 if (validateur.valider(notesJouees[0], note)) {
-                    Logger::log("[GameManager] Notes OK: " + notesJouees[0]);
+                    Logger::log("[GameManager] Notes OK: {}", notesJouees[0]);
                     notesCorrectes++;
                     noteCorrecte = true;
                 } else {
-                    Logger::log("[GameManager] Note incorrecte", true);
+                    Logger::err("[GameManager] Note incorrecte");
                     socketManager.envoyerMessage(noteMessage);
                 }
             } else {
-                Logger::log("[GameManager] Nombre incorrect de notes", true);
+                Logger::err("[GameManager] Nombre incorrect de notes");
                 socketManager.envoyerMessage(noteMessage);
             }
         }
@@ -192,18 +182,7 @@ void GameManager::lancerJeuDeNote(const std::string& gamme,
         {"type", "fin_du_jeu"}, {"score", std::to_string(duration)}};
 
     socketManager.envoyerMessage(finMessage);
-    Logger::log("[GameManager] Jeu terminé, temps total: " +
-                std::to_string(duration) + "s");
+    Logger::log("[GameManager] Jeu terminé, temps total: {}s", duration);
 
     restartProgram();
 }
-
-// Redémarrage du programme
-// void GameManager::restartProgram() {
-//     Logger::log("[GameManager] Redémarrage de Smart Piano");
-//     const char* program = "TODO auto detect starting path";
-//     const char* args[] = {program, nullptr};
-//     execvp(program, const_cast<char* const*>(args));
-//     Logger::log("[GameManager] Échec du redémarrage", true);
-//     std::exit(EXIT_FAILURE);
-// }

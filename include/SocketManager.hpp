@@ -1,6 +1,7 @@
 #ifndef SOCKETMANAGER_H
 #define SOCKETMANAGER_H
 
+#include "Logger.hpp"
 #include <map>
 #include <string>
 
@@ -12,28 +13,21 @@
  * et d'envoyer ou recevoir des messages en texte brut.
  */
 class SocketManager {
-  public:
-    /**
-     * @brief Constructeur de la classe SocketManager
-     */
-    SocketManager();
+  private:
+    int serverSocket{-1}; ///< Descripteur du serveur UDS
+    int clientSocket{-1}; ///< Descripteur de la socket client connectee
+    const std::string socketPath{"/tmp/smartpiano.sock"}; ///< Chemin socket
 
-    /**
-     * @brief Destructeur de la classe SocketManager
-     *
-     * Libere les ressources allouees pour le serveur et la socket client.
-     */
+  public:
+    SocketManager() { Logger::log("[SocketManager] Constructeur initialisé"); }
     ~SocketManager();
 
     /**
      * @brief Initialise le serveur UDS
-     *
      * Configure le serveur pour ecouter les connexions sur un socket Unix.
-     *
-     * @param socketPath Chemin du socket Unix (ex: "/tmp/smartpiano.sock")
      * @return true si le serveur demarre correctement, false sinon.
      */
-    bool initialiserServeur(const std::string& socketPath);
+    bool initialiserServeur();
 
     /**
      * @brief Attend la connexion d'un client
@@ -70,11 +64,6 @@ class SocketManager {
      */
     std::map<std::string, std::string>
     traiterMessage(const std::string& message);
-
-  private:
-    int serverSocket;       ///< Descripteur du serveur UDS
-    int clientSocket;       ///< Descripteur de la socket client connectee
-    std::string socketPath; ///< Chemin du socket Unix
 };
 
 #endif // SOCKETMANAGER_H

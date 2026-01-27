@@ -9,8 +9,8 @@
 // Validation d'une seule note jouee par rapport a une note attendue
 bool ValidationNote::valider(const std::string& noteJouee,
                              const std::string& noteAttendue) {
-    Logger::log("[ValidationNote] Ligne 9 : Validation d'une note : " +
-                noteJouee + " == " + noteAttendue);
+    Logger::log("[ValidationNote] Validation note {} = {}", noteJouee,
+                noteAttendue);
     return noteJouee == noteAttendue;
 }
 
@@ -18,12 +18,10 @@ bool ValidationNote::valider(const std::string& noteJouee,
 bool ValidationNote::validerAccordSR(
     const std::vector<std::string>& accordJoue,
     const std::vector<std::string>& accordAttendu) {
-    Logger::log("[ValidationNote] Ligne 15 : Validation d'un accord sans "
-                "renversement.");
+    Logger::log("[ValidationNote] Validation accord sans renversement");
 
     if (accordJoue.size() != accordAttendu.size()) {
-        Logger::log(
-            "[ValidationNote] Ligne 18 : Taille des accords differente.", true);
+        Logger::err("[ValidationNote] Taille des accords différente");
         return false;
     }
 
@@ -47,9 +45,8 @@ bool ValidationNote::validerAccordSR(
     std::sort(attenduModulo.begin(), attenduModulo.end());
 
     bool resultat = (joueModulo == attenduModulo);
-    Logger::log(
-        "[ValidationNote] Ligne 43 : Validation sans renversement terminee : " +
-        std::string(resultat ? "Valide" : "Invalide"));
+    Logger::log("[ValidationNote] Validation sans renversement terminée {}",
+                resultat ? "Valide" : "Invalide");
     return resultat;
 }
 
@@ -57,13 +54,11 @@ bool ValidationNote::validerAccordSR(
 bool ValidationNote::validerAccordRenversement(
     const std::vector<std::string>& accordJoue,
     const std::vector<std::string>& accordAttendu, uint32_t renversement) {
-    Logger::log("[ValidationNote] Ligne 49 : Validation d'un accord avec "
-                "renversement. Renversement : " +
-                std::to_string(renversement));
+    Logger::log("[ValidationNote] Validation accord avec renversement {}",
+                renversement);
 
     if (accordJoue.size() != accordAttendu.size()) {
-        Logger::log(
-            "[ValidationNote] Ligne 52 : Taille des accords differente.", true);
+        Logger::err("[ValidationNote] Taille des accords différente");
         return false;
     }
 
@@ -92,23 +87,21 @@ bool ValidationNote::validerAccordRenversement(
 
     for (uint32_t i = 1; i < joueMidi.size(); ++i) {
         if (joueMidi[i] - joueMidi[i - 1] > 12) {
-            Logger::log("[ValidationNote] Ligne 82 : Une des notes est en "
-                        "dehors de l'octave.",
-                        true);
+            Logger::err(
+                "[ValidationNote] Une des notes est en dehors de l'octave");
             return false;
         }
     }
 
     for (uint32_t i = 0; i < attenduRecalibre.size(); ++i) {
         if (joueMidi[i] % 12 != attenduRecalibre[i] % 12) {
-            Logger::log("[ValidationNote] Ligne 89 : Les hauteurs des notes ne "
-                        "correspondent pas.",
-                        true);
+            Logger::err(
+                "[ValidationNote] Hauteurs des notes non correspondantes");
             return false;
         }
     }
 
-    Logger::log("[ValidationNote] Ligne 94 : Validation avec renversement "
-                "terminee : Valide.");
+    Logger::log(
+        "[ValidationNote] Validation avec renversement terminée: valide");
     return true;
 }

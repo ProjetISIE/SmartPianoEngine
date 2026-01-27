@@ -10,45 +10,10 @@
 
 /**
  * @brief Jeu d'accords simples (sans renversement)
- *
  * Le joueur doit jouer l'accord affiché dans n'importe quel ordre
  */
 class ChordGame : public IGameMode {
-  public:
-    /**
-     * @brief Constructeur
-     * @param transport Transport pour communication
-     * @param midi Entrée MIDI
-     * @param config Configuration du jeu
-     * @param withInversions true pour mode avec renversements
-     */
-    ChordGame(ITransport& transport, IMidiInput& midi, const GameConfig& config,
-              bool withInversions = false);
-
-    /**
-     * @brief Démarre le jeu
-     */
-    void start() override;
-
-    /**
-     * @brief Exécute une partie
-     * @return Résultat de la partie
-     */
-    GameResult play() override;
-
-    /**
-     * @brief Arrête le jeu
-     */
-    void stop() override;
-
   private:
-    ITransport& transport_; ///< Référence au transport
-    IMidiInput& midi_;      ///< Référence à l'entrée MIDI
-    GameConfig config_;     ///< Configuration du jeu
-    bool withInversions_;   ///< Mode avec renversements?
-    std::mt19937 rng_;      ///< Générateur aléatoire
-    int challengeId_;       ///< ID du challenge actuel
-
     /**
      * @brief Structure représentant un accord
      */
@@ -58,6 +23,15 @@ class ChordGame : public IGameMode {
         int inversion;           ///< Renversement (0, 1, 2)
     };
 
+  private:
+    ITransport& transport; ///< Référence au transport
+    IMidiInput& midi;      ///< Référence à l'entrée MIDI
+    GameConfig config;     ///< Configuration du jeu
+    bool withInversions;   ///< Mode avec renversements?
+    std::mt19937 rng;      ///< Générateur aléatoire
+    int challengeId;       ///< ID du challenge actuel
+
+  private:
     /**
      * @brief Génère un accord aléatoire dans la gamme
      * @return Accord généré
@@ -94,6 +68,33 @@ class ChordGame : public IGameMode {
      */
     int validateChord(const std::vector<Note>& played,
                       const std::vector<Note>& expected);
+
+  public:
+    /**
+     * @brief Constructeur
+     * @param transport Transport pour communication
+     * @param midi Entrée MIDI
+     * @param config Configuration du jeu
+     * @param withInversions true pour mode avec renversements
+     */
+    ChordGame(ITransport& transport, IMidiInput& midi, const GameConfig& config,
+              bool withInversions = false);
+
+    /**
+     * @brief Démarre le jeu
+     */
+    void start() override;
+
+    /**
+     * @brief Exécute une partie
+     * @return Résultat de la partie
+     */
+    GameResult play() override;
+
+    /**
+     * @brief Arrête le jeu
+     */
+    void stop() override;
 };
 
 #endif // CHORDGAME_HPP

@@ -4,9 +4,6 @@
 
 TEST_CASE("RtMidiInput initialization") {
     RtMidiInput input;
-    // Just check that we can call methods without crash.
-    // Initialize will likely fail or return false if no backend.
-
     bool init = input.initialize();
     if (!init) {
         WARN(

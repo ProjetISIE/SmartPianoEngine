@@ -5,12 +5,10 @@
 #include "ITransport.hpp"
 #include "Message.hpp"
 #include "Note.hpp"
-#include <atomic>
 #include <chrono>
 #include <condition_variable>
 #include <deque>
 #include <mutex>
-#include <thread>
 #include <vector>
 
 class MockMidiInput : public IMidiInput {
@@ -59,14 +57,13 @@ class MockTransport : public ITransport {
   public:
     bool started = false;
     bool connected = false;
-    std::string endpoint;
+    const std::string sockPath{"/tmp/smartpiano.sock"}; ///< Chemin socket Unix
     std::deque<Message> sentMessages;
     std::deque<Message> incomingMessages;
     std::mutex mtx;
     std::condition_variable cv;
 
-    bool start(const std::string& ep) override {
-        endpoint = ep;
+    bool start() override {
         started = true;
         return true;
     }
@@ -116,6 +113,12 @@ class MockTransport : public ITransport {
         sentMessages.pop_front();
         return msg;
     }
+
+    /**
+     * @brief Obtient le chemin de la socket Unix
+     * @return Chemin de la socket (string)
+     */
+    std::string getSocketPath() const override { return this->sockPath; }
 };
 
 #endif // MOCKS_HPP

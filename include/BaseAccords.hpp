@@ -5,30 +5,26 @@
 #include <string>
 #include <vector>
 
-// Classe BaseAccords : contient les informations sur les accords pour
-// differentes tonalites
+/** Informations sur les accords pour différentes tonalités */
 class BaseAccords {
+  private:
+    void initialiserAccords(); ///< Initialise accords + notes correspondantes
+
   public:
-    // Constructeur : initialise les accords disponibles
-    BaseAccords();
+    BaseAccords(); ///< Constructeur, initialise les accords disponibles
 
     /**
-     * @brief Obtenir l'accord associe a une tonalite et un degre
+     * @brief Obtenir l'accord associé à une tonalité et un degré
      *
-     * @param tonalite Tonalite musicale (ex: "Do", "Re")
-     * @param degre Degre de l'accord dans la tonalite (ex: "I", "II", "III")
-     * @return Un vecteur d'entiers representant les notes MIDI de l'accord
+     * @param tonalite Tonalité musicale (ex: "Do", "Re")
+     * @param degre Degré de l'accord dans la tonalité (ex: "I", "II", "III")
+     * @return Un vecteur d'entiers représentant les notes MIDI de l'accord
      */
     std::vector<int> obtenirAccord(const std::string& tonalite,
                                    const std::string& degre) const;
 
-    // Map contenant les accords pour chaque tonalite et degre
-    // Structure : accords["Tonalite"]["Degre"] = {Notes MIDI}
+    // Accords pour chaque tonalité/degré: accords["Tonalite"]["Degre"]={Notes}
     std::map<std::string, std::map<std::string, std::vector<int>>> accords;
-
-  private:
-    // Methode pour initialiser les accords avec leurs notes correspondantes
-    void initialiserAccords();
 };
 
 #endif // BASEACCORDS_H

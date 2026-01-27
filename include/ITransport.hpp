@@ -2,13 +2,10 @@
 #define ITRANSPORT_HPP
 
 #include "Message.hpp"
-#include <string>
 
 /**
  * @brief Interface de transport pour la communication client-serveur
- *
- * Abstraction permettant différentes implémentations de transport
- * (UDS, TCP, etc.)
+ * Abstraction permettant différents transports (UDS, TCP…)
  */
 class ITransport {
   public:
@@ -16,10 +13,9 @@ class ITransport {
 
     /**
      * @brief Démarre le serveur de transport
-     * @param endpoint Point de connexion (ex: chemin socket Unix)
      * @return true si démarrage réussi, false sinon
      */
-    virtual bool start(const std::string& endpoint) = 0;
+    virtual bool start() = 0;
 
     /**
      * @brief Attend la connexion d'un client (bloquant)
@@ -48,6 +44,12 @@ class ITransport {
      * @return true si un client est connecté
      */
     virtual bool isClientConnected() const = 0;
+
+    /**
+     * @brief Obtient le chemin de la socket Unix
+     * @return Chemin de la socket (string)
+     */
+    virtual std::string getSocketPath() const = 0;
 };
 
 #endif // ITRANSPORT_HPP

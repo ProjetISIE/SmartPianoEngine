@@ -3,7 +3,6 @@
 #include <doctest/doctest.h>
 
 TEST_CASE("GameManager instantiation") {
-    // Just verify it constructs without error
     GameManager gm;
     CHECK(true);
 }

@@ -6,20 +6,19 @@
 #include <map>
 #include <vector>
 
-// Constructeur pour initialiser le generateur de nombres aleatoires
+// Constructeur pour initialiser le générateur de nombres aléatoires
 GenererNoteAleatoire::GenererNoteAleatoire() {
     srand(static_cast<unsigned>(
-        time(nullptr))); // Initialisation du generateur aleatoire
-    Logger::log("[GenererNoteAleatoire] ligne 13 : Generateur de nombres "
-                "aleatoires initialise");
+        time(nullptr))); // Initialisation générateur aléatoire
+    Logger::log(
+        "[GenererNoteAleatoire] Générateur de nombres aléatoires initialisé");
 }
 
-// Fonction pour generer une note aleatoire en fonction de la gamme et du mode
 std::string GenererNoteAleatoire::generer(const std::string& gamme,
                                           const std::string& mode) {
-    Logger::log("[GenererNoteAleatoire] ligne 18 : Generation d'une note pour "
-                "la gamme " +
-                gamme + " et le mode " + mode);
+    Logger::log(
+        "[GenererNoteAleatoire] Génération note pour gamme {} et mode {}",
+        gamme, mode);
 
     const std::map<std::string, std::vector<std::string>> gammesMajeures = {
         {"Do", {"C", "D", "E", "F", "G", "A", "B"}},
@@ -45,10 +44,8 @@ std::string GenererNoteAleatoire::generer(const std::string& gamme,
     } else if (mode == "Mineur" && gammesMineures.count(gamme)) {
         notes = gammesMineures.at(gamme);
     } else {
-        Logger::log(
-            "[GenererNoteAleatoire] ligne 46 : Gamme ou mode invalide : " +
-                gamme + " " + mode,
-            true);
+        Logger::err("[GenererNoteAleatoire] Gamme ou mode invalide: {} {}",
+                    gamme, mode);
         return "";
     }
 
@@ -56,31 +53,29 @@ std::string GenererNoteAleatoire::generer(const std::string& gamme,
     int octave;
     int index;
     do {
-        octave = (rand() % 5) + 2; // Octave aleatoire entre 2 et 6
+        octave = (rand() % 5) + 2; // Octave aléatoire entre 2 et 6
         index = rand() % notes.size();
         note = notes[index] + std::to_string(octave);
     } while (octave == 6 &&
-             notes[index] != "C"); // Exclusion des notes au-dela de C6
+             notes[index] != "C"); // Exclusion des notes au-delà de C6
 
-    Logger::log("[GenererNoteAleatoire] ligne 59 : Note generee : " + note);
+    Logger::log("[GenererNoteAleatoire] Note générée: {}", note);
     return note;
 }
 
-// Fonction pour generer un accord aleatoire
+// Fonction pour générer un accord aléatoire
 std::pair<std::string, std::vector<std::string>>
 GenererNoteAleatoire::genererAccord(const std::string& gamme,
                                     const std::string& mode) {
-    Logger::log("[GenererNoteAleatoire] ligne 66 : Generation d'un accord pour "
-                "la gamme " +
-                gamme + " et le mode " + mode);
+    Logger::log("[GenererNoteAleatoire]: Generation d'un accord pour "
+                "la gamme {} et le mode {}",
+                gamme, mode);
     BaseAccords baseAccords;
 
     auto it = baseAccords.accords.find(gamme + " " + mode);
     if (it == baseAccords.accords.end()) {
-        Logger::log(
-            "[GenererNoteAleatoire] ligne 71 : Gamme ou mode invalide : " +
-                gamme + " " + mode,
-            true);
+        Logger::err("[GenererNoteAleatoire]: Gamme {} ou mode {} invalide",
+                    gamme, mode);
         return {"", {}};
     }
 
@@ -101,27 +96,24 @@ GenererNoteAleatoire::genererAccord(const std::string& gamme,
         notes.push_back(notesMap.at(noteIndex) + std::to_string(octave));
     }
 
-    Logger::log(
-        "[GenererNoteAleatoire] ligne 93 : Accord genere : " + nomAccord +
-        " (" + notes[0] + ", " + notes[1] + ", " + notes[2] + ")");
+    Logger::log("[GenererNoteAleatoire]: Accord {} généré ({}, {}, {})",
+                nomAccord, notes[0], notes[1], notes[2]);
     return {nomAccord, notes};
 }
 
-// Fonction pour generer un accord avec renversement
+// Fonction pour générer un accord avec renversement
 std::tuple<std::string, std::vector<std::string>, int>
 GenererNoteAleatoire::genererAccordRenversement(const std::string& gamme,
                                                 const std::string& mode) {
-    Logger::log("[GenererNoteAleatoire] ligne 100 : Generation d'un accord "
-                "avec renversement pour la gamme " +
-                gamme + " et le mode " + mode);
+    Logger::log("[GenererNoteAleatoire]: Génération d'un accord "
+                "avec renversement pour la gamme {} et le mode {}",
+                gamme, mode);
     BaseAccords baseAccords;
 
     auto it = baseAccords.accords.find(gamme + " " + mode);
     if (it == baseAccords.accords.end()) {
-        Logger::log(
-            "[GenererNoteAleatoire] ligne 105 : Gamme ou mode invalide : " +
-                gamme + " " + mode,
-            true);
+        Logger::err("[GenererNoteAleatoire]: Gamme {} ou mode {} invalide",
+                    gamme, mode);
         return {"", {}, 0};
     }
 
@@ -143,9 +135,9 @@ GenererNoteAleatoire::genererAccordRenversement(const std::string& gamme,
     }
 
     int renversement = (rand() % 3) + 1;
-    Logger::log(
-        "[GenererNoteAleatoire] ligne 128 : Accord genere : " + nomAccord +
-        " avec renversement " + std::to_string(renversement) + " (" + notes[0] +
-        ", " + notes[1] + ", " + notes[2] + ")");
+    Logger::log("[GenererNoteAleatoire]: Accord {} avec renversement {} généré "
+                "({}, {}, {})",
+                nomAccord, std::to_string(renversement), notes[0], notes[1],
+                notes[2]);
     return {nomAccord, notes, renversement};
 }

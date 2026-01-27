@@ -6,69 +6,48 @@
 #include <sys/un.h>
 #include <unistd.h>
 
-UdsTransport::UdsTransport()
-    : serverSocket_(-1), clientSocket_(-1), socketPath_("") {
-    Logger::log("[UdsTransport] Instance créée");
-}
-
-UdsTransport::~UdsTransport() {
-    stop();
-    Logger::log("[UdsTransport] Instance détruite");
-}
-
-bool UdsTransport::start(const std::string& endpoint) {
-    socketPath_ = endpoint;
-
-    // Supprimer le socket existant s'il existe
-    unlink(socketPath_.c_str());
-
-    // Créer le socket Unix
-    serverSocket_ = socket(AF_UNIX, SOCK_STREAM, 0);
-    if (serverSocket_ < 0) {
-        Logger::log("[UdsTransport] Erreur: Impossible de créer le socket",
-                    true);
+bool UdsTransport::start() {
+    unlink(this->sockPath.c_str()); // Supprimer socket existant s'il existe
+    // Créer socket Unix
+    this->serverSock = socket(AF_UNIX, SOCK_STREAM, 0);
+    if (this->serverSock < 0) {
+        Logger::err("[UdsTransport] Erreur: Impossible de créer le socket");
         return false;
     }
-
     // Configurer l'adresse du socket
     struct sockaddr_un addr;
     memset(&addr, 0, sizeof(addr));
     addr.sun_family = AF_UNIX;
-    strncpy(addr.sun_path, socketPath_.c_str(), sizeof(addr.sun_path) - 1);
-
+    strncpy(addr.sun_path, this->sockPath.c_str(), sizeof(addr.sun_path) - 1);
     // Lier le socket
-    if (bind(serverSocket_, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
-        Logger::log("[UdsTransport] Erreur: Impossible de lier le socket",
-                    true);
-        close(serverSocket_);
-        serverSocket_ = -1;
+    if (bind(this->serverSock, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
+        Logger::err("[UdsTransport] Erreur: Impossible de lier le socket");
+        close(this->serverSock);
+        this->serverSock = -1;
         return false;
     }
-
     // Écouter les connexions
-    if (listen(serverSocket_, 1) < 0) {
-        Logger::log(
-            "[UdsTransport] Erreur: Impossible de mettre le socket en écoute",
-            true);
-        close(serverSocket_);
-        serverSocket_ = -1;
+    if (listen(this->serverSock, 1) < 0) {
+        Logger::err(
+            "[UdsTransport] Erreur: Impossible de mettre le socket en écoute");
+        close(this->serverSock);
+        this->serverSock = -1;
         return false;
     }
-
-    Logger::log("[UdsTransport] Serveur démarré sur " + socketPath_);
+    Logger::log("[UdsTransport] Serveur démarré sur {}", this->sockPath);
     return true;
 }
 
 void UdsTransport::waitForClient() {
-    if (serverSocket_ < 0) {
-        Logger::log("[UdsTransport] Erreur: Serveur non initialisé", true);
+    if (this->serverSock < 0) {
+        Logger::err("[UdsTransport] Erreur: Serveur non initialisé");
         return;
     }
 
-    clientSocket_ = accept(serverSocket_, nullptr, nullptr);
-    if (clientSocket_ < 0) {
-        Logger::log(
-            "[UdsTransport] Erreur: Échec de l'acceptation de connexion", true);
+    this->clientSock = accept(this->serverSock, nullptr, nullptr);
+    if (this->clientSock < 0) {
+        Logger::err(
+            "[UdsTransport] Erreur: Échec de l'acceptation de connexion");
         return;
     }
 
@@ -76,25 +55,25 @@ void UdsTransport::waitForClient() {
 }
 
 void UdsTransport::send(const Message& msg) {
-    if (clientSocket_ < 0) {
-        Logger::log("[UdsTransport] Erreur: Aucun client connecté", true);
+    if (this->clientSock < 0) {
+        Logger::err("[UdsTransport] Erreur: Aucun client connecté");
         return;
     }
 
     std::string data = serializeMessage(msg);
-    ssize_t sent = ::send(clientSocket_, data.c_str(), data.length(), 0);
+    ssize_t sent = ::send(this->clientSock, data.c_str(), data.length(), 0);
 
     if (sent < 0) {
-        Logger::log("[UdsTransport] Erreur: Échec de l'envoi du message", true);
+        Logger::err("[UdsTransport] Erreur: Échec de l'envoi du message");
         return;
     }
 
-    Logger::log("[UdsTransport] Message envoyé: type=" + msg.type);
+    Logger::log("[UdsTransport] Message envoyé: type={}", msg.getType());
 }
 
 Message UdsTransport::receive() {
-    if (clientSocket_ < 0) {
-        Logger::log("[UdsTransport] Erreur: Aucun client connecté", true);
+    if (this->clientSock < 0) {
+        Logger::err("[UdsTransport] Erreur: Aucun client connecté");
         return Message("error");
     }
 
@@ -103,17 +82,18 @@ Message UdsTransport::receive() {
 
     // Lire jusqu'à trouver double newline
     while (true) {
-        ssize_t received = recv(clientSocket_, buffer, sizeof(buffer) - 1, 0);
+        ssize_t received =
+            recv(this->clientSock, buffer, sizeof(buffer) - 1, 0);
 
         if (received < 0) {
-            Logger::log("[UdsTransport] Erreur: Échec de réception", true);
+            Logger::err("[UdsTransport] Erreur: Échec de réception");
             return Message("error");
         }
 
         if (received == 0) {
-            Logger::log("[UdsTransport] Client déconnecté", true);
-            close(clientSocket_);
-            clientSocket_ = -1;
+            Logger::err("[UdsTransport] Client déconnecté");
+            close(this->clientSock);
+            this->clientSock = -1;
             return Message("error");
         }
 
@@ -121,9 +101,7 @@ Message UdsTransport::receive() {
         data += buffer;
 
         // Vérifier si message complet (double newline)
-        if (data.find("\n\n") != std::string::npos) {
-            break;
-        }
+        if (data.find("\n\n") != std::string::npos) break;
     }
 
     Logger::log("[UdsTransport] Message reçu");
@@ -131,34 +109,25 @@ Message UdsTransport::receive() {
 }
 
 void UdsTransport::stop() {
-    if (clientSocket_ >= 0) {
-        close(clientSocket_);
-        clientSocket_ = -1;
+    if (this->clientSock >= 0) {
+        close(this->clientSock);
+        this->clientSock = -1;
     }
-
-    if (serverSocket_ >= 0) {
-        close(serverSocket_);
-        serverSocket_ = -1;
-
-        if (!socketPath_.empty()) {
-            unlink(socketPath_.c_str());
-        }
+    if (this->serverSock >= 0) {
+        close(this->serverSock);
+        this->serverSock = -1;
+        if (!this->sockPath.empty()) unlink(this->sockPath.c_str());
     }
-
     Logger::log("[UdsTransport] Serveur arrêté");
 }
 
-bool UdsTransport::isClientConnected() const { return clientSocket_ >= 0; }
+bool UdsTransport::isClientConnected() const { return clientSock >= 0; }
 
 std::string UdsTransport::serializeMessage(const Message& msg) const {
-    std::string result = msg.type + "\n";
-
-    for (const auto& [key, value] : msg.fields) {
+    std::string result = msg.getType() + "\n";
+    for (const auto& [key, value] : msg.getFields())
         result += key + "=" + value + "\n";
-    }
-
-    result += "\n"; // Double newline pour terminer
-    return result;
+    return result + "\n";
 }
 
 Message UdsTransport::parseMessage(const std::string& data) const {
@@ -167,37 +136,31 @@ Message UdsTransport::parseMessage(const std::string& data) const {
 
     // Première ligne = type du message
     if (!std::getline(stream, line) || line.empty()) {
-        Logger::log("[UdsTransport] Erreur: Type de message manquant", true);
+        Logger::err("[UdsTransport] Erreur: Type de message manquant");
         return Message("error");
     }
 
     // Enlever le \r si présent (pour compatibilité Windows)
-    if (!line.empty() && line.back() == '\r') {
-        line.pop_back();
-    }
+    if (!line.empty() && line.back() == '\r') line.pop_back();
 
-    Message msg(line);
+    std::string messageType = line;
+    std::map<std::string, std::string> messageFields;
 
     // Lignes suivantes = champs clé=valeur
     while (std::getline(stream, line)) {
         // Enlever le \r si présent
-        if (!line.empty() && line.back() == '\r') {
-            line.pop_back();
-        }
+        if (!line.empty() && line.back() == '\r') line.pop_back();
 
         // Ligne vide = fin du message
-        if (line.empty()) {
-            break;
-        }
+        if (line.empty()) break;
 
         // Parser clé=valeur
         size_t pos = line.find('=');
         if (pos != std::string::npos) {
             std::string key = line.substr(0, pos);
             std::string value = line.substr(pos + 1);
-            msg.addField(key, value);
+            messageFields[key] = value;
         }
     }
-
-    return msg;
+    return Message(messageType, messageFields);
 }

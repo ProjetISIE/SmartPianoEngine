@@ -4,57 +4,39 @@
 #include <map>
 #include <thread>
 
-LectureNoteJouee::LectureNoteJouee()
-    : midiIn(nullptr), midiOut(nullptr), noteDisponible(false) {
-    Logger::log("[LectureNoteJouee] Instance créée");
-}
-
-LectureNoteJouee::~LectureNoteJouee() {
-    Logger::log("[LectureNoteJouee] Instance détruite");
-    fermer();
-}
-
 bool LectureNoteJouee::initialiser() {
     Logger::log("[LectureNoteJouee] Initialisation MIDI (JACK)...");
     try {
         midiIn = new RtMidiIn(RtMidi::Api::UNIX_JACK, "SmartPianoEngine");
         midiOut = new RtMidiOut(RtMidi::Api::UNIX_JACK, "SmartPianoEngine");
     } catch (RtMidiError& error) {
-        Logger::log("[LectureNoteJouee] Erreur creation RtMidi JACK: " +
-                        error.getMessage(),
-                    true);
-
+        Logger::err("[LectureNoteJouee] Erreur creation RtMidi JACK {}",
+                    error.getMessage());
         return false;
     }
     try {
         midiIn->openVirtualPort("input");
         midiOut->openVirtualPort("output");
-
         midiIn->ignoreTypes(false, false, false);
         std::thread(&LectureNoteJouee::traiterMessagesMIDI, this).detach();
-
-        Logger::log("[LectureNoteJouee] Ports JACK ouverts avec succes.");
+        Logger::log("[LectureNoteJouee] Ports JACK ouverts avec succès");
         return true;
-
     } catch (RtMidiError& error) {
-        Logger::log("[LectureNoteJouee] Erreur ouverture ports: " +
-                        error.getMessage(),
-                    true);
-
+        Logger::err("[LectureNoteJouee] Erreur ouverture ports: {}",
+                    error.getMessage());
         return false;
     }
 }
 
 void LectureNoteJouee::traiterMessagesMIDI() {
-    Logger::log("[LectureNoteJouee] Thread MIDI demarre");
+    Logger::log("[LectureNoteJouee] Thread MIDI démarré");
     std::vector<unsigned char> message;
     using namespace std::chrono;
-    milliseconds startAccord;
-    milliseconds delaiAccord = milliseconds{500};
-    bool isAccordEnCours = false;
+    // milliseconds startAccord;
+    // milliseconds delaiAccord = milliseconds{500};
+    // bool isAccordEnCours = false;
     std::vector<std::string> notesAccord;
-    while (midiIn) { // Tant que le message existe
-        try {
+    while (midiIn) try {
             if (!midiIn) break;
             midiIn->getMessage(&message);
             if (!message.empty() && message.size() >= 3) {
@@ -64,15 +46,13 @@ void LectureNoteJouee::traiterMessagesMIDI() {
                 if (status == 0x90 && velocite > 0) {
                     std::string noteStr = convertirNote(noteMidi);
                     notesAccord.push_back(noteStr);
-                    Logger::log("[LectureNoteJouee] Note reçue : " + noteStr);
+                    Logger::log("[LectureNoteJouee] Note reçue: {}", noteStr);
                 }
             }
         } catch (const std::exception& e) {
-            Logger::log(
-                std::string("[LectureNoteJouee] Exception: ") + e.what(), true);
+            Logger::log("[LectureNoteJouee] Exception: {}", e.what());
         }
-        std::this_thread::sleep_for(std::chrono::microseconds(100));
-    }
+    std::this_thread::sleep_for(std::chrono::microseconds(100));
 }
 
 std::string LectureNoteJouee::convertirNote(int noteMidi) {
@@ -86,10 +66,8 @@ std::string LectureNoteJouee::convertirNote(int noteMidi) {
 }
 
 std::vector<std::string> LectureNoteJouee::lireNote() {
-    while (!noteDisponible.load()) {
+    while (!noteDisponible.load())
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    }
-
     std::vector<std::string> accord;
     {
         std::lock_guard<std::mutex> lock(noteMutex);
@@ -100,7 +78,7 @@ std::vector<std::string> LectureNoteJouee::lireNote() {
 }
 
 void LectureNoteJouee::fermer() {
-    Logger::log("[LectureNoteJouee] Fermeture des ressources...");
+    Logger::log("[LectureNoteJouee] Fermeture des ressources");
     if (midiIn) {
         delete midiIn;
         midiIn = nullptr;
@@ -110,5 +88,3 @@ void LectureNoteJouee::fermer() {
         midiOut = nullptr;
     }
 }
-
-void LectureNoteJouee::test() {} // DEBUG

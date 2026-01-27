@@ -1,8 +1,6 @@
 #ifndef IGAMEMODE_HPP
 #define IGAMEMODE_HPP
 
-#include "IMidiInput.hpp"
-#include "ITransport.hpp"
 #include <string>
 
 /**
@@ -23,13 +21,11 @@ struct GameConfig {
     std::string scale;    ///< Gamme: "c", "d", "e", "f", "g", "a", "b"
     std::string mode;     ///< Mode: "maj", "min"
     int maxChallenges;    ///< Nombre maximum de challenges
-
     GameConfig() : maxChallenges(10) {}
 };
 
 /**
  * @brief Interface pour les modes de jeu
- *
  * Définit le contrat que tous les modes de jeu doivent respecter
  */
 class IGameMode {

@@ -9,14 +9,12 @@ TEST_CASE("Note construction and parsing") {
         CHECK(n.getOctave() == 4);
         CHECK(n.toString() == "c4");
     }
-
     SUBCASE("Parameterized constructor") {
         Note n("d#", 5);
         CHECK(n.getName() == "d#");
         CHECK(n.getOctave() == 5);
         CHECK(n.toString() == "d#5");
     }
-
     SUBCASE("String parsing constructor") {
         Note n1("gb3");
         CHECK(n1.getName() == "gb");
@@ -33,7 +31,6 @@ TEST_CASE("Note invalid construction") {
         CHECK_THROWS_AS(Note("c", 9), std::invalid_argument);
         CHECK_THROWS_AS(Note("c", -1), std::invalid_argument);
     }
-
     SUBCASE("Invalid string format") {
         CHECK_THROWS_AS(Note(""), std::invalid_argument);
         CHECK_THROWS_AS(Note("h4"), std::invalid_argument); // invalid note name
@@ -47,7 +44,6 @@ TEST_CASE("Note equality") {
     Note n1("c4");
     Note n2("c", 4);
     Note n3("d4");
-
     CHECK(n1 == n2);
     CHECK(n1 != n3);
 }

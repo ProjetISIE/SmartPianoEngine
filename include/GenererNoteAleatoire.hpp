@@ -4,40 +4,37 @@
 #include <string>
 #include <vector>
 
-// Classe pour generer des notes et des accords aleatoires
+// Classe pour générer des notes et des accords aléatoires
 class GenererNoteAleatoire {
   public:
-    // Constructeur par defaut
-    GenererNoteAleatoire();
+    GenererNoteAleatoire(); ///< Constructeur par défaut
 
     /**
-     * @brief Genere une note aleatoire dans une gamme et un mode specifiques.
-     *
-     * @param gamme La gamme musicale (ex: "Do", "Re", etc.).
-     * @param mode Le mode musical (ex: "Majeur", "Mineur").
-     * @return Une chaine de caracteres representant la note generee (ex: "C4").
+     * @brief Génère une note aléatoire dans une gamme et un mode spécifiques
+     * @param gamme La gamme musicale (ex: "Do", "Re"…)
+     * @param mode Le mode musical (ex: "Majeur", "Mineur")
+     * @return Une chaîne de caractères représentant la note générée (ex: "C4")
      */
     std::string generer(const std::string& gamme, const std::string& mode);
 
     /**
-     * @brief Genere un accord aleatoire dans une gamme et un mode specifiques.
-     *
-     * @param gamme La gamme musicale (ex: "Do", "Re", etc.).
-     * @param mode Le mode musical (ex: "Majeur", "Mineur").
+     * @brief Génère un accord aléatoire dans une gamme et un mode spécifiques
+     * @param gamme La gamme musicale (ex: "Do", "Re"…)
+     * @param mode Le mode musical (ex: "Majeur", "Mineur")
      * @return Une paire contenant le nom de l'accord et un vecteur de notes
-     * (ex: {"Do majeur", {"C4", "E4", "G4"}}).
+     * (ex: {"Do majeur", {"C4", "E4", "G4"}})
      */
     std::pair<std::string, std::vector<std::string>>
     genererAccord(const std::string& gamme, const std::string& mode);
 
     /**
-     * @brief Genere un accord avec un renversement aleatoire.
+     * @brief Génère un accord avec un renversement aléatoire.
      *
-     * @param gamme La gamme musicale (ex: "Do", "Re", etc.).
+     * @param gamme La gamme musicale (ex: "Do", "Re"…).
      * @param mode Le mode musical (ex: "Majeur", "Mineur").
      * @return Un tuple contenant le nom de l'accord, un vecteur de notes et le
-     * numero de (renversement-1) (ex: {"Do majeur", {"E4", "G4", "C5"}, 2 = 3
-     * eme renversement}).
+     * numéro de (renversement-1) (ex: {"Do majeur", {"E4", "G4", "C5"}, 2 = 3
+     * ème renversement})
      */
     std::tuple<std::string, std::vector<std::string>, int>
     genererAccordRenversement(const std::string& gamme,

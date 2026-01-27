@@ -8,39 +8,16 @@
 
 /**
  * @brief Moteur de jeu principal
- *
  * Orchestrateur qui coordonne les composants et gère le cycle de vie
  */
 class GameEngine {
-  public:
-    /**
-     * @brief Constructeur
-     * @param transport Interface de transport
-     * @param midi Interface MIDI
-     */
-    GameEngine(ITransport& transport, IMidiInput& midi);
-
-    /**
-     * @brief Destructeur
-     */
-    ~GameEngine();
-
-    /**
-     * @brief Lance le moteur de jeu
-     */
-    void run();
-
-    /**
-     * @brief Arrête le moteur de jeu
-     */
-    void stop();
+  private:
+    ITransport& transport;                  ///< Référence au transport
+    IMidiInput& midi;                       ///< Référence à l'entrée MIDI
+    std::unique_ptr<IGameMode> currentGame; ///< Mode de jeu actuel
+    bool running{false};                    ///< État du moteur
 
   private:
-    ITransport& transport_;                  ///< Référence au transport
-    IMidiInput& midi_;                       ///< Référence à l'entrée MIDI
-    std::unique_ptr<IGameMode> currentGame_; ///< Mode de jeu actuel
-    bool running_;                           ///< État du moteur
-
     /**
      * @brief Gère la connexion d'un client
      */
@@ -74,6 +51,29 @@ class GameEngine {
      */
     void sendAck(bool ok, const std::string& errorCode = "",
                  const std::string& errorMessage = "");
+
+  public:
+    /**
+     * @brief Constructeur
+     * @param transport Interface de transport
+     * @param midi Interface MIDI
+     */
+    GameEngine(ITransport& transport, IMidiInput& midi);
+
+    /**
+     * @brief Destructeur
+     */
+    ~GameEngine();
+
+    /**
+     * @brief Lance le moteur de jeu
+     */
+    void run();
+
+    /**
+     * @brief Arrête le moteur de jeu
+     */
+    void stop();
 };
 
 #endif // GAMEENGINE_HPP

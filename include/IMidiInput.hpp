@@ -6,7 +6,6 @@
 
 /**
  * @brief Interface pour l'entrée MIDI
- *
  * Abstraction permettant différentes implémentations MIDI
  */
 class IMidiInput {
