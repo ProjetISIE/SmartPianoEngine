@@ -65,7 +65,7 @@ TEST_CASE("ChordGame Partial and Incorrect") {
     if (!notes.empty()) {
         midi.pushNotes({notes[0]});
     } else {
-         midi.pushNotes({});
+         midi.pushNotes(std::vector<Note>{});
     }
 
     Message res1 = transport.waitForSentMessage();
@@ -117,7 +117,7 @@ TEST_CASE("ChordGame Inversions") {
             seenInversion = true;
         }
         
-        midi.pushNotes({}); 
+        midi.pushNotes(std::vector<Note>{}); 
         transport.waitForSentMessage(); // result
         
         if (i < 19) transport.pushIncoming(Message("ready"));
@@ -143,7 +143,7 @@ TEST_CASE("ChordGame Unknown Scale") {
     Message msg = transport.waitForSentMessage();
     CHECK(msg.getType() == "chord"); // Should produce a chord (C Maj default)
 
-    midi.pushNotes({});
+    midi.pushNotes(std::vector<Note>{});
     transport.waitForSentMessage();
 
     if (gameThread.joinable()) gameThread.join();
