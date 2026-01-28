@@ -43,10 +43,12 @@ TEST_CASE("AnswerValidator::validerAccordSR (Sans Renversement)") {
 }
 
 /// Vérifie la validation d'accords avec renversements (1er, 2ème)
-/// Les notes doivent correspondre au renversement spécifié et être dans une octave
+/// Les notes doivent correspondre au renversement spécifié et être dans une
+/// octave
 TEST_CASE("AnswerValidator::validerAccordRenversement") {
     AnswerValidator vn;
-    std::vector<std::string> attendu = {"c4", "e4", "g4"}; // Accord Do Majeur fondamental
+    std::vector<std::string> attendu = {"c4", "e4",
+                                        "g4"}; // Accord Do Majeur fondamental
 
     /// Vérifie position fondamentale (renversement=1)
     SUBCASE("Root position (renversement=1)") {

@@ -60,7 +60,8 @@ class MockRtMidiOut : public IRtMidiOut {
 };
 
 /// RtMidiInput testable permettant injection mocks
-/// Surcharge createMidiIn/Out pour retourner mocks au lieu de vrais objets RtMidi
+/// Surcharge createMidiIn/Out pour retourner mocks au lieu de vrais objets
+/// RtMidi
 class TestableRtMidiInput : public RtMidiInput {
   public:
     MockRtMidiIn* mockIn = nullptr;

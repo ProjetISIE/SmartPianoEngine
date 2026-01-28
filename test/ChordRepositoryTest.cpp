@@ -3,7 +3,8 @@
 #include <doctest/doctest.h>
 
 /// Vérifie l'initialisation et récupération des accords depuis le référentiel
-/// Test accords valides (Do Majeur I) et gestion erreurs (tonalité/degré invalide)
+/// Test accords valides (Do Majeur I) et gestion erreurs (tonalité/degré
+/// invalide)
 TEST_CASE("ChordRepository initialization and retrieval") {
     ChordRepository ba;
     /// Vérifie obtention accord Do Majeur I (contient bien un Do/C)
@@ -19,7 +20,8 @@ TEST_CASE("ChordRepository initialization and retrieval") {
             CHECK(hasC);
         }
     }
-    /// Vérifie retour vide pour degré invalide (tonalité existe mais pas degré Z)
+    /// Vérifie retour vide pour degré invalide (tonalité existe mais pas degré
+    /// Z)
     SUBCASE("Obtenir Accord invalide (Tonality exists, Degree missing)") {
         auto accord = ba.obtenirAccord("Do Majeur", "Z"); // Z n'existe pas
         CHECK(accord.empty());

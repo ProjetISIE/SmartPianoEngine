@@ -46,7 +46,8 @@ TEST_CASE("ChordGame Flow") {
 }
 
 /// Vérifie gestion réponses partielles (quelques notes correctes seulement)
-/// Valide présence champ "correct" sans champ "incorrect" si notes partiellement bonnes
+/// Valide présence champ "correct" sans champ "incorrect" si notes
+/// partiellement bonnes
 TEST_CASE("ChordGame Partial and Incorrect") {
     MockTransport transport;
     MockMidiInput midi;

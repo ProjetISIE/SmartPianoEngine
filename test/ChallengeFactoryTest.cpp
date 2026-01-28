@@ -7,7 +7,8 @@
 /// Test génération notes, accords simples et avec renversements
 TEST_CASE("ChallengeFactory") {
     ChallengeFactory gen;
-    /// Vérifie génération note aléatoire dans gamme Do Majeur (sans altérations)
+    /// Vérifie génération note aléatoire dans gamme Do Majeur (sans
+    /// altérations)
     SUBCASE("Generer note in Do Majeur") {
         std::string note = gen.generer("Do", "Majeur");
         std::regex pattern("^[A-G][#]?[0-9]$");

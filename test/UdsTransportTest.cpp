@@ -237,9 +237,10 @@ TEST_CASE("UdsTransport waitForClient error handling") {
 /// Test robustesse création socket avec contraintes système
 TEST_CASE("UdsTransport listen failure") {
     // Ce test tente couvrir chemin échec listen()
-    // Difficile déclencher de manière fiable, mais on peut essayer bind chemin invalide
+    // Difficile déclencher de manière fiable, mais on peut essayer bind chemin
+    // invalide
     UdsTransport transport("/proc/test.sock"); // /proc est lecture seule
-    CHECK_FALSE(transport.start());            // Devrait échouer sur bind ou listen
+    CHECK_FALSE(transport.start()); // Devrait échouer sur bind ou listen
 }
 
 /// Vérifie gestion erreur recv (client envoie incomplet puis ferme)
@@ -289,7 +290,8 @@ TEST_CASE("UdsTransport message with newline detection") {
             strncpy(addr.sun_path, socketPath.c_str(),
                     sizeof(addr.sun_path) - 1);
             if (connect(sock, (struct sockaddr*)&addr, sizeof(addr)) == 0) {
-                // Envoyer message avec newline pour déclencher logging ligne 96-97
+                // Envoyer message avec newline pour déclencher logging ligne
+                // 96-97
                 std::string msg = "TYPE\nkey=value\n\n";
                 ::send(sock, msg.c_str(), msg.length(), 0);
                 std::this_thread::sleep_for(std::chrono::milliseconds(50));

@@ -39,7 +39,8 @@ TEST_CASE("Note invalid construction") {
         CHECK_THROWS_AS(Note("c", 9), std::invalid_argument);
         CHECK_THROWS_AS(Note("c", -1), std::invalid_argument);
     }
-    /// Vérifie le rejet des formats invalides (nom invalide, octave manquante, etc.)
+    /// Vérifie le rejet des formats invalides (nom invalide, octave manquante,
+    /// etc.)
     SUBCASE("Invalid string format") {
         CHECK_THROWS_AS(Note(""), std::invalid_argument);
         CHECK_THROWS_AS(Note("h4"), std::invalid_argument); // invalid note name
@@ -50,7 +51,8 @@ TEST_CASE("Note invalid construction") {
 }
 
 /// Vérifie les opérateurs d'égalité et d'inégalité entre notes
-/// Deux notes identiques doivent être égales quel que soit le constructeur utilisé
+/// Deux notes identiques doivent être égales quel que soit le constructeur
+/// utilisé
 TEST_CASE("Note equality") {
     Note n1("c4");
     Note n2("c", 4);

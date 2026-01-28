@@ -79,8 +79,8 @@ TEST_CASE("NoteGame Incorrect Answer") {
     if (gameThread.joinable()) gameThread.join();
 }
 
-/// Vérifie comportement repli gamme invalide (doit utiliser Do Majeur par défaut)
-/// Valide que défis sont quand même générés avec gamme fallback
+/// Vérifie comportement repli gamme invalide (doit utiliser Do Majeur par
+/// défaut) Valide que défis sont quand même générés avec gamme fallback
 TEST_CASE("NoteGame Unknown Scale Fallback") {
     MockTransport transport;
     MockMidiInput midi;
