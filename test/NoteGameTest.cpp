@@ -62,7 +62,7 @@ TEST_CASE("NoteGame Incorrect Answer") {
 
     Message msg1 = transport.waitForSentMessage();
     std::string expectedNote = msg1.getField("note");
-    
+
     // Send incorrect note
     std::string wrongNote = (expectedNote == "c4") ? "d4" : "c4";
     midi.pushNotes({wrongNote});
@@ -86,11 +86,11 @@ TEST_CASE("NoteGame Unknown Scale Fallback") {
 
     game.start();
     std::thread gameThread([&game]() { game.play(); });
-    
+
     // Should default to C Major, so we should get a note
     Message msg1 = transport.waitForSentMessage();
     CHECK(msg1.getType() == "note");
-    
+
     midi.close(); // Stop waiting for notes
     if (gameThread.joinable()) gameThread.join();
 }

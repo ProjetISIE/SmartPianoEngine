@@ -65,7 +65,7 @@ TEST_CASE("ChordGame Partial and Incorrect") {
     if (!notes.empty()) {
         midi.pushNotes({notes[0]});
     } else {
-         midi.pushNotes(std::vector<Note>{});
+        midi.pushNotes(std::vector<Note>{});
     }
 
     Message res1 = transport.waitForSentMessage();
@@ -74,11 +74,12 @@ TEST_CASE("ChordGame Partial and Incorrect") {
     // Check fields in message
     // If correctNotes not empty -> field "correct" exists.
     // If incorrectNotes not empty -> field "incorrect" exists.
-    
+
     if (!notes.empty()) {
-        CHECK(res1.hasField("correct")); 
-        // If we only played correct notes (but not all), "incorrect" field is NOT present.
-        CHECK_FALSE(res1.hasField("incorrect")); 
+        CHECK(res1.hasField("correct"));
+        // If we only played correct notes (but not all), "incorrect" field is
+        // NOT present.
+        CHECK_FALSE(res1.hasField("incorrect"));
     }
 
     if (gameThread.joinable()) gameThread.join();
@@ -105,21 +106,22 @@ TEST_CASE("ChordGame Inversions") {
             break;
         }
         CHECK(msg.getType() == "chord");
-        
+
         std::string name = msg.getField("name");
-        if (name.find("1") != std::string::npos || name.find("2") != std::string::npos) {
+        if (name.find("1") != std::string::npos ||
+            name.find("2") != std::string::npos) {
             seenInversion = true;
         }
-        
-        midi.pushNotes(std::vector<Note>{}); 
+
+        midi.pushNotes(std::vector<Note>{});
         transport.waitForSentMessage(); // result
-        
+
         // Send ready only if we expect another round
         if (i < 19) {
             transport.pushIncoming(Message("ready"));
         }
     }
-    
+
     CHECK(seenInversion); // Should be very likely
 
     if (gameThread.joinable()) gameThread.join();

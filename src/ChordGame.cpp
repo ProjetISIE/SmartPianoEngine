@@ -101,7 +101,8 @@ GameResult ChordGame::play() {
         if (i < maxChallenges - 1) {
             Message readyMsg = this->transport.receive();
             if (readyMsg.getType() != "ready") {
-                Logger::err("[ChordGame] Erreur: ready attendu, reçu '{}'", readyMsg.getType());
+                Logger::err("[ChordGame] Erreur: ready attendu, reçu '{}'",
+                            readyMsg.getType());
                 break;
             }
         }

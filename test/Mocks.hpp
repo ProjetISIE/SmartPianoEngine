@@ -30,7 +30,6 @@ class MockMidiInput : public IMidiInput {
     void setInitializeResult(bool res) { initResult = res; }
     void setReady(bool ready) { initialized = ready; }
 
-
     std::vector<Note> readNotes() override {
         std::unique_lock<std::mutex> lock(mtx);
         // Wait for notes to be available
@@ -101,7 +100,8 @@ class MockTransport : public ITransport {
                     [this] { return !incomingMessages.empty() || !connected; });
         }
         if (incomingMessages.empty() && !connected) {
-            // Logger::err("[MockTransport] Receive returning error because disconnected and empty");
+            // Logger::err("[MockTransport] Receive returning error because
+            // disconnected and empty");
             return Message("error");
         }
         auto msg = incomingMessages.front();

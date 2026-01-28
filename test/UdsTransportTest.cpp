@@ -43,7 +43,7 @@ TEST_CASE("UdsTransport communication") {
 
 TEST_CASE("UdsTransport Edge Cases") {
     UdsTransport transport("test_edge.sock");
-    
+
     SUBCASE("Send without client") {
         // Should not crash, just log error
         transport.send(Message("TEST"));
