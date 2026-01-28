@@ -40,3 +40,22 @@ TEST_CASE("UdsTransport communication") {
         CHECK_FALSE(transport.isClientConnected());
     } else WARN("Could not create server socket. Skipping test.");
 }
+
+TEST_CASE("UdsTransport Edge Cases") {
+    UdsTransport transport("test_edge.sock");
+    
+    SUBCASE("Send without client") {
+        // Should not crash, just log error
+        transport.send(Message("TEST"));
+    }
+
+    SUBCASE("Receive without client") {
+        Message msg = transport.receive();
+        CHECK(msg.getType() == "error");
+    }
+
+    SUBCASE("Stop idempotency") {
+        transport.stop();
+        transport.stop(); // Should be safe
+    }
+}

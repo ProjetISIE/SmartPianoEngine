@@ -47,3 +47,50 @@ TEST_CASE("NoteGame Flow") {
 
     if (gameThread.joinable()) gameThread.join();
 }
+
+TEST_CASE("NoteGame Incorrect Answer") {
+    MockTransport transport;
+    MockMidiInput midi;
+    GameConfig config;
+    config.scale = "c";
+    config.mode = "maj";
+    config.maxChallenges = 1;
+    NoteGame game(transport, midi, config);
+
+    game.start();
+    std::thread gameThread([&game]() { game.play(); });
+
+    Message msg1 = transport.waitForSentMessage();
+    std::string expectedNote = msg1.getField("note");
+    
+    // Send incorrect note
+    std::string wrongNote = (expectedNote == "c4") ? "d4" : "c4";
+    midi.pushNotes({wrongNote});
+
+    Message res1 = transport.waitForSentMessage();
+    CHECK(res1.getType() == "result");
+    CHECK(res1.hasField("incorrect"));
+    CHECK_FALSE(res1.hasField("correct"));
+
+    if (gameThread.joinable()) gameThread.join();
+}
+
+TEST_CASE("NoteGame Unknown Scale Fallback") {
+    MockTransport transport;
+    MockMidiInput midi;
+    GameConfig config;
+    config.scale = "unknown";
+    config.mode = "mode";
+    config.maxChallenges = 1;
+    NoteGame game(transport, midi, config);
+
+    game.start();
+    std::thread gameThread([&game]() { game.play(); });
+    
+    // Should default to C Major, so we should get a note
+    Message msg1 = transport.waitForSentMessage();
+    CHECK(msg1.getType() == "note");
+    
+    midi.close(); // Stop waiting for notes
+    if (gameThread.joinable()) gameThread.join();
+}
