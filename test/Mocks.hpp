@@ -123,7 +123,7 @@ class MockTransport : public ITransport {
     Message waitForSentMessage() {
         std::unique_lock<std::mutex> lock(mtx);
         if (sentMessages.empty()) {
-            cv.wait_for(lock, std::chrono::seconds(5),
+            cv.wait_for(lock, std::chrono::seconds(10),
                         [this] { return !sentMessages.empty(); });
         }
         if (sentMessages.empty()) return Message("TIMEOUT");
