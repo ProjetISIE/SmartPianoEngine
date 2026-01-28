@@ -1,6 +1,7 @@
 #include "AnswerValidator.hpp"
 #include "Logger.hpp"
 #include <algorithm>
+#include <cctype>
 #include <cstdint>
 #include <map>
 #include <sys/types.h>
@@ -30,6 +31,8 @@ bool AnswerValidator::validerAccordSR(
             {"C", 0},  {"C#", 1}, {"D", 2},  {"D#", 3}, {"E", 4},   {"F", 5},
             {"F#", 6}, {"G", 7},  {"G#", 8}, {"A", 9},  {"A#", 10}, {"B", 11}};
         std::string nomNote = note.substr(0, note.size() - 1);
+        std::transform(nomNote.begin(), nomNote.end(), nomNote.begin(),
+                       ::toupper);
         return notesMidi.at(nomNote);
     };
 
@@ -67,6 +70,8 @@ bool AnswerValidator::validerAccordRenversement(
             {"C", 0},  {"C#", 1}, {"D", 2},  {"D#", 3}, {"E", 4},   {"F", 5},
             {"F#", 6}, {"G", 7},  {"G#", 8}, {"A", 9},  {"A#", 10}, {"B", 11}};
         std::string nomNote = note.substr(0, note.size() - 1);
+        std::transform(nomNote.begin(), nomNote.end(), nomNote.begin(),
+                       ::toupper);
         int octave = std::stoi(note.substr(note.size() - 1));
         return notesMidi.at(nomNote) + (octave * 12);
     };
