@@ -14,7 +14,7 @@ target_include_directories(
 target_link_libraries(${PROJECT_NAME} PUBLIC Threads::Threads ${ALSA_LIBRARIES}
                                              ${RTMIDI_LIBRARIES} dl pthread m)
 
-add_executable(${PROJECT_NAME}Main main.cpp)
-target_link_libraries(${PROJECT_NAME}Main ${PROJECT_NAME})
+add_executable(main main.cpp)
+target_link_libraries(main ${PROJECT_NAME})
 include(GNUInstallDirs)
-install(TARGETS ${PROJECT_NAME}Main RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(TARGETS main RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
