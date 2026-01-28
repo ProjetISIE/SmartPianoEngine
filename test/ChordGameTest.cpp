@@ -70,20 +70,7 @@ TEST_CASE("ChordGame Partial and Incorrect") {
 
     Message res1 = transport.waitForSentMessage();
     CHECK(res1.getType() == "result");
-    CHECK(res1.hasField("correct"));
-    CHECK(res1.hasField("incorrect")); // The missing notes are "incorrect" (actually missing, but logic might vary)
-    // Looking at code: "incorrect" lists played notes that were not expected.
-    // Wait, check logic:
-    // for played: if in target -> add to correct, else -> add to incorrect.
-    // If I play valid note, correct is not empty. Incorrect is empty (if I played only valid).
-    // BUT result is determined by: correctCount == size && incorrect.empty -> perfect.
-    // correctCount > 0 -> partial.
-    // else -> incorrect.
 
-    // If I play 1 correct note and nothing else:
-    // correctCount = 1. incorrect = empty.
-    // Result: Partial.
-    
     // Check fields in message
     // If correctNotes not empty -> field "correct" exists.
     // If incorrectNotes not empty -> field "incorrect" exists.

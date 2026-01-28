@@ -122,7 +122,10 @@ GameResult ChordGame::play() {
     return result;
 }
 
-void ChordGame::stop() { Logger::log("[ChordGame] Arrêt du jeu"); }
+void ChordGame::stop() {
+    Logger::log("[ChordGame] Arrêt du jeu");
+    this->midi.close();
+}
 
 ChordGame::Chord ChordGame::generateRandomChord() {
     std::vector<int> degrees = getChordDegrees();

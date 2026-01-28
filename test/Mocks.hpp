@@ -101,6 +101,7 @@ class MockTransport : public ITransport {
                     [this] { return !incomingMessages.empty() || !connected; });
         }
         if (incomingMessages.empty() && !connected) {
+            // Logger::err("[MockTransport] Receive returning error because disconnected and empty");
             return Message("error");
         }
         auto msg = incomingMessages.front();
