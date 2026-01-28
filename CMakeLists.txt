@@ -25,7 +25,7 @@ if(COVERAGE)
   add_link_options(-fprofile-instr-generate)
 endif()
 set(PROFRAW_MAIN "main.profraw")
-set(PROFRAW_TESTS "tests.profraw")
+set(PROFRAW_TESTS "tests-%m.profraw")
 set(PROFDATA_FILE "coverage.profdata")
 
 add_subdirectory(src)
@@ -35,19 +35,20 @@ add_subdirectory(test)
 # Exécute les exécutables pour générer données de profilage (main.profraw…)
 add_custom_target(
   run_main
-  COMMAND LLVM_PROFILE_FILE=${CMAKE_BINARY_DIR}/${PROFRAW_MAIN} ./src/main --timeout 500
+  COMMAND LLVM_PROFILE_FILE=${CMAKE_BINARY_DIR}/${PROFRAW_MAIN} ./src/main
+          --timeout 1000 # S’arrêter tout seul après 1s
   COMMENT "Exécution du main pour générer ${PROFRAW_MAIN}")
 add_custom_target(
   run_tests
+  COMMAND rm -f ${CMAKE_BINARY_DIR}/tests-*.profraw
   COMMAND LLVM_PROFILE_FILE=${CMAKE_BINARY_DIR}/${PROFRAW_TESTS} ctest
   COMMENT "Exécution des tests pour générer ${PROFRAW_TESTS}")
 # Fusionne les données de profilage dans coverage.profdata
 add_custom_target(
   merge_coverage_data
   COMMAND
-    llvm-profdata merge -sparse -output=${CMAKE_BINARY_DIR}/${PROFDATA_FILE}
-    ${CMAKE_BINARY_DIR}/${PROFRAW_MAIN}
-    ${CMAKE_BINARY_DIR}/${PROFRAW_TESTS}
+    bash -c
+    "llvm-profdata merge -sparse -output=${CMAKE_BINARY_DIR}/${PROFDATA_FILE} ${CMAKE_BINARY_DIR}/${PROFRAW_MAIN} ${CMAKE_BINARY_DIR}/tests-*.profraw"
   DEPENDS run_tests run_main
   COMMENT "Fusion données couverture: ${PROFDATA_FILE}")
 # Génération du rapport de couverture de code HTML
@@ -59,5 +60,16 @@ add_custom_target(
   DEPENDS merge_coverage_data
   COMMENT "Rapport de couverture HTML généré: ${CMAKE_BINARY_DIR}/coverage")
 add_dependencies(run_main main)
-add_dependencies(run_tests integrationTest) # WARN Besoin de tous les tests ?
+add_dependencies(run_tests ChordRepositoryTest)
+add_dependencies(run_tests ChordGameTest)
+add_dependencies(run_tests GameEngineTest)
+add_dependencies(run_tests ChallengeFactoryTest)
+add_dependencies(run_tests LoggerTest)
+add_dependencies(run_tests MessageTest)
+add_dependencies(run_tests NoteTest)
+add_dependencies(run_tests NoteGameTest)
+add_dependencies(run_tests RtMidiInputTest)
+add_dependencies(run_tests UdsTransportTest)
+add_dependencies(run_tests AnswerValidatorTest)
+add_dependencies(run_tests integrationTest)
 add_dependencies(report_coverage merge_coverage_data)

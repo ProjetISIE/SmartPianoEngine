@@ -30,13 +30,12 @@ int main(int argc, char* argv[]) {
         std::string arg = argv[i];
         if (arg == "--timeout" && i + 1 < argc) {
             int timeoutMs = std::atoi(argv[++i]);
-            if (timeoutMs > 0) {
+            if (timeoutMs > 0)
                 std::thread([timeoutMs]() {
                     std::this_thread::sleep_for(
                         std::chrono::milliseconds(timeoutMs));
                     std::raise(SIGINT);
                 }).detach();
-            }
         }
     }
     Logger::log("[MAIN] === Démarrage Smart Piano Engine ===");
