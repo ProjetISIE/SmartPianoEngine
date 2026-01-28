@@ -97,19 +97,20 @@ d’exploitations, architectures ou configurations, sans garantie.
 
 ## Outillage
 
-| Fonction                     | Outil             |
-| ---------------------------- | ----------------- |
-| Compilation C++              | [Clang]           |
-| Système de build             | [CMake] (+ Ninja) |
-| Dépendances et environnement | [Nix]             |
-| Versionnage et collaboration | [Git] avec GitHub |
-| Tests automatisés            | [doctest]         |
-| Couverture de code           | [lcov]            |
-| Assistance langage C++       | [clangd] (LSP)    |
-| Documentation depuis le code | [Doxygen]         |
-| Formatage du C++             | [clang-format]    |
-| Contrôle qualité C++         | [clang-tidy]      |
-| Débogage C++                 | [lldb]            |
+| Fonction                         | Outil             |
+| -------------------------------- | ----------------- |
+| Compilation C++                  | [Clang]           |
+| Système de build                 | [CMake] (+ Ninja) |
+| Dépendances et environnement     | [Nix]             |
+| Versionnage et collaboration     | [Git] avec GitHub |
+| Tests automatisés                | [doctest]         |
+| Couverture de code               | [lcov]            |
+| Assistance langage C++           | [clangd] (LSP)    |
+| Documentation depuis le code     | [Doxygen]         |
+| Formatage du C++                 | [clang-format]    |
+| Contrôle qualité C++             | [clang-tidy]      |
+| Débogage C++                     | [lldb]            |
+| Test manuel communication socket | [socat]           |
 
 ## Compilation & Exécution
 
@@ -444,3 +445,5 @@ main.cpp
 [lldb]: https://lldb.llvm.org
 [Nix]: https://nixos.org
 [Polytech Tours]: https://polytech.univ-tours.fr
+[socat]: http://www.dest-unreach.org/socat
+[tio]: https://github.com/tio/tio

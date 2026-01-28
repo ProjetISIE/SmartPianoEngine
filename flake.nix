@@ -54,6 +54,7 @@
                   lldb # Clang debug adapter
                   # neocmakelsp # CMake LSP
                   # qsynth # FluidSynth GUI
+                  socat # Serial terminal for manual testing
                   # valgrind # Debugging and profiling
                 ];
                 nativeBuildInputs = self.packages.${pkgs.stdenv.hostPlatform.system}.smart-piano.nativeBuildInputs;
