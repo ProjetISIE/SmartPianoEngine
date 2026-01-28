@@ -1,8 +1,8 @@
-#include "BaseAccords.hpp"
+#include "ChordRepository.hpp"
 
-BaseAccords::BaseAccords() { initialiserAccords(); }
+ChordRepository::ChordRepository() { initialiserAccords(); }
 
-void BaseAccords::initialiserAccords() {
+void ChordRepository::initialiserAccords() {
     // Tonalité : Do majeur
     accords["Do Majeur"] = {
         {"C", {60, 64, 67}},  // Do (C)
@@ -158,7 +158,7 @@ void BaseAccords::initialiserAccords() {
     };
 }
 
-std::vector<int> BaseAccords::obtenirAccord(const std::string& tonalite,
+std::vector<int> ChordRepository::obtenirAccord(const std::string& tonalite,
                                             const std::string& degre) const {
     if (accords.find(tonalite) != accords.end() &&
         accords.at(tonalite).find(degre) != accords.at(tonalite).end()) {

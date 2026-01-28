@@ -5,12 +5,12 @@ add_library(
   NoteGame.cpp
   ChordGame.cpp
   UdsTransport.cpp
-  BaseAccords.cpp
-  NoteGenerator.cpp
+  ChordRepository.cpp
+  ChallengeFactory.cpp
   NoteReader.cpp
   GameManager.cpp
   SocketManager.cpp
-  ValidationNote.cpp)
+  AnswerValidator.cpp)
 target_include_directories(
   ${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include ${RTMIDI_INCLUDE_DIRS}
                          ${ALSA_INCLUDE_DIRS})

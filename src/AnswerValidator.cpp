@@ -1,4 +1,4 @@
-#include "ValidationNote.hpp"
+#include "AnswerValidator.hpp"
 #include "Logger.hpp"
 #include <algorithm>
 #include <cstdint>
@@ -7,21 +7,21 @@
 #include <vector>
 
 // Validation d'une seule note jouee par rapport a une note attendue
-bool ValidationNote::valider(const std::string& noteJouee,
+bool AnswerValidator::valider(const std::string& noteJouee,
                              const std::string& noteAttendue) {
-    Logger::log("[ValidationNote] Validation note {} = {}", noteJouee,
+    Logger::log("[AnswerValidator] Validation note {} = {}", noteJouee,
                 noteAttendue);
     return noteJouee == noteAttendue;
 }
 
 // Validation d'un accord sans tenir compte du renversement
-bool ValidationNote::validerAccordSR(
+bool AnswerValidator::validerAccordSR(
     const std::vector<std::string>& accordJoue,
     const std::vector<std::string>& accordAttendu) {
-    Logger::log("[ValidationNote] Validation accord sans renversement");
+    Logger::log("[AnswerValidator] Validation accord sans renversement");
 
     if (accordJoue.size() != accordAttendu.size()) {
-        Logger::err("[ValidationNote] Taille des accords différente");
+        Logger::err("[AnswerValidator] Taille des accords différente");
         return false;
     }
 
@@ -45,20 +45,20 @@ bool ValidationNote::validerAccordSR(
     std::sort(attenduModulo.begin(), attenduModulo.end());
 
     bool resultat = (joueModulo == attenduModulo);
-    Logger::log("[ValidationNote] Validation sans renversement terminée {}",
+    Logger::log("[AnswerValidator] Validation sans renversement terminée {}",
                 resultat ? "Valide" : "Invalide");
     return resultat;
 }
 
 // Validation d'un accord avec prise en compte du renversement
-bool ValidationNote::validerAccordRenversement(
+bool AnswerValidator::validerAccordRenversement(
     const std::vector<std::string>& accordJoue,
     const std::vector<std::string>& accordAttendu, uint32_t renversement) {
-    Logger::log("[ValidationNote] Validation accord avec renversement {}",
+    Logger::log("[AnswerValidator] Validation accord avec renversement {}",
                 renversement);
 
     if (accordJoue.size() != accordAttendu.size()) {
-        Logger::err("[ValidationNote] Taille des accords différente");
+        Logger::err("[AnswerValidator] Taille des accords différente");
         return false;
     }
 
@@ -88,7 +88,7 @@ bool ValidationNote::validerAccordRenversement(
     for (uint32_t i = 1; i < joueMidi.size(); ++i) {
         if (joueMidi[i] - joueMidi[i - 1] > 12) {
             Logger::err(
-                "[ValidationNote] Une des notes est en dehors de l'octave");
+                "[AnswerValidator] Une des notes est en dehors de l'octave");
             return false;
         }
     }
@@ -96,12 +96,12 @@ bool ValidationNote::validerAccordRenversement(
     for (uint32_t i = 0; i < attenduRecalibre.size(); ++i) {
         if (joueMidi[i] % 12 != attenduRecalibre[i] % 12) {
             Logger::err(
-                "[ValidationNote] Hauteurs des notes non correspondantes");
+                "[AnswerValidator] Hauteurs des notes non correspondantes");
             return false;
         }
     }
 
     Logger::log(
-        "[ValidationNote] Validation avec renversement terminée: valide");
+        "[AnswerValidator] Validation avec renversement terminée: valide");
     return true;
 }

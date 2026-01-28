@@ -1,13 +1,13 @@
-#ifndef NOTE_GENERATOR
-#define NOTE_GENERATOR
+#ifndef CHALLENGEFACTORY_HPP
+#define CHALLENGEFACTORY_HPP
 
 #include <string>
 #include <vector>
 
 // Classe pour générer des notes et des accords aléatoires
-class NoteGenerator {
+class ChallengeFactory {
   public:
-    NoteGenerator(); ///< Constructeur par défaut
+    ChallengeFactory(); ///< Constructeur par défaut
 
     /**
      * @brief Génère une note aléatoire dans une gamme et un mode spécifiques
@@ -41,4 +41,4 @@ class NoteGenerator {
                               const std::string& mode);
 };
 
-#endif // NOTE_GENERATOR
+#endif // CHALLENGEFACTORY_HPP

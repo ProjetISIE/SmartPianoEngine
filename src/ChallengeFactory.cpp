@@ -1,5 +1,5 @@
-#include "NoteGenerator.hpp"
-#include "BaseAccords.hpp"
+#include "ChallengeFactory.hpp"
+#include "ChordRepository.hpp"
 #include "Logger.hpp"
 #include <cstdlib>
 #include <ctime>
@@ -7,15 +7,15 @@
 #include <vector>
 
 // Constructeur pour initialiser le générateur de nombres aléatoires
-NoteGenerator::NoteGenerator() {
+ChallengeFactory::ChallengeFactory() {
     srand(static_cast<unsigned>(
         time(nullptr))); // Initialisation générateur aléatoire
-    Logger::log("[NoteGenerator] Générateur de nombres aléatoires initialisé");
+    Logger::log("[ChallengeFactory] Générateur de nombres aléatoires initialisé");
 }
 
-std::string NoteGenerator::generer(const std::string& gamme,
+std::string ChallengeFactory::generer(const std::string& gamme,
                                    const std::string& mode) {
-    Logger::log("[NoteGenerator] Génération note pour gamme {} et mode {}",
+    Logger::log("[ChallengeFactory] Génération note pour gamme {} et mode {}",
                 gamme, mode);
 
     const std::map<std::string, std::vector<std::string>> gammesMajeures = {
@@ -42,7 +42,7 @@ std::string NoteGenerator::generer(const std::string& gamme,
     } else if (mode == "Mineur" && gammesMineures.count(gamme)) {
         notes = gammesMineures.at(gamme);
     } else {
-        Logger::err("[NoteGenerator] Gamme ou mode invalide: {} {}", gamme,
+        Logger::err("[ChallengeFactory] Gamme ou mode invalide: {} {}", gamme,
                     mode);
         return "";
     }
@@ -57,22 +57,22 @@ std::string NoteGenerator::generer(const std::string& gamme,
     } while (octave == 6 &&
              notes[index] != "C"); // Exclusion des notes au-delà de C6
 
-    Logger::log("[NoteGenerator] Note générée: {}", note);
+    Logger::log("[ChallengeFactory] Note générée: {}", note);
     return note;
 }
 
 // Fonction pour générer un accord aléatoire
 std::pair<std::string, std::vector<std::string>>
-NoteGenerator::genererAccord(const std::string& gamme,
+ChallengeFactory::genererAccord(const std::string& gamme,
                              const std::string& mode) {
-    Logger::log("[NoteGenerator]: Generation d'un accord pour "
+    Logger::log("[ChallengeFactory]: Generation d'un accord pour "
                 "la gamme {} et le mode {}",
                 gamme, mode);
-    BaseAccords baseAccords;
+    ChordRepository baseAccords;
 
     auto it = baseAccords.accords.find(gamme + " " + mode);
     if (it == baseAccords.accords.end()) {
-        Logger::err("[NoteGenerator]: Gamme {} ou mode {} invalide", gamme,
+        Logger::err("[ChallengeFactory]: Gamme {} ou mode {} invalide", gamme,
                     mode);
         return {"", {}};
     }
@@ -94,23 +94,23 @@ NoteGenerator::genererAccord(const std::string& gamme,
         notes.push_back(notesMap.at(noteIndex) + std::to_string(octave));
     }
 
-    Logger::log("[NoteGenerator]: Accord {} généré ({}, {}, {})", nomAccord,
+    Logger::log("[ChallengeFactory]: Accord {} généré ({}, {}, {})", nomAccord,
                 notes[0], notes[1], notes[2]);
     return {nomAccord, notes};
 }
 
 // Fonction pour générer un accord avec renversement
 std::tuple<std::string, std::vector<std::string>, int>
-NoteGenerator::genererAccordRenversement(const std::string& gamme,
+ChallengeFactory::genererAccordRenversement(const std::string& gamme,
                                          const std::string& mode) {
-    Logger::log("[NoteGenerator]: Génération d'un accord "
+    Logger::log("[ChallengeFactory]: Génération d'un accord "
                 "avec renversement pour la gamme {} et le mode {}",
                 gamme, mode);
-    BaseAccords baseAccords;
+    ChordRepository baseAccords;
 
     auto it = baseAccords.accords.find(gamme + " " + mode);
     if (it == baseAccords.accords.end()) {
-        Logger::err("[NoteGenerator]: Gamme {} ou mode {} invalide", gamme,
+        Logger::err("[ChallengeFactory]: Gamme {} ou mode {} invalide", gamme,
                     mode);
         return {"", {}, 0};
     }
@@ -133,7 +133,7 @@ NoteGenerator::genererAccordRenversement(const std::string& gamme,
     }
 
     int renversement = (rand() % 3) + 1;
-    Logger::log("[NoteGenerator]: Accord {} avec renversement {} généré "
+    Logger::log("[ChallengeFactory]: Accord {} avec renversement {} généré "
                 "({}, {}, {})",
                 nomAccord, std::to_string(renversement), notes[0], notes[1],
                 notes[2]);

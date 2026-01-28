@@ -1,16 +1,16 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "ValidationNote.hpp"
+#include "AnswerValidator.hpp"
 #include <doctest/doctest.h>
 
-TEST_CASE("ValidationNote::valider") {
-    ValidationNote vn;
+TEST_CASE("AnswerValidator::valider") {
+    AnswerValidator vn;
     CHECK(vn.valider("c4", "c4"));
     CHECK_FALSE(vn.valider("c4", "d4"));
     CHECK(vn.valider("d#5", "d#5"));
 }
 
-TEST_CASE("ValidationNote::validerAccordSR (Sans Renversement)") {
-    ValidationNote vn;
+TEST_CASE("AnswerValidator::validerAccordSR (Sans Renversement)") {
+    AnswerValidator vn;
     std::vector<std::string> attendu = {"c4", "e4", "g4"};
 
     SUBCASE("Correct chord same order") {
@@ -34,8 +34,8 @@ TEST_CASE("ValidationNote::validerAccordSR (Sans Renversement)") {
     }
 }
 
-TEST_CASE("ValidationNote::validerAccordRenversement") {
-    ValidationNote vn;
+TEST_CASE("AnswerValidator::validerAccordRenversement") {
+    AnswerValidator vn;
     std::vector<std::string> attendu = {"c4", "e4", "g4"}; // C Major Root
 
     SUBCASE("Root position (renversement=1)") {

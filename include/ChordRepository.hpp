@@ -1,17 +1,17 @@
-#ifndef BASEACCORDS_H
-#define BASEACCORDS_H
+#ifndef CHORDREPOSITORY_HPP
+#define CHORDREPOSITORY_HPP
 
 #include <map>
 #include <string>
 #include <vector>
 
-/** Informations sur les accords pour différentes tonalités */
-class BaseAccords {
+/** Référentiel contenant tous les accords musicaux mappés par tonalité et degré */
+class ChordRepository {
   private:
     void initialiserAccords(); ///< Initialise accords + notes correspondantes
 
   public:
-    BaseAccords(); ///< Constructeur, initialise les accords disponibles
+    ChordRepository(); ///< Constructeur, initialise les accords disponibles
 
     /**
      * @brief Obtenir l'accord associé à une tonalité et un degré
@@ -27,4 +27,4 @@ class BaseAccords {
     std::map<std::string, std::map<std::string, std::vector<int>>> accords;
 };
 
-#endif // BASEACCORDS_H
+#endif // CHORDREPOSITORY_HPP

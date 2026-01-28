@@ -1,10 +1,10 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "NoteGenerator.hpp"
+#include "ChallengeFactory.hpp"
 #include <doctest/doctest.h>
 #include <regex>
 
-TEST_CASE("NoteGenerator") {
-    NoteGenerator gen;
+TEST_CASE("ChallengeFactory") {
+    ChallengeFactory gen;
     SUBCASE("Generer note in Do Majeur") {
         std::string note = gen.generer("Do", "Majeur");
         std::regex pattern("^[A-G][#]?[0-9]$");

@@ -353,15 +353,15 @@ communication entre le moteur de jeu et l’interface utilisateur.
 - [`main`](src/main.cpp) Configure l’application, instancie les composants,
   lance `GameEngine`
 - [`GameEngine`](include/GameEngine.hpp) Orchestre les différents composants
-  - [`BaseAccords`](include/BaseAccords.hpp)
+  - [`ChordRepository`](include/ChordRepository.hpp)
   - [`GameManager`](include/GameManager.hpp)
-  - [`NoteGenerator`](include/NoteGenerator.hpp)
+  - [`ChallengeFactory`](include/ChallengeFactory.hpp)
   - [`NoteReader`](include/NoteReader.hpp)
   - [`Logger`](include/Logger.hpp)
   - [`Message`](include/Message.hpp)
   - [`Note`](include/Note.hpp)
   - [`SocketManager`](include/SocketManager.hpp)
-  - [`ValidationNote`](include/ValidationNote.hpp)
+  - [`AnswerValidator`](include/AnswerValidator.hpp)
 - [`IGameMode`](include/IGameMode.hpp) Définit le contrat des modes de jeu
   - [`ChordGame`](include/ChordGame.hpp) Mode de jeu accords
   - [`NoteGame`](include/NoteGame.hpp) Mode de jeu notes

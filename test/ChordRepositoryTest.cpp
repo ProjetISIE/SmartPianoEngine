@@ -1,9 +1,9 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "BaseAccords.hpp"
+#include "ChordRepository.hpp"
 #include <doctest/doctest.h>
 
-TEST_CASE("BaseAccords initialization and retrieval") {
-    BaseAccords ba;
+TEST_CASE("ChordRepository initialization and retrieval") {
+    ChordRepository ba;
     SUBCASE("Obtenir Accord Do I") {
         auto accord = ba.obtenirAccord("Do Majeur", "C");
         // Do Majeur (C Major) I is C E G -> MIDI 60, 64, 67 (usually)

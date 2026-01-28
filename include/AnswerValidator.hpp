@@ -1,18 +1,18 @@
-#ifndef VALIDATION_NOTE_H
-#define VALIDATION_NOTE_H
+#ifndef ANSWERVALIDATOR_HPP
+#define ANSWERVALIDATOR_HPP
 
 #include <cstdint>
 #include <string>
 #include <vector>
 
 /**
- * @brief Classe ValidationNote
+ * @brief Classe AnswerValidator
  *
  * Cette classe fournit des methodes pour valider des notes et accords musicaux.
  * Elle permet de comparer des notes jouees avec des notes attendues et de
  * verifier la validite d'accords, y compris avec renversements.
  */
-class ValidationNote {
+class AnswerValidator {
   public:
     /**
      * @brief Valide une note jouee par rapport a une note attendue.
@@ -58,4 +58,4 @@ class ValidationNote {
                               uint32_t renversement);
 };
 
-#endif // VALIDATION_NOTE_H
+#endif // ANSWERVALIDATOR_HPP
