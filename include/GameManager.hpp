@@ -1,22 +1,22 @@
 #ifndef GAME_MANAGER_H
 #define GAME_MANAGER_H
 
-#include "GenererNoteAleatoire.hpp"
-#include "LectureNoteJouee.hpp"
 #include "Logger.hpp"
+#include "NoteGenerator.hpp"
+#include "NoteReader.hpp"
 #include "SocketManager.hpp"
 #include "ValidationNote.hpp"
 
 // Classe représentant l’essentiel de l’état de Smart Piano
 class GameManager {
   private:
-    SocketManager socketManager;     ///< Communication avec le client
-    GenererNoteAleatoire generateur; ///< Génération notes et accords aléatoires
-    ValidationNote validateur;       ///< Validation des notes et accords joués
-    LectureNoteJouee lectureNote;    ///< Lecture des notes jouées par le client
-    std::string jeuActuel;     ///< Type de jeu en cours (ex: "Jeu de note")
-    std::string gammeActuelle; ///< Gamme musicale utilisée (ex: "Do")
-    std::string modeActuel;    ///< Mode utilisé (ex: "Majeur" ou "Mineur")
+    SocketManager socketManager; ///< Communication avec le client
+    NoteGenerator generateur;    ///< Génération notes et accords aléatoires
+    ValidationNote validateur;   ///< Validation des notes et accords joués
+    NoteReader lectureNote;      ///< Lecture des notes jouées par le client
+    std::string jeuActuel;       ///< Type de jeu en cours (ex: "Jeu de note")
+    std::string gammeActuelle;   ///< Gamme musicale utilisée (ex: "Do")
+    std::string modeActuel;      ///< Mode utilisé (ex: "Majeur" ou "Mineur")
 
   protected:
     /** Lancer le "Jeu de note" */

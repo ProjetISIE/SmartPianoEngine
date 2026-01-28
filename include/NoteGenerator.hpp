@@ -1,13 +1,13 @@
-#ifndef GENERER_NOTE_ALEATOIRE_H
-#define GENERER_NOTE_ALEATOIRE_H
+#ifndef NOTE_GENERATOR
+#define NOTE_GENERATOR
 
 #include <string>
 #include <vector>
 
 // Classe pour générer des notes et des accords aléatoires
-class GenererNoteAleatoire {
+class NoteGenerator {
   public:
-    GenererNoteAleatoire(); ///< Constructeur par défaut
+    NoteGenerator(); ///< Constructeur par défaut
 
     /**
      * @brief Génère une note aléatoire dans une gamme et un mode spécifiques
@@ -41,4 +41,4 @@ class GenererNoteAleatoire {
                               const std::string& mode);
 };
 
-#endif // GENERER_NOTE_ALEATOIRE_H
+#endif // NOTE_GENERATOR

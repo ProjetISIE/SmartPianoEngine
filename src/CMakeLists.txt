@@ -6,8 +6,8 @@ add_library(
   ChordGame.cpp
   UdsTransport.cpp
   BaseAccords.cpp
-  GenererNoteAleatoire.cpp
-  LectureNoteJouee.cpp
+  NoteGenerator.cpp
+  NoteReader.cpp
   GameManager.cpp
   SocketManager.cpp
   ValidationNote.cpp)

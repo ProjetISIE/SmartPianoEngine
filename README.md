@@ -355,8 +355,8 @@ communication entre le moteur de jeu et l’interface utilisateur.
 - [`GameEngine`](include/GameEngine.hpp) Orchestre les différents composants
   - [`BaseAccords`](include/BaseAccords.hpp)
   - [`GameManager`](include/GameManager.hpp)
-  - [`GenererNoteAleatoire`](include/GenererNoteAleatoire.hpp)
-  - [`LectureNoteJouee`](include/LectureNoteJouee.hpp)
+  - [`NoteGenerator`](include/NoteGenerator.hpp)
+  - [`NoteReader`](include/NoteReader.hpp)
   - [`Logger`](include/Logger.hpp)
   - [`Message`](include/Message.hpp)
   - [`Note`](include/Note.hpp)

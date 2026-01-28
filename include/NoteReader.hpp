@@ -15,7 +15,7 @@
  * MIDI. Elle gère la connexion au périphérique, la lecture des messages MIDI et
  * leur conversion en notation musicale standard.
  */
-class LectureNoteJouee {
+class NoteReader {
   private:
     RtMidiIn* midiIn{nullptr};   ///< Pointeur sur l’entrée MIDI
     RtMidiOut* midiOut{nullptr}; ///< Pointeur sur la sortie MIDI
@@ -47,9 +47,9 @@ class LectureNoteJouee {
     std::string convertirNote(int noteMidi);
 
   public:
-    LectureNoteJouee() { Logger::log("[LectureNoteJouee] Instance créée"); }
+    NoteReader() { Logger::log("[LectureNoteJouee] Instance créée"); }
 
-    ~LectureNoteJouee() {
+    ~NoteReader() {
         Logger::log("[LectureNoteJouee] Instance détruite");
         fermer();
     }

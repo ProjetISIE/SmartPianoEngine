@@ -30,7 +30,7 @@ lang: fr
 
 <!--toc:end-->
 
-# Smart Piano UDS Protocol Specification
+# Protocole Smart Piano
 
 > Version: 0.0.0
 
