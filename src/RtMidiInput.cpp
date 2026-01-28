@@ -12,6 +12,7 @@ bool RtMidiInput::initialize() {
     } catch (RtMidiError& error) {
         Logger::err("[RtMidiInput] Erreur création RtMidi: {}",
                     error.getMessage());
+        close();
         return false;
     }
     try {
@@ -28,6 +29,7 @@ bool RtMidiInput::initialize() {
     } catch (RtMidiError& error) {
         Logger::err("[RtMidiInput] Erreur ouverture ports: {}",
                     error.getMessage());
+        close();
         return false;
     }
 }
