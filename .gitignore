@@ -16,6 +16,8 @@
 
 # Debugger Files
 *.pdb
+*.profraw
+*.profdata
 
 # Compiled Dynamic libraries
 *.so

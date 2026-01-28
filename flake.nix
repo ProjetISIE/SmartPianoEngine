@@ -27,8 +27,14 @@
     {
       packages = systems (
         pkgs: crossPkgs: rec {
-          smart-piano = pkgs.callPackage ./engine.nix { inherit self; };
-          cross-smart-piano = crossPkgs.callPackage ./engine.nix { inherit self; };
+          smart-piano = pkgs.callPackage ./engine.nix {
+            inherit self;
+            stdenv = pkgs.clangStdenv;
+          };
+          cross-smart-piano = crossPkgs.callPackage ./engine.nix {
+            inherit self;
+            stdenv = crossPkgs.clangStdenv;
+          };
           default = smart-piano;
           cross = cross-smart-piano;
         }
