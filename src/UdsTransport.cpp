@@ -2,6 +2,7 @@
 #include "Logger.hpp"
 #include <cstring>
 #include <sstream>
+#include <string>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
@@ -91,6 +92,8 @@ Message UdsTransport::receive() {
             return Message("error");
         }
         buffer[received] = '\0';
+        if (std::string(buffer).find("\n") != std::string::npos)
+            Logger::log("[UdsTransport] Ligne reçue: {}", buffer);
         data += buffer;
         // Vérifier si message complet (double newline)
         if (data.find("\n\n") != std::string::npos) break;

@@ -61,13 +61,14 @@ class Logger {
         if (std::filesystem::exists(path) &&
             std::filesystem::file_size(path) > MAX_LOG_SIZE)
             rotateLog(path); // Rotation des logs si nécessaire
-        // Écrit message dans fichier approprié
+        // Écrit message dans fichier et dans sortie appropriés
         std::ofstream file(path, std::ios::app);
-        if (file.is_open())
+        if (file.is_open()) {
             std::println(file, "[{} {}] {}", date(), time(), message);
-        else {
+            std::println(stdout, "{}", message);
+        } else {
             std::println(stderr, "[Logger] Impossible d'écrire dans fichier");
-            std::println(stderr, "[{} {}] {}", date(), time(), message);
+            std::println(stderr, "{}", message);
         }
     }
 

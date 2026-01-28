@@ -22,6 +22,7 @@ void signalHandler(int signum) {
 int main() {
     Logger::init();
     Logger::log("[MAIN] === Démarrage Smart Piano Engine ===");
+    std::println("[MAIN] Appuyer sur Ctrl+C pour arrêter Smart Piano Engine");
     // Configuration gestionnaires de signaux de terminaison
     std::signal(SIGINT, signalHandler);
     std::signal(SIGTERM, signalHandler);
@@ -29,23 +30,15 @@ int main() {
         UdsTransport transport;
         g_transport = &transport; // Garder référence pour le signal handler
         RtMidiInput midi;
-        // Création du moteur de jeu
-        GameEngine engine(transport, midi);
-        g_engine = &engine; // Garder référence pour le signal handler
-        // Démarrage du transport
-        if (!transport.start()) {
+        GameEngine engine(transport, midi); // Création du moteur de jeu
+        g_engine = &engine;       // Garder référence pour le signal handler
+        if (!transport.start()) { // Démarrage du transport
             Logger::err(
                 "[MAIN] ERREUR FATALE: Impossible de démarrer le transport");
             std::println("Erreur: Impossible de créer le socket {}",
                          transport.getSocketPath());
             return 1;
         }
-        Logger::log("[MAIN] Transport démarré sur {}",
-                    transport.getSocketPath());
-        std::println("Smart Piano Engine démarré");
-        std::println("Socket: {}", transport.getSocketPath());
-        std::println("En attente de connexion client...");
-        std::println("Appuyez sur Ctrl+C pour arrêter");
         engine.run(); // Lancement moteur (boucle d’évènements principale)
     } catch (const std::exception& e) {
         Logger::err("[MAIN] EXCEPTION NON GÉRÉE: {}", e.what());
@@ -55,7 +48,6 @@ int main() {
     g_engine = nullptr;    // Nettoyage
     g_transport = nullptr; // Nettoyage
     Logger::log("[MAIN] === Arrêt Smart Piano Engine ===");
-    std::println("");
     std::println("Smart Piano Engine arrêté");
     return 0;
 }
