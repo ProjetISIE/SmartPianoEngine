@@ -17,6 +17,7 @@ TEST_CASE("ChordGame Flow") {
     config.maxChallenges = 1;
     ChordGame game(transport, midi, config, false);
 
+    transport.waitForClient(); // Simulate connected client
     game.start();
     std::thread gameThread([&game]() { game.play(); });
 
@@ -46,11 +47,10 @@ TEST_CASE("ChordGame Partial and Incorrect") {
     MockTransport transport;
     MockMidiInput midi;
     GameConfig config;
-    config.scale = "c";
-    config.mode = "maj";
     config.maxChallenges = 1;
     ChordGame game(transport, midi, config, false);
 
+    transport.waitForClient();
     game.start();
     std::thread gameThread([&game]() { game.play(); });
 
@@ -106,6 +106,7 @@ TEST_CASE("ChordGame Inversions") {
     config.maxChallenges = 20; // Increase to ensure we hit inversions
     ChordGame game(transport, midi, config, true); // With inversions
 
+    transport.waitForClient();
     game.start();
     std::thread gameThread([&game]() { game.play(); });
 
@@ -146,6 +147,7 @@ TEST_CASE("ChordGame Unknown Scale") {
     config.maxChallenges = 1;
     ChordGame game(transport, midi, config, false);
 
+    transport.waitForClient();
     game.start();
     std::thread gameThread([&game]() { game.play(); });
 
