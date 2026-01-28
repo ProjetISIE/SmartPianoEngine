@@ -5,7 +5,8 @@
 #include <string>
 #include <vector>
 
-/** Référentiel contenant tous les accords musicaux mappés par tonalité et degré */
+/** Référentiel contenant tous les accords musicaux mappés par tonalité et degré
+ */
 class ChordRepository {
   private:
     void initialiserAccords(); ///< Initialise accords + notes correspondantes

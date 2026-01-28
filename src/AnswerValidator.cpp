@@ -9,7 +9,7 @@
 
 // Validation d'une seule note jouee par rapport a une note attendue
 bool AnswerValidator::valider(const std::string& noteJouee,
-                             const std::string& noteAttendue) {
+                              const std::string& noteAttendue) {
     Logger::log("[AnswerValidator] Validation note {} = {}", noteJouee,
                 noteAttendue);
     return noteJouee == noteAttendue;

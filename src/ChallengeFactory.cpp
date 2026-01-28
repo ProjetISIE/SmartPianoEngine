@@ -10,11 +10,12 @@
 ChallengeFactory::ChallengeFactory() {
     srand(static_cast<unsigned>(
         time(nullptr))); // Initialisation générateur aléatoire
-    Logger::log("[ChallengeFactory] Générateur de nombres aléatoires initialisé");
+    Logger::log(
+        "[ChallengeFactory] Générateur de nombres aléatoires initialisé");
 }
 
 std::string ChallengeFactory::generer(const std::string& gamme,
-                                   const std::string& mode) {
+                                      const std::string& mode) {
     Logger::log("[ChallengeFactory] Génération note pour gamme {} et mode {}",
                 gamme, mode);
 
@@ -64,7 +65,7 @@ std::string ChallengeFactory::generer(const std::string& gamme,
 // Fonction pour générer un accord aléatoire
 std::pair<std::string, std::vector<std::string>>
 ChallengeFactory::genererAccord(const std::string& gamme,
-                             const std::string& mode) {
+                                const std::string& mode) {
     Logger::log("[ChallengeFactory]: Generation d'un accord pour "
                 "la gamme {} et le mode {}",
                 gamme, mode);
@@ -102,7 +103,7 @@ ChallengeFactory::genererAccord(const std::string& gamme,
 // Fonction pour générer un accord avec renversement
 std::tuple<std::string, std::vector<std::string>, int>
 ChallengeFactory::genererAccordRenversement(const std::string& gamme,
-                                         const std::string& mode) {
+                                            const std::string& mode) {
     Logger::log("[ChallengeFactory]: Génération d'un accord "
                 "avec renversement pour la gamme {} et le mode {}",
                 gamme, mode);

@@ -158,8 +158,9 @@ void ChordRepository::initialiserAccords() {
     };
 }
 
-std::vector<int> ChordRepository::obtenirAccord(const std::string& tonalite,
-                                            const std::string& degre) const {
+std::vector<int>
+ChordRepository::obtenirAccord(const std::string& tonalite,
+                               const std::string& degre) const {
     if (accords.find(tonalite) != accords.end() &&
         accords.at(tonalite).find(degre) != accords.at(tonalite).end()) {
         return accords.at(tonalite).at(degre);

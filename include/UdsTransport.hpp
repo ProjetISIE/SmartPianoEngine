@@ -12,8 +12,8 @@
 class UdsTransport : public ITransport {
   private:
     const std::string sockPath; ///< Chemin socket Unix
-    int serverSock{-1}; ///< Descripteur socket serveur
-    int clientSock{-1}; ///< Descripteur socket client
+    int serverSock{-1};         ///< Descripteur socket serveur
+    int clientSock{-1};         ///< Descripteur socket client
 
   private:
     /**

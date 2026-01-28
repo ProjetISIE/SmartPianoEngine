@@ -90,7 +90,8 @@ class MockTransport : public ITransport {
         std::unique_lock<std::mutex> lock(mtx);
         // Block until message available
         if (incomingMessages.empty()) {
-            cv.wait(lock, [this] { return !incomingMessages.empty() || !connected; });
+            cv.wait(lock,
+                    [this] { return !incomingMessages.empty() || !connected; });
         }
         if (incomingMessages.empty() && !connected) {
             return Message("error");
