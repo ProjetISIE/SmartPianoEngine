@@ -6,7 +6,8 @@
 #include <rtmidi/RtMidi.h> // for RtMidiError
 #include <thread>
 
-// Mock for IRtMidiIn
+/// Mock pour IRtMidiIn permettant injection messages MIDI de test
+/// Simule port virtuel MIDI et file messages pour tests
 class MockRtMidiIn : public IRtMidiIn {
   public:
     std::deque<std::vector<unsigned char>> messageQueue;
@@ -46,7 +47,8 @@ class MockRtMidiIn : public IRtMidiIn {
     }
 };
 
-// Mock for IRtMidiOut
+/// Mock pour IRtMidiOut (sortie MIDI pour tests)
+/// Simule port virtuel sortie MIDI
 class MockRtMidiOut : public IRtMidiOut {
   public:
     bool openPortCalled = false;
@@ -57,7 +59,8 @@ class MockRtMidiOut : public IRtMidiOut {
     }
 };
 
-// Testable RtMidiInput
+/// RtMidiInput testable permettant injection mocks
+/// Surcharge createMidiIn/Out pour retourner mocks au lieu de vrais objets RtMidi
 class TestableRtMidiInput : public RtMidiInput {
   public:
     MockRtMidiIn* mockIn = nullptr;
@@ -80,6 +83,8 @@ class TestableRtMidiInput : public RtMidiInput {
     }
 };
 
+/// Vérifie initialisation réussie et ouverture ports virtuels MIDI
+/// Valide que initialize ouvre ports entrée/sortie et marque comme prêt
 TEST_CASE("RtMidiInput initialization success") {
     TestableRtMidiInput input;
     CHECK(input.initialize());
@@ -90,23 +95,27 @@ TEST_CASE("RtMidiInput initialization success") {
     CHECK_FALSE(input.isReady());
 }
 
+/// Vérifie gestion exception lors traitement messages MIDI
+/// Valide que thread continue après exception et ne plante pas
 TEST_CASE("RtMidiInput processing exception") {
     TestableRtMidiInput input;
     input.initialize();
 
-    // Configure mock to throw on getMessage
-    // We need to wait a bit to ensure the thread picks it up.
-    // The thread loop catches exception and continues.
+    // Configurer mock pour lancer exception sur getMessage
+    // On attend un peu pour s'assurer que thread le récupère
+    // Boucle thread attrape exception et continue
     input.mockIn->throwOnGet = true;
 
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
-    // Restore to normal to close cleanly
+    // Restaurer normal pour fermer proprement
     input.mockIn->throwOnGet = false;
 
     input.close();
 }
 
+/// Vérifie échec initialisation lors création objets RtMidi
+/// Valide que erreurs création sont gérées correctement
 TEST_CASE("RtMidiInput initialization failure (creation)") {
     TestableRtMidiInput input;
     input.forceCreateError = true;
@@ -114,6 +123,8 @@ TEST_CASE("RtMidiInput initialization failure (creation)") {
     CHECK_FALSE(input.isReady());
 }
 
+/// Vérifie échec initialisation lors ouverture port virtuel
+/// Valide gestion erreur RtMidi openVirtualPort
 TEST_CASE("RtMidiInput initialization failure (open port)") {
     TestableRtMidiInput input;
     input.throwOnOpen = true;
@@ -121,18 +132,20 @@ TEST_CASE("RtMidiInput initialization failure (open port)") {
     CHECK_FALSE(input.isReady());
 }
 
+/// Vérifie traitement et conversion message MIDI Note On vers objet Note
+/// Valide conversion MIDI (status 0x90, note 60 = C4)
 TEST_CASE("RtMidiInput message processing") {
     TestableRtMidiInput input;
     input.initialize();
 
-    // Send Note On (status 0x90, note 60 (C4), velocity 100)
+    // Envoyer Note On (status 0x90, note 60 (C4), vélocité 100)
     std::vector<unsigned char> noteOn = {0x90, 60, 100};
     input.mockIn->pushMessage(noteOn);
 
-    // Wait for chord timeout (100ms in code) -> wait 150ms
+    // Attendre timeout accord (100ms dans code) -> attendre 150ms
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
 
-    // Read notes
+    // Lire notes
     std::vector<Note> notes = input.readNotes();
     CHECK(notes.size() == 1);
     CHECK(notes[0].toString() == "c4");
@@ -140,25 +153,27 @@ TEST_CASE("RtMidiInput message processing") {
     input.close();
 }
 
+/// Vérifie regroupement notes simultanées en accord (timeout 100ms)
+/// Valide détection accords via timing entre notes MIDI
 TEST_CASE("RtMidiInput chord processing") {
     TestableRtMidiInput input;
     input.initialize();
 
-    // Send C4
+    // Envoyer C4
     input.mockIn->pushMessage({0x90, 60, 100});
-    // Send E4 shortly after
+    // Envoyer E4 peu après
     std::this_thread::sleep_for(std::chrono::milliseconds(20));
     input.mockIn->pushMessage({0x90, 64, 100});
 
-    // Wait for timeout
+    // Attendre timeout
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
 
-    // Read notes
+    // Lire notes
     std::vector<Note> notes = input.readNotes();
     CHECK(notes.size() == 2);
-    // Order might depend, but usually preserved
-    // Logic in processMidiMessages: push_back.
-    // c4 first, e4 second.
+    // Ordre peut dépendre, mais habituellement préservé
+    // Logique dans processMidiMessages: push_back
+    // c4 en premier, e4 en second
     bool foundC4 = false;
     bool foundE4 = false;
     for (const auto& n : notes) {
@@ -171,24 +186,26 @@ TEST_CASE("RtMidiInput chord processing") {
     input.close();
 }
 
-// Expose protected methods to test the real factory methods (and thus the real
-// Impl classes partially)
+/// Expose méthodes protégées pour tester vraies implémentations RtMidi
+/// Permet tester factory methods et classes wrapper réelles partiellement
 class ExposeRealRtMidiInput : public RtMidiInput {
   public:
     using RtMidiInput::createMidiIn;
     using RtMidiInput::createMidiOut;
-    // We don't override them, so we use the base implementation from
+    // On ne surcharge pas, donc on utilise implémentation base de
     // RtMidiInput.cpp
 };
 
+/// Vérifie instanciation vraies implémentations RtMidi (si système audio dispo)
+/// Test factory methods et wrappers méthodes IRtMidiIn/Out
 TEST_CASE("RtMidiInput Real Implementation Instantiation") {
     ExposeRealRtMidiInput input;
-    // Attempt to create real instances.
+    // Tenter créer instances réelles
 
     try {
         IRtMidiIn* in = input.createMidiIn();
         CHECK(in != nullptr);
-        // Cover wrapper methods
+        // Couvrir méthodes wrapper
         try {
             in->openVirtualPort("test_input");
             in->ignoreTypes(true, true, true);
@@ -197,7 +214,7 @@ TEST_CASE("RtMidiInput Real Implementation Instantiation") {
         } catch (...) {}
         delete in;
     } catch (const RtMidiError&) {
-        // Expected if no audio system
+        // Attendu si pas système audio
     } catch (const std::exception&) {}
 
     try {
@@ -208,6 +225,6 @@ TEST_CASE("RtMidiInput Real Implementation Instantiation") {
         } catch (...) {}
         delete out;
     } catch (const RtMidiError&) {
-        // Expected if no audio system
+        // Attendu si pas système audio
     } catch (const std::exception&) {}
 }

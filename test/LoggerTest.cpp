@@ -6,13 +6,16 @@
 #include <filesystem>
 #include <fstream>
 
+/// Vérifie les fonctionnalités du système de journalisation
+/// Test initialisation, écriture logs normaux/erreur, rotation automatique
 TEST_CASE("Logger functionality") {
     std::string basicLog = "test_basic.log";
     std::string errorLog = "test_error.log";
-    // Cleanup before test
+    // Nettoyage avant test
     if (std::filesystem::exists(basicLog)) std::filesystem::remove(basicLog);
     if (std::filesystem::exists(errorLog)) std::filesystem::remove(errorLog);
 
+    /// Vérifie l'initialisation par défaut avec fichiers smartpiano.log
     SUBCASE("Default init") {
         std::string defaultLog = "smartpiano.log";
         std::string defaultErr = "smartpiano.err.log";
@@ -31,9 +34,11 @@ TEST_CASE("Logger functionality") {
         std::filesystem::remove(defaultErr);
     }
 
+    /// Vérifie l'initialisation explicite et la journalisation basique
     SUBCASE("Explicit init and basic logging") {
         Logger::init(basicLog, errorLog);
 
+        /// Vérifie l'écriture d'un message basique avec timestamp
         SUBCASE("Log basic message") {
             Logger::log("Test basic message");
             std::ifstream f(basicLog);
@@ -43,6 +48,7 @@ TEST_CASE("Logger functionality") {
             CHECK(line.find("Test basic message") != std::string::npos);
             CHECK(line.find("[") != std::string::npos); // Timestamp check
         }
+        /// Vérifie l'écriture d'un message d'erreur dans le fichier dédié
         SUBCASE("Log error message") {
             Logger::err("Test error message");
             std::ifstream f(errorLog);
@@ -52,6 +58,7 @@ TEST_CASE("Logger functionality") {
             CHECK(line.find("Test error message") != std::string::npos);
         }
 
+        /// Vérifie le formatage des messages d'erreur avec paramètres
         SUBCASE("Log error message with format") {
             Logger::err("Error code: {}", 404);
             std::ifstream f(errorLog);
@@ -65,10 +72,11 @@ TEST_CASE("Logger functionality") {
         }
     }
 
+    /// Vérifie la rotation automatique des logs dépassant 2Mo
     SUBCASE("Log rotation") {
         Logger::init(basicLog, errorLog);
 
-        // Fill file to > 2MB
+        // Remplir fichier > 2Mo pour déclencher rotation
         {
             std::ofstream f(basicLog);
             std::string largeString(1024 * 1024, 'A'); // 1MB
@@ -79,9 +87,9 @@ TEST_CASE("Logger functionality") {
 
         Logger::log("Trigger rotation");
 
-        // Check if rotated
-        // The rotation logic is: rename(filePath, date() + filePath)
-        // We need the date string
+        // Vérifier si fichier a été archivé avec date
+        // La logique de rotation: rename(filePath, date() + filePath)
+        // Il faut obtenir la chaîne de date
         auto now = std::chrono::zoned_time{std::chrono::current_zone(),
                                            std::chrono::system_clock::now()};
         std::string dateStr = std::format("{:%F}", now);
@@ -90,22 +98,22 @@ TEST_CASE("Logger functionality") {
         CHECK(std::filesystem::exists(rotatedFile));
         CHECK(std::filesystem::file_size(rotatedFile) > 2 * 1024 * 1024);
 
-        // New file should be small (just the "Trigger rotation" log)
+        // Le nouveau fichier doit être petit (juste le log "Trigger rotation")
         CHECK(std::filesystem::file_size(basicLog) < 1024);
 
         std::filesystem::remove(rotatedFile);
     }
 
+    /// Vérifie la gestion d'erreur lors d'initialisation avec chemin invalide
     SUBCASE("Init failure (invalid path)") {
-        // We can't easily assert on stderr output with doctest unless we
-        // redirect it, but we can ensure it doesn't crash and maybe check if
-        // files are NOT created or opened. If we pass an invalid path like a
-        // directory that exists
+        // On ne peut pas facilement tester stderr avec doctest sans redirection
+        // mais on s'assure que ça ne plante pas
+        // Si on passe un chemin invalide comme un répertoire existant
         std::filesystem::create_directory("invalid_dir");
         Logger::init("invalid_dir", "invalid_dir");
 
-        // It should print to stderr but not crash.
-        // Coverage should hit the error path in init.
+        // Doit afficher sur stderr mais pas planter
+        // La couverture devrait atteindre le chemin d'erreur dans init
 
         Logger::log("Should not crash");
         Logger::err("Should not crash");
@@ -113,26 +121,27 @@ TEST_CASE("Logger functionality") {
         std::filesystem::remove("invalid_dir");
     }
 
+    /// Vérifie l'échec de rotation lorsque répertoire en lecture seule
     SUBCASE("Log rotation failure (readonly directory)") {
-        // Test line 50-51: file recreation failure during rotation
+        // Test ligne 50-51: échec de recréation fichier durant rotation
         Logger::init(basicLog, errorLog);
-        // Create a large log file
+        // Créer un gros fichier log
         {
             std::ofstream f(basicLog);
             std::println(f, "{}", std::string(2 * 1024 * 1024, 'A'));
         }
-        // Make the directory read-only to cause rotation failure
+        // Rendre répertoire lecture seule pour causer échec rotation
         std::filesystem::permissions(std::filesystem::current_path(),
                                      std::filesystem::perms::owner_read |
                                          std::filesystem::perms::owner_exec,
                                      std::filesystem::perm_options::replace);
         CHECK_THROWS(Logger::log("Should trigger failed rotation"));
-        // Restore permissions
+        // Restaurer permissions
         std::filesystem::permissions(std::filesystem::current_path(),
                                      std::filesystem::perms::owner_all,
                                      std::filesystem::perm_options::replace);
     }
-    // Cleanup after test
+    // Nettoyage après tests
     if (std::filesystem::exists(basicLog)) std::filesystem::remove(basicLog);
     if (std::filesystem::exists(errorLog)) std::filesystem::remove(errorLog);
 }

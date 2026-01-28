@@ -4,10 +4,12 @@
 #include <doctest/doctest.h>
 #include <thread>
 
+/// Vérifie le déroulement complet d'une partie en mode Note
+/// Valide envoi défis, validation réponses correctes et enchaînement défis
 TEST_CASE("NoteGame Flow") {
-    // Vérifie le déroulement d'une partie de type "Note".
+    // Vérifie le déroulement d'une partie de type "Note"
     // Le test valide que le jeu envoie les défis (notes) et valide correctement
-    // les entrées MIDI simulées.
+    // les entrées MIDI simulées
     MockTransport transport;
     MockMidiInput midi;
     GameConfig config;
@@ -48,6 +50,8 @@ TEST_CASE("NoteGame Flow") {
     if (gameThread.joinable()) gameThread.join();
 }
 
+/// Vérifie détection et signalement réponse incorrecte
+/// Valide présence champ "incorrect" dans résultat
 TEST_CASE("NoteGame Incorrect Answer") {
     MockTransport transport;
     MockMidiInput midi;
@@ -63,7 +67,7 @@ TEST_CASE("NoteGame Incorrect Answer") {
     Message msg1 = transport.waitForSentMessage();
     std::string expectedNote = msg1.getField("note");
 
-    // Send incorrect note
+    // Envoyer note incorrecte
     std::string wrongNote = (expectedNote == "c4") ? "d4" : "c4";
     midi.pushNotes({wrongNote});
 
@@ -75,6 +79,8 @@ TEST_CASE("NoteGame Incorrect Answer") {
     if (gameThread.joinable()) gameThread.join();
 }
 
+/// Vérifie comportement repli gamme invalide (doit utiliser Do Majeur par défaut)
+/// Valide que défis sont quand même générés avec gamme fallback
 TEST_CASE("NoteGame Unknown Scale Fallback") {
     MockTransport transport;
     MockMidiInput midi;
@@ -87,10 +93,10 @@ TEST_CASE("NoteGame Unknown Scale Fallback") {
     game.start();
     std::thread gameThread([&game]() { game.play(); });
 
-    // Should default to C Major, so we should get a note
+    // Devrait fallback sur Do Majeur, donc générer une note
     Message msg1 = transport.waitForSentMessage();
     CHECK(msg1.getType() == "note");
 
-    midi.close(); // Stop waiting for notes
+    midi.close(); // Arrêter attente notes
     if (gameThread.joinable()) gameThread.join();
 }

@@ -2,19 +2,24 @@
 #include "Note.hpp"
 #include <doctest/doctest.h>
 
+/// Vérifie la construction et l'analyse des notes musicales
+/// Test le constructeur par défaut, paramétré et par chaîne
 TEST_CASE("Note construction and parsing") {
+    /// Vérifie que le constructeur par défaut crée un Do4 (c4)
     SUBCASE("Default constructor") {
         Note n;
         CHECK(n.getName() == "c");
         CHECK(n.getOctave() == 4);
         CHECK(n.toString() == "c4");
     }
+    /// Vérifie la création d'une note avec nom et octave explicites
     SUBCASE("Parameterized constructor") {
         Note n("d#", 5);
         CHECK(n.getName() == "d#");
         CHECK(n.getOctave() == 5);
         CHECK(n.toString() == "d#5");
     }
+    /// Vérifie l'analyse correcte de chaînes (gb3, f2) vers des objets Note
     SUBCASE("String parsing constructor") {
         Note n1("gb3");
         CHECK(n1.getName() == "gb");
@@ -26,11 +31,15 @@ TEST_CASE("Note construction and parsing") {
     }
 }
 
+/// Vérifie que les constructions invalides lèvent des exceptions appropriées
+/// Test les octaves hors limites et formats de chaînes malformés
 TEST_CASE("Note invalid construction") {
+    /// Vérifie le rejet des octaves invalides (< 0 ou > 8)
     SUBCASE("Invalid octave in constructor") {
         CHECK_THROWS_AS(Note("c", 9), std::invalid_argument);
         CHECK_THROWS_AS(Note("c", -1), std::invalid_argument);
     }
+    /// Vérifie le rejet des formats invalides (nom invalide, octave manquante, etc.)
     SUBCASE("Invalid string format") {
         CHECK_THROWS_AS(Note(""), std::invalid_argument);
         CHECK_THROWS_AS(Note("h4"), std::invalid_argument); // invalid note name
@@ -40,6 +49,8 @@ TEST_CASE("Note invalid construction") {
     }
 }
 
+/// Vérifie les opérateurs d'égalité et d'inégalité entre notes
+/// Deux notes identiques doivent être égales quel que soit le constructeur utilisé
 TEST_CASE("Note equality") {
     Note n1("c4");
     Note n2("c", 4);

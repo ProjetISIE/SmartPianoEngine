@@ -1,9 +1,11 @@
 #include "GameEngine.hpp"
-#include "Mocks.hpp" // Remplace le client par quelque chose déterministe
+#include "Mocks.hpp" // Remplace client par quelque chose de déterministe
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include <doctest/doctest.h>
 #include <thread>
 
+/// Vérifie intégration complète système avec IO mockés
+/// Test workflow complet: config, défis multiples, résultats, fin partie
 TEST_CASE("Full System Integration Test (Mocked IO)") {
     MockTransport transport;
     MockMidiInput midi;

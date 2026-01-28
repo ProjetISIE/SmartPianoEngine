@@ -3,8 +3,11 @@
 #include <doctest/doctest.h>
 #include <regex>
 
+/// Vérifie la génération aléatoire de défis musicaux (notes et accords)
+/// Test génération notes, accords simples et avec renversements
 TEST_CASE("ChallengeFactory") {
     ChallengeFactory gen;
+    /// Vérifie génération note aléatoire dans gamme Do Majeur (sans altérations)
     SUBCASE("Generer note in Do Majeur") {
         std::string note = gen.generer("Do", "Majeur");
         std::regex pattern("^[A-G][#]?[0-9]$");
@@ -13,12 +16,14 @@ TEST_CASE("ChallengeFactory") {
         CHECK(note.find('b') == std::string::npos);
     }
 
+    /// Vérifie génération note dans gamme Sol Majeur
     SUBCASE("Generer note in Sol Majeur") {
         std::string note;
         note = gen.generer("Sol", "Majeur");
         CHECK(!note.empty());
     }
 
+    /// Vérifie génération accord (3 notes) avec nom et notes valides
     SUBCASE("Generer Accord Do Majeur") {
         auto [nom, notes] = gen.genererAccord("Do", "Majeur");
         CHECK(!nom.empty());
@@ -29,6 +34,7 @@ TEST_CASE("ChallengeFactory") {
         }
     }
 
+    /// Vérifie génération accord avec renversement aléatoire (1-3)
     SUBCASE("Generer Accord Renversement") {
         auto [nom, notes, renv] = gen.genererAccordRenversement("Do", "Majeur");
         CHECK(!nom.empty());
@@ -37,6 +43,7 @@ TEST_CASE("ChallengeFactory") {
         CHECK(renv <= 3);
     }
 
+    /// Vérifie comportement avec paramètres invalides (gamme inconnue)
     SUBCASE("Invalid parameters") {
         std::string note = gen.generer("Invalid", "Majeur");
         CHECK(note == "");

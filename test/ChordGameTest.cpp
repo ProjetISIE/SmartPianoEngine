@@ -5,10 +5,12 @@
 #include <sstream>
 #include <thread>
 
+/// Vérifie le déroulement complet d'une partie en mode Accord
+/// Valide envoi défis (3 notes simultanées), validation entrée MIDI multi-notes
 TEST_CASE("ChordGame Flow") {
-    // Vérifie le déroulement d'une partie de type "Accord".
+    // Vérifie le déroulement d'une partie de type "Accord"
     // S'assure que les accords sont correctement demandés et que la validation
-    // MIDI (plusieurs notes simultanées) fonctionne.
+    // MIDI (plusieurs notes simultanées) fonctionne
     MockTransport transport;
     MockMidiInput midi;
     GameConfig config;
@@ -17,7 +19,7 @@ TEST_CASE("ChordGame Flow") {
     config.maxChallenges = 1;
     ChordGame game(transport, midi, config, false);
 
-    transport.waitForClient(); // Simulate connected client
+    transport.waitForClient(); // Simuler client connecté
     game.start();
     std::thread gameThread([&game]() { game.play(); });
 
@@ -26,7 +28,7 @@ TEST_CASE("ChordGame Flow") {
     CHECK(msg1.getType() == "chord");
     std::string notesStr = msg1.getField("notes");
 
-    // Analyse des notes attendues (séparées par des espaces)
+    // Analyse des notes attendues (séparées par espaces)
     std::vector<std::string> notes;
     std::stringstream ss(notesStr);
     std::string segment;
@@ -43,6 +45,8 @@ TEST_CASE("ChordGame Flow") {
     if (gameThread.joinable()) gameThread.join();
 }
 
+/// Vérifie gestion réponses partielles (quelques notes correctes seulement)
+/// Valide présence champ "correct" sans champ "incorrect" si notes partiellement bonnes
 TEST_CASE("ChordGame Partial and Incorrect") {
     MockTransport transport;
     MockMidiInput midi;
@@ -61,7 +65,7 @@ TEST_CASE("ChordGame Partial and Incorrect") {
     std::string segment;
     while (std::getline(ss, segment, ' ')) notes.push_back(segment);
 
-    // Send only 1 correct note (Partial)
+    // Envoyer seulement 1 note correcte (Partiel)
     if (!notes.empty()) {
         midi.pushNotes({notes[0]});
     } else {
@@ -71,29 +75,29 @@ TEST_CASE("ChordGame Partial and Incorrect") {
     Message res1 = transport.waitForSentMessage();
     CHECK(res1.getType() == "result");
 
-    // Check fields in message
-    // If correctNotes not empty -> field "correct" exists.
-    // If incorrectNotes not empty -> field "incorrect" exists.
-
+    // Vérifier champs dans message
+    // Si correctNotes non vide -> champ "correct" existe
+    // Si incorrectNotes non vide -> champ "incorrect" existe
     if (!notes.empty()) {
         CHECK(res1.hasField("correct"));
-        // If we only played correct notes (but not all), "incorrect" field is
-        // NOT present.
+        // Si on joue seulement notes correctes (mais pas toutes), champ
+        // "incorrect" n'est PAS présent
         CHECK_FALSE(res1.hasField("incorrect"));
     }
 
     if (gameThread.joinable()) gameThread.join();
 }
 
+/// Vérifie génération et validation accords avec renversements
+/// Valide apparition renversements (1er, 2ème) sur plusieurs défis
 TEST_CASE("ChordGame Inversions") {
     MockTransport transport;
     MockMidiInput midi;
     GameConfig config;
     config.scale = "c";
     config.mode = "maj";
-    config.maxChallenges = 20; // Increase to ensure we hit inversions
-    ChordGame game(transport, midi, config, true); // With inversions
-
+    config.maxChallenges = 20; // Augmenter pour s'assurer de voir renversements
+    ChordGame game(transport, midi, config, true); // Avec renversements
     transport.waitForClient();
     game.start();
     std::thread gameThread([&game]() { game.play(); });
@@ -116,17 +120,18 @@ TEST_CASE("ChordGame Inversions") {
         midi.pushNotes(std::vector<Note>{});
         transport.waitForSentMessage(); // result
 
-        // Send ready only if we expect another round
+        // Envoyer ready seulement si on attend un autre tour
         if (i < 19) {
             transport.pushIncoming(Message("ready"));
         }
     }
 
-    CHECK(seenInversion); // Should be very likely
-
+    CHECK(seenInversion); // Devrait être très probable
     if (gameThread.joinable()) gameThread.join();
 }
 
+/// Vérifie comportement avec gamme inconnue (doit fallback Do Majeur)
+/// Valide génération accord malgré paramètres invalides
 TEST_CASE("ChordGame Unknown Scale") {
     MockTransport transport;
     MockMidiInput midi;
@@ -141,16 +146,17 @@ TEST_CASE("ChordGame Unknown Scale") {
     std::thread gameThread([&game]() { game.play(); });
 
     Message msg = transport.waitForSentMessage();
-    CHECK(msg.getType() == "chord"); // Should produce a chord (C Maj default)
-
+    CHECK(msg.getType() == "chord"); // Devrait produire accord (Do Maj défaut)
     midi.pushNotes(std::vector<Note>{});
     transport.waitForSentMessage();
 
     if (gameThread.joinable()) gameThread.join();
 }
 
+/// Vérifie gestion réponses complètement incorrectes (aucune note correcte)
+/// Valide présence champ "incorrect" sans champ "correct"
 TEST_CASE("ChordGame Completely Incorrect") {
-    // Test case where no notes are correct (line 96 coverage)
+    // Cas de test où aucune note n'est correcte (couverture ligne 96)
     MockTransport transport;
     MockMidiInput midi;
     GameConfig config;
@@ -166,9 +172,8 @@ TEST_CASE("ChordGame Completely Incorrect") {
     Message msg = transport.waitForSentMessage();
     CHECK(msg.getType() == "chord");
 
-    // Play completely wrong notes
-    midi.pushNotes({Note("c", 0), Note("d", 0)}); // Wrong octave/notes
-
+    // Jouer notes complètement fausses
+    midi.pushNotes({Note("c", 0), Note("d", 0)}); // Mauvaise octave/notes
     Message res = transport.waitForSentMessage();
     CHECK(res.getType() == "result");
     CHECK(res.hasField("incorrect"));
@@ -176,8 +181,10 @@ TEST_CASE("ChordGame Completely Incorrect") {
     if (gameThread.joinable()) gameThread.join();
 }
 
+/// Vérifie gestion message non-ready entre défis (erreur protocole)
+/// Valide robustesse face messages inattendus
 TEST_CASE("ChordGame Ready Message Error") {
-    // Test handling of non-ready message (lines 103-106)
+    // Test gestion message non-ready (lignes 103-106)
     MockTransport transport;
     MockMidiInput midi;
     GameConfig config;
@@ -188,28 +195,29 @@ TEST_CASE("ChordGame Ready Message Error") {
     game.start();
     std::thread gameThread([&game]() { game.play(); });
 
-    // First challenge
+    // Premier défi
     Message msg1 = transport.waitForSentMessage();
     CHECK(msg1.getType() == "chord");
     midi.pushNotes(std::vector<Note>{});
     transport.waitForSentMessage(); // result
 
-    // Send wrong message instead of "ready"
+    // Envoyer mauvais message au lieu de "ready"
     transport.pushIncoming(Message("wrong"));
-
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     if (gameThread.joinable()) gameThread.join();
 }
 
+/// Vérifie couverture renversements appliqués (inversion > 0)
+/// S'assure que sur 50 tentatives au moins un renversement apparaît
 TEST_CASE("ChordGame With Inversions Coverage") {
-    // Ensure inversion > 0 is applied (line 142)
+    // S'assurer inversion > 0 est appliquée (ligne 142)
     MockTransport transport;
     MockMidiInput midi;
     GameConfig config;
     config.scale = "c";
     config.mode = "maj";
-    config.maxChallenges = 50; // More attempts to hit inversion
+    config.maxChallenges = 50; // Plus tentatives pour atteindre renversement
     ChordGame game(transport, midi, config, true);
 
     transport.waitForClient();
@@ -236,7 +244,6 @@ TEST_CASE("ChordGame With Inversions Coverage") {
         }
     }
 
-    CHECK(foundInversion); // Very likely with 50 attempts
-
+    CHECK(foundInversion); // Très probable avec 50 tentatives
     if (gameThread.joinable()) gameThread.join();
 }
