@@ -20,8 +20,7 @@ void signalHandler(int signum) {
 }
 
 int main() {
-    // Initialisation journaux
-    Logger::init("smartpiano.log", "smartpiano.err.log");
+    Logger::init();
     Logger::log("[MAIN] === Démarrage Smart Piano Engine ===");
     // Configuration gestionnaires de signaux de terminaison
     std::signal(SIGINT, signalHandler);
@@ -46,16 +45,13 @@ int main() {
         std::println("Smart Piano Engine démarré");
         std::println("Socket: {}", transport.getSocketPath());
         std::println("En attente de connexion client...");
-        std::println("");
         std::println("Appuyez sur Ctrl+C pour arrêter");
-        // Lancement moteur (boucle d’évènements principale)
-        engine.run();
+        engine.run(); // Lancement moteur (boucle d’évènements principale)
     } catch (const std::exception& e) {
         Logger::err("[MAIN] EXCEPTION NON GÉRÉE: {}", e.what());
         std::println("Erreur fatale: {}", e.what());
         return 1;
     }
-
     g_engine = nullptr;    // Nettoyage
     g_transport = nullptr; // Nettoyage
     Logger::log("[MAIN] === Arrêt Smart Piano Engine ===");
