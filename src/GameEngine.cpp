@@ -16,7 +16,10 @@ void GameEngine::run() {
 
 void GameEngine::stop() {
     this->running = false;
-    this->currentGame.reset();
+    if (this->currentGame) {
+        this->currentGame->stop();
+    }
+    this->transport.stop();
 }
 
 void GameEngine::handleClientConnection() {

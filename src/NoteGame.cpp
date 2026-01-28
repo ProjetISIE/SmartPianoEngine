@@ -94,7 +94,10 @@ GameResult NoteGame::play() {
     return result;
 }
 
-void NoteGame::stop() { Logger::log("[NoteGame] Arrêt du jeu"); }
+void NoteGame::stop() {
+    Logger::log("[NoteGame] Arrêt du jeu");
+    this->midi.close();
+}
 
 Note NoteGame::generateRandomNote() {
     std::vector<std::string> scaleNotes = getScaleNotes();

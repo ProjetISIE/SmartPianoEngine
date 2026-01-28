@@ -27,14 +27,24 @@ class MockMidiInput : public IMidiInput {
     std::vector<Note> readNotes() override {
         std::unique_lock<std::mutex> lock(mtx);
         // Wait for notes to be available
-        cv.wait(lock, [this] { return !notesQueue.empty(); });
+        cv.wait(lock, [this] { return !notesQueue.empty() || closed; });
+
+        if (notesQueue.empty() && closed) {
+            return {};
+        }
 
         auto notes = notesQueue.front();
         notesQueue.pop_front();
         return notes;
     }
 
-    void close() override { closed = true; }
+    void close() override {
+        {
+            std::lock_guard<std::mutex> lock(mtx);
+            closed = true;
+        }
+        cv.notify_all();
+    }
 
     bool isReady() const override { return initialized && !closed; }
 
@@ -80,7 +90,10 @@ class MockTransport : public ITransport {
         std::unique_lock<std::mutex> lock(mtx);
         // Block until message available
         if (incomingMessages.empty()) {
-            cv.wait(lock, [this] { return !incomingMessages.empty(); });
+            cv.wait(lock, [this] { return !incomingMessages.empty() || !connected; });
+        }
+        if (incomingMessages.empty() && !connected) {
+            return Message("error");
         }
         auto msg = incomingMessages.front();
         incomingMessages.pop_front();
@@ -88,8 +101,12 @@ class MockTransport : public ITransport {
     }
 
     void stop() override {
-        started = false;
-        connected = false;
+        {
+            std::lock_guard<std::mutex> lock(mtx);
+            started = false;
+            connected = false;
+        }
+        cv.notify_all();
     }
 
     bool isClientConnected() const override { return connected; }
