@@ -17,10 +17,10 @@ struct GameResult {
  * @brief Configuration d'une partie
  */
 struct GameConfig {
-    std::string gameType; ///< Type de jeu: "note", "chord", "inversed"
-    std::string scale;    ///< Gamme: "c", "d", "e", "f", "g", "a", "b"
-    std::string mode;     ///< Mode: "maj", "min"
-    int maxChallenges;    ///< Nombre maximum de challenges
+    std::string gameType{"note"}; ///< Type jeu: "note", "chord", "inversed"
+    std::string scale{"c"};       ///< Gamme: "c", "d", "e", "f", "g", "a", "b"
+    std::string mode{"maj"};      ///< Mode: "maj", "min"
+    int maxChallenges{10};        ///< Nombre maximum de challenges
     GameConfig() : maxChallenges(10) {}
 };
 

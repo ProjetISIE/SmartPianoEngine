@@ -74,34 +74,27 @@ Message UdsTransport::receive() {
         Logger::err("[UdsTransport] Erreur: Aucun client connecté");
         return Message("error");
     }
-
     char buffer[4096];
     std::string data;
-
     // Lire jusqu'à trouver double newline
     while (true) {
         ssize_t received =
             recv(this->clientSock, buffer, sizeof(buffer) - 1, 0);
-
         if (received < 0) {
             Logger::err("[UdsTransport] Erreur: Échec de réception");
             return Message("error");
         }
-
         if (received == 0) {
             Logger::err("[UdsTransport] Client déconnecté");
             close(this->clientSock);
             this->clientSock = -1;
             return Message("error");
         }
-
         buffer[received] = '\0';
         data += buffer;
-
         // Vérifier si message complet (double newline)
         if (data.find("\n\n") != std::string::npos) break;
     }
-
     Logger::log("[UdsTransport] Message reçu");
     return parseMessage(data);
 }
@@ -114,7 +107,6 @@ void UdsTransport::stop() {
     if (this->serverSock >= 0) {
         close(this->serverSock);
         this->serverSock = -1;
-        if (!this->sockPath.empty()) unlink(this->sockPath.c_str());
     }
     Logger::log("[UdsTransport] Serveur arrêté");
 }
