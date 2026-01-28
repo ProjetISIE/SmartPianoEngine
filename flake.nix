@@ -49,10 +49,7 @@
                   # cppcheck # C++ Static analysis
                   doxygen # Documentation generator
                   # fluidsynth # JACK Synthesizer
-                  # gtest # Testing framework
-                  # lcov # Code coverage
                   lldb # Clang debug adapter
-                  # llvm # For llvm-cov
                   # neocmakelsp # CMake LSP
                   # qsynth # FluidSynth GUI
                   socat # Serial terminal for manual testing

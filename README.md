@@ -104,7 +104,7 @@ d’exploitations, architectures ou configurations, sans garantie.
 | Dépendances et environnement     | [Nix]                    |
 | Versionnage et collaboration     | [Git] hébergé sur GitHub |
 | Tests automatisés                | [doctest]                |
-| Couverture de code               | [lcov]                   |
+| Couverture de code               | [llvm-cov]               |
 | Assistance langage C++           | [clangd] (LSP)           |
 | Documentation depuis le code     | [Doxygen]                |
 | Formatage du C++                 | [clang-format]           |
@@ -446,6 +446,7 @@ main.cpp
 [Helix]: https://helix-editor.com
 [lcov]: https://github.com/linux-test-project/lcov
 [lldb]: https://lldb.llvm.org
+[llvm-cov]: https://llvm.org/docs/CommandGuide/llvm-cov.html
 [Nix]: https://nixos.org
 [Polytech Tours]: https://polytech.univ-tours.fr
 [socat]: http://www.dest-unreach.org/socat

@@ -14,9 +14,6 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(RTMIDI REQUIRED rtmidi)
 pkg_check_modules(ALSA REQUIRED alsa)
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
-include(Coverage)
-
 add_compile_options(
   -Wall -Wextra -Wpedantic -Wshadow
   # -Wconversion -Werror

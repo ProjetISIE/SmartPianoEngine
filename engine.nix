@@ -2,7 +2,6 @@
   alsa-lib,
   cmake,
   doctest,
-  lcov,
   llvm,
   libjack2,
   ninja,
@@ -19,7 +18,6 @@ stdenv.mkDerivation {
   nativeBuildInputs = [
     cmake # Modern build tool
     doctest # Testing framework
-    lcov # Code coverage tool
     llvm # For llvm-cov
     ninja # Modern build tool
     pkg-config # Build tool
@@ -29,12 +27,4 @@ stdenv.mkDerivation {
     libjack2 # Audio interconnection lib
     rtmidi # MIDI lib
   ];
-  cmakeFlags = [ "-DCODE_COVERAGE=ON" ];
-  postBuild = ''
-    cmake --build . --target coverage
-  '';
-  postInstall = ''
-    mkdir -p $out/share/doc/coverage
-    cp -r coverage_html/* $out/share/doc/coverage/
-  '';
 }
