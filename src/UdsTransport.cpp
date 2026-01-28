@@ -104,10 +104,12 @@ Message UdsTransport::receive() {
 
 void UdsTransport::stop() {
     if (this->clientSock >= 0) {
+        shutdown(this->clientSock, SHUT_RDWR);
         close(this->clientSock);
         this->clientSock = -1;
     }
     if (this->serverSock >= 0) {
+        shutdown(this->serverSock, SHUT_RDWR);
         close(this->serverSock);
         this->serverSock = -1;
     }

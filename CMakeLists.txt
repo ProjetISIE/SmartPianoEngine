@@ -33,9 +33,10 @@ enable_testing()
 add_subdirectory(test)
 
 # Exécute les exécutables pour générer données de profilage (main.profraw…)
-# add_custom_target(run_main COMMAND
-# LLVM_PROFILE_FILE=${CMAKE_BINARY_DIR}/${PROFRAW_MAIN} ./src/main COMMENT
-# "Exécution du main pour générer ${PROFRAW_MAIN}" )
+add_custom_target(
+  run_main
+  COMMAND LLVM_PROFILE_FILE=${CMAKE_BINARY_DIR}/${PROFRAW_MAIN} ./src/main --timeout 500
+  COMMENT "Exécution du main pour générer ${PROFRAW_MAIN}")
 add_custom_target(
   run_tests
   COMMAND LLVM_PROFILE_FILE=${CMAKE_BINARY_DIR}/${PROFRAW_TESTS} ctest
@@ -45,9 +46,9 @@ add_custom_target(
   merge_coverage_data
   COMMAND
     llvm-profdata merge -sparse -output=${CMAKE_BINARY_DIR}/${PROFDATA_FILE}
-    # ${CMAKE_BINARY_DIR}/${PROFRAW_MAIN}
+    ${CMAKE_BINARY_DIR}/${PROFRAW_MAIN}
     ${CMAKE_BINARY_DIR}/${PROFRAW_TESTS}
-  DEPENDS run_tests # run_main
+  DEPENDS run_tests run_main
   COMMENT "Fusion données couverture: ${PROFDATA_FILE}")
 # Génération du rapport de couverture de code HTML
 add_custom_target(
@@ -57,6 +58,6 @@ add_custom_target(
     -format=html -output-dir=${CMAKE_BINARY_DIR}/coverage
   DEPENDS merge_coverage_data
   COMMENT "Rapport de couverture HTML généré: ${CMAKE_BINARY_DIR}/coverage")
-# add_dependencies(run_main main)
+add_dependencies(run_main main)
 add_dependencies(run_tests integrationTest) # WARN Besoin de tous les tests ?
 add_dependencies(report_coverage merge_coverage_data)
