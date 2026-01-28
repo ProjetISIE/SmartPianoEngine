@@ -90,6 +90,7 @@ TEST_CASE("ChordGame Partial and Incorrect") {
     
     if (!notes.empty()) {
         CHECK(res1.hasField("correct")); 
+        // If we only played correct notes (but not all), "incorrect" field is NOT present.
         CHECK_FALSE(res1.hasField("incorrect")); 
     }
 
@@ -111,7 +112,12 @@ TEST_CASE("ChordGame Inversions") {
     bool seenInversion = false;
     for (int i = 0; i < 20; ++i) {
         Message msg = transport.waitForSentMessage();
+        if (msg.getType() == "TIMEOUT") {
+            FAIL("Timeout waiting for chord challenge at index " << i);
+            break;
+        }
         CHECK(msg.getType() == "chord");
+        
         std::string name = msg.getField("name");
         if (name.find("1") != std::string::npos || name.find("2") != std::string::npos) {
             seenInversion = true;
@@ -120,7 +126,10 @@ TEST_CASE("ChordGame Inversions") {
         midi.pushNotes(std::vector<Note>{}); 
         transport.waitForSentMessage(); // result
         
-        if (i < 19) transport.pushIncoming(Message("ready"));
+        // Send ready only if we expect another round
+        if (i < 19) {
+            transport.pushIncoming(Message("ready"));
+        }
     }
     
     CHECK(seenInversion); // Should be very likely
