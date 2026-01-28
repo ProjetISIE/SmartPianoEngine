@@ -198,16 +198,16 @@ TEST_CASE("GameEngine Partial Results") {
     transport.waitForSentMessage(); // Ack
 
     transport.pushIncoming(Message("ready"));
-    
-    // In NoteGame, to get partial results we need some correct and some incorrect
-    // The mock will simulate this
+
+    // In NoteGame, to get partial results we need some correct and some
+    // incorrect The mock will simulate this
     Message challenge = transport.waitForSentMessage();
     CHECK(challenge.getType() == "note");
-    
+
     // Simulate partial result by playing some notes
     // We need to check the "over" message for partial field
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    
+
     Message over = transport.waitForSentMessage();
     if (over.getType() == "over") {
         // Check if partial field exists when partial > 0

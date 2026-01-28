@@ -165,7 +165,7 @@ TEST_CASE("ChordGame Completely Incorrect") {
 
     Message msg = transport.waitForSentMessage();
     CHECK(msg.getType() == "chord");
-    
+
     // Play completely wrong notes
     midi.pushNotes({Note("c", 0), Note("d", 0)}); // Wrong octave/notes
 
@@ -196,7 +196,7 @@ TEST_CASE("ChordGame Ready Message Error") {
 
     // Send wrong message instead of "ready"
     transport.pushIncoming(Message("wrong"));
-    
+
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     if (gameThread.joinable()) gameThread.join();
@@ -214,7 +214,7 @@ TEST_CASE("ChordGame With Inversions Coverage") {
 
     transport.waitForClient();
     game.start();
-    
+
     bool foundInversion = false;
     std::thread gameThread([&game]() { game.play(); });
 
@@ -222,21 +222,21 @@ TEST_CASE("ChordGame With Inversions Coverage") {
         Message msg = transport.waitForSentMessage();
         if (msg.getType() == "chord") {
             std::string name = msg.getField("name");
-            if (name.find("1") != std::string::npos || 
+            if (name.find("1") != std::string::npos ||
                 name.find("2") != std::string::npos) {
                 foundInversion = true;
             }
         }
-        
+
         midi.pushNotes(std::vector<Note>{});
         transport.waitForSentMessage(); // result
-        
+
         if (i < 49) {
             transport.pushIncoming(Message("ready"));
         }
     }
 
     CHECK(foundInversion); // Very likely with 50 attempts
-    
+
     if (gameThread.joinable()) gameThread.join();
 }

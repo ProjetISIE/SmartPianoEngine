@@ -216,7 +216,7 @@ TEST_CASE("UdsTransport Send Failure") {
 TEST_CASE("UdsTransport waitForClient error handling") {
     std::string socketPath = "test_wait_fail.sock";
     UdsTransport transport(socketPath);
-    
+
     // Call waitForClient without starting server (serverSock < 0)
     transport.waitForClient(); // Should log error and return
     CHECK_FALSE(transport.isClientConnected());
@@ -226,20 +226,21 @@ TEST_CASE("UdsTransport listen failure") {
     // This test attempts to cover the listen() failure path
     // This is hard to trigger reliably, but we can try binding to invalid path
     UdsTransport transport("/proc/test.sock"); // /proc is read-only
-    CHECK_FALSE(transport.start()); // Should fail on bind or listen
+    CHECK_FALSE(transport.start());            // Should fail on bind or listen
 }
 
 TEST_CASE("UdsTransport recv error") {
     std::string socketPath = "test_recv_err.sock";
     UdsTransport transport(socketPath);
-    
+
     if (transport.start()) {
         std::thread client([&]() {
             int sock = socket(AF_UNIX, SOCK_STREAM, 0);
             struct sockaddr_un addr;
             memset(&addr, 0, sizeof(addr));
             addr.sun_family = AF_UNIX;
-            strncpy(addr.sun_path, socketPath.c_str(), sizeof(addr.sun_path) - 1);
+            strncpy(addr.sun_path, socketPath.c_str(),
+                    sizeof(addr.sun_path) - 1);
             if (connect(sock, (struct sockaddr*)&addr, sizeof(addr)) == 0) {
                 // Send incomplete message then close
                 ::send(sock, "TYPE", 4, 0);
@@ -248,11 +249,11 @@ TEST_CASE("UdsTransport recv error") {
                 close(sock);
             }
         });
-        
+
         transport.waitForClient();
         Message msg = transport.receive();
         CHECK(msg.getType() == "error");
-        
+
         if (client.joinable()) client.join();
         transport.stop();
     }
@@ -261,14 +262,15 @@ TEST_CASE("UdsTransport recv error") {
 TEST_CASE("UdsTransport message with newline detection") {
     std::string socketPath = "test_newline.sock";
     UdsTransport transport(socketPath);
-    
+
     if (transport.start()) {
         std::thread client([&]() {
             int sock = socket(AF_UNIX, SOCK_STREAM, 0);
             struct sockaddr_un addr;
             memset(&addr, 0, sizeof(addr));
             addr.sun_family = AF_UNIX;
-            strncpy(addr.sun_path, socketPath.c_str(), sizeof(addr.sun_path) - 1);
+            strncpy(addr.sun_path, socketPath.c_str(),
+                    sizeof(addr.sun_path) - 1);
             if (connect(sock, (struct sockaddr*)&addr, sizeof(addr)) == 0) {
                 // Send message with newline to trigger logging on line 96-97
                 std::string msg = "TYPE\nkey=value\n\n";
@@ -277,11 +279,11 @@ TEST_CASE("UdsTransport message with newline detection") {
                 close(sock);
             }
         });
-        
+
         transport.waitForClient();
         Message msg = transport.receive();
         CHECK(msg.getType() == "TYPE");
-        
+
         if (client.joinable()) client.join();
         transport.stop();
     }
