@@ -50,7 +50,7 @@
                   doxygen # Documentation generator
                   # fluidsynth # JACK Synthesizer
                   # gtest # Testing framework
-                  # lcov # Code coverage
+                  lcov # Code coverage
                   lldb # Clang debug adapter
                   # neocmakelsp # CMake LSP
                   # qsynth # FluidSynth GUI

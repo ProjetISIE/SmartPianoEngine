@@ -103,7 +103,8 @@ d’exploitations, architectures ou configurations, sans garantie.
 | Système de build             | [CMake] (+ Ninja) |
 | Dépendances et environnement | [Nix]             |
 | Versionnage et collaboration | [Git] avec GitHub |
-| Tests unitaires              | [doctest]         |
+| Tests automatisés            | [doctest]         |
+| Couverture de code           | [lcov]            |
 | Assistance langage C++       | [clangd] (LSP)    |
 | Documentation depuis le code | [Doxygen]         |
 | Formatage du C++             | [clang-format]    |
@@ -439,6 +440,7 @@ main.cpp
 [Doxygen]: https://www.doxygen.nl
 [Doxygen Docs]: https://www.doxygen.nl/manual
 [Git]: https://git-scm.com
+[lcov]: https://github.com/linux-test-project/lcov
 [lldb]: https://lldb.llvm.org
 [Nix]: https://nixos.org
 [Polytech Tours]: https://polytech.univ-tours.fr
