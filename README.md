@@ -10,7 +10,6 @@ lang: fr
     - [Modes Supportés](#modes-supportés)
   - [Matériel](#matériel)
   - [Dépannage et Résolution des Problèmes](#dépannage-et-résolution-des-problèmes)
-  - [Architecture](#architecture)
   - [Outillage](#outillage)
   - [Compilation & Exécution](#compilation-exécution)
     - [Test Manuel](#test-manuel)
@@ -25,6 +24,7 @@ lang: fr
   - [Contribution](#contribution)
     - [Ajout d’un Mode de Jeu](#ajout-dun-mode-de-jeu)
     - [Ajout d’un Transport](#ajout-dun-transport)
+  - [Architecture](#architecture)
 
 <!--toc:end-->
 
