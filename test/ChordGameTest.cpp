@@ -148,3 +148,95 @@ TEST_CASE("ChordGame Unknown Scale") {
 
     if (gameThread.joinable()) gameThread.join();
 }
+
+TEST_CASE("ChordGame Completely Incorrect") {
+    // Test case where no notes are correct (line 96 coverage)
+    MockTransport transport;
+    MockMidiInput midi;
+    GameConfig config;
+    config.scale = "c";
+    config.mode = "maj";
+    config.maxChallenges = 1;
+    ChordGame game(transport, midi, config, false);
+
+    transport.waitForClient();
+    game.start();
+    std::thread gameThread([&game]() { game.play(); });
+
+    Message msg = transport.waitForSentMessage();
+    CHECK(msg.getType() == "chord");
+    
+    // Play completely wrong notes
+    midi.pushNotes({Note("c", 0), Note("d", 0)}); // Wrong octave/notes
+
+    Message res = transport.waitForSentMessage();
+    CHECK(res.getType() == "result");
+    CHECK(res.hasField("incorrect"));
+
+    if (gameThread.joinable()) gameThread.join();
+}
+
+TEST_CASE("ChordGame Ready Message Error") {
+    // Test handling of non-ready message (lines 103-106)
+    MockTransport transport;
+    MockMidiInput midi;
+    GameConfig config;
+    config.maxChallenges = 2;
+    ChordGame game(transport, midi, config, false);
+
+    transport.waitForClient();
+    game.start();
+    std::thread gameThread([&game]() { game.play(); });
+
+    // First challenge
+    Message msg1 = transport.waitForSentMessage();
+    CHECK(msg1.getType() == "chord");
+    midi.pushNotes(std::vector<Note>{});
+    transport.waitForSentMessage(); // result
+
+    // Send wrong message instead of "ready"
+    transport.pushIncoming(Message("wrong"));
+    
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+    if (gameThread.joinable()) gameThread.join();
+}
+
+TEST_CASE("ChordGame With Inversions Coverage") {
+    // Ensure inversion > 0 is applied (line 142)
+    MockTransport transport;
+    MockMidiInput midi;
+    GameConfig config;
+    config.scale = "c";
+    config.mode = "maj";
+    config.maxChallenges = 50; // More attempts to hit inversion
+    ChordGame game(transport, midi, config, true);
+
+    transport.waitForClient();
+    game.start();
+    
+    bool foundInversion = false;
+    std::thread gameThread([&game]() { game.play(); });
+
+    for (int i = 0; i < 50; ++i) {
+        Message msg = transport.waitForSentMessage();
+        if (msg.getType() == "chord") {
+            std::string name = msg.getField("name");
+            if (name.find("1") != std::string::npos || 
+                name.find("2") != std::string::npos) {
+                foundInversion = true;
+            }
+        }
+        
+        midi.pushNotes(std::vector<Note>{});
+        transport.waitForSentMessage(); // result
+        
+        if (i < 49) {
+            transport.pushIncoming(Message("ready"));
+        }
+    }
+
+    CHECK(foundInversion); // Very likely with 50 attempts
+    
+    if (gameThread.joinable()) gameThread.join();
+}

@@ -5,8 +5,27 @@
 #include "Logger.hpp"
 #include <atomic>
 #include <mutex>
-#include <rtmidi/RtMidi.h>
+#include <thread>
 #include <vector>
+
+// Forward declarations to avoid including RtMidi.h if possible, or include it
+// if needed for types. RtMidi uses std::string and vector.
+#include <string>
+
+// Interfaces for wrapping RtMidi
+class IRtMidiIn {
+  public:
+    virtual ~IRtMidiIn() = default;
+    virtual void openVirtualPort(const std::string& portName) = 0;
+    virtual void ignoreTypes(bool midiSysex, bool midiTime, bool midiSense) = 0;
+    virtual double getMessage(std::vector<unsigned char>* message) = 0;
+};
+
+class IRtMidiOut {
+  public:
+    virtual ~IRtMidiOut() = default;
+    virtual void openVirtualPort(const std::string& portName) = 0;
+};
 
 /**
  * @brief Implémentation de l'entrée MIDI via RTMidi
@@ -15,11 +34,14 @@
  */
 class RtMidiInput : public IMidiInput {
   private:
-    RtMidiIn* midiIn{nullptr};               ///< Instance RTMidi
-    RtMidiOut* midiOut{nullptr};             ///< Sortie MIDI (pour écho)
+    IRtMidiIn* midiIn{nullptr};              ///< Instance RTMidi (Wrapper)
+    IRtMidiOut* midiOut{nullptr};            ///< Sortie MIDI (Wrapper)
     std::vector<Note> lastNotes;             ///< Dernières notes jouées
     std::atomic<bool> notesAvailable{false}; ///< Notes disponibles?
     std::mutex notesMutex;                   ///< Mutex pour accès aux notes
+
+    std::atomic<bool> shouldStop{false}; ///< Flag d'arrêt du thread
+    std::thread inputThread;             ///< Thread de traitement
 
   private:
     /**
@@ -64,6 +86,19 @@ class RtMidiInput : public IMidiInput {
      * @return true si MIDI est prêt
      */
     bool isReady() const override;
+
+  protected:
+    /**
+     * @brief Crée l'instance IRtMidiIn
+     * @return Pointeur vers IRtMidiIn
+     */
+    virtual IRtMidiIn* createMidiIn();
+
+    /**
+     * @brief Crée l'instance IRtMidiOut
+     * @return Pointeur vers IRtMidiOut
+     */
+    virtual IRtMidiOut* createMidiOut();
 };
 
 #endif // RTMIDIINPUT_HPP

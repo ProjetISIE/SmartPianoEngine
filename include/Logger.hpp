@@ -59,6 +59,7 @@ class Logger {
     static void writeLog(const std::string& message, std::string& path) {
         std::lock_guard<std::mutex> lock(logMutex);
         if (std::filesystem::exists(path) &&
+            std::filesystem::is_regular_file(path) &&
             std::filesystem::file_size(path) > MAX_LOG_SIZE)
             rotateLog(path); // Rotation des logs si nécessaire
         // Écrit message dans fichier et dans sortie appropriés

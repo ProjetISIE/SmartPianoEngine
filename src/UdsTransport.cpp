@@ -60,7 +60,8 @@ void UdsTransport::send(const Message& msg) {
     }
 
     std::string data = serializeMessage(msg);
-    ssize_t sent = ::send(this->clientSock, data.c_str(), data.length(), 0);
+    ssize_t sent =
+        ::send(this->clientSock, data.c_str(), data.length(), MSG_NOSIGNAL);
 
     if (sent < 0) {
         Logger::err("[UdsTransport] Erreur: Échec de l'envoi du message");
@@ -96,7 +97,9 @@ Message UdsTransport::receive() {
             Logger::log("[UdsTransport] Ligne reçue: {}", buffer);
         data += buffer;
         // Vérifier si message complet (double newline)
-        if (data.find("\n\n") != std::string::npos) break;
+        if (data.find("\n\n") != std::string::npos ||
+            data.find("\r\n\r\n") != std::string::npos)
+            break;
     }
     Logger::log("[UdsTransport] Message reçu");
     return parseMessage(data);
