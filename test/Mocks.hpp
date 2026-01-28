@@ -15,14 +15,21 @@ class MockMidiInput : public IMidiInput {
   public:
     bool initialized = false;
     bool closed = false;
+    bool initResult = true; // Default success
     std::deque<std::vector<Note>> notesQueue;
     std::mutex mtx;
     std::condition_variable cv;
 
     bool initialize() override {
-        initialized = true;
-        return true;
+        if (initResult) {
+            initialized = true;
+        }
+        return initResult;
     }
+
+    void setInitializeResult(bool res) { initResult = res; }
+    void setReady(bool ready) { initialized = ready; }
+
 
     std::vector<Note> readNotes() override {
         std::unique_lock<std::mutex> lock(mtx);
