@@ -357,12 +357,12 @@ L'architecture suit le principe **d'inversion de dépendances** avec des
 interfaces abstraites (`IGameMode`, `ITransport`, `IMidiInput`) permettant de
 découpler les composants et faciliter les tests et l'extensibilité.
 
-[`main`](src/main.cpp) point d'entrée de l'application. Configure la
+[`main`](src/main.cpp): Point d'entrée de l'application. Configure la
 journalisation, instancie le transport (UDS) et l'entrée MIDI (RtMidi), crée le
 moteur de jeu puis lance la boucle d'événements principale.
 
-[`GameEngine`](include/GameEngine.hpp) **Orchestrateur central** qui coordonne
-le transport, l'entrée MIDI et les modes de jeu. Gère le cycle complet d'une
+[`GameEngine`](include/GameEngine.hpp): **Orchestrateur central** coordonne le
+transport, l'entrée MIDI et les modes de jeu. Gère le cycle complet d'une
 session : connexion client, réception configuration, création du mode approprié,
 exécution de la partie.
 

@@ -43,14 +43,12 @@ void UdsTransport::waitForClient() {
         Logger::err("[UdsTransport] Erreur: Serveur non initialisé");
         return;
     }
-
     this->clientSock = accept(this->serverSock, nullptr, nullptr);
     if (this->clientSock < 0) {
         Logger::err(
             "[UdsTransport] Erreur: Échec de l'acceptation de connexion");
         return;
     }
-
     Logger::log("[UdsTransport] Client connecté");
 }
 

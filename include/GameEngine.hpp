@@ -4,6 +4,7 @@
 #include "IGameMode.hpp"
 #include "IMidiInput.hpp"
 #include "ITransport.hpp"
+#include "Logger.hpp"
 #include <memory>
 
 /**
@@ -53,17 +54,15 @@ class GameEngine {
                  const std::string& errorMessage = "");
 
   public:
-    /**
-     * @brief Constructeur
-     * @param transport Interface de transport
-     * @param midi Interface MIDI
-     */
-    GameEngine(ITransport& transport, IMidiInput& midi);
+    GameEngine(ITransport& transport, IMidiInput& midi)
+        : transport(transport), midi(midi) {
+        Logger::log("[GameEngine] Instance créée");
+    }
 
-    /**
-     * @brief Destructeur
-     */
-    ~GameEngine();
+    ~GameEngine() {
+        stop();
+        Logger::log("[GameEngine] Instance détruite");
+    }
 
     /**
      * @brief Lance le moteur de jeu

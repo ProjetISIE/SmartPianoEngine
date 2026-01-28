@@ -3,16 +3,6 @@
 #include "Logger.hpp"
 #include "NoteGame.hpp"
 
-GameEngine::GameEngine(ITransport& transport, IMidiInput& midi)
-    : transport(transport), midi(midi) {
-    Logger::log("[GameEngine] Instance créée");
-}
-
-GameEngine::~GameEngine() {
-    stop();
-    Logger::log("[GameEngine] Instance détruite");
-}
-
 void GameEngine::run() {
     this->running = true;
     Logger::log("[GameEngine] Démarrage du moteur");
