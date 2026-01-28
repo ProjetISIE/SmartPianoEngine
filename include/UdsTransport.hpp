@@ -11,7 +11,7 @@
  */
 class UdsTransport : public ITransport {
   private:
-    const std::string sockPath{"/tmp/smartpiano.sock"}; ///< Chemin socket Unix
+    const std::string sockPath; ///< Chemin socket Unix
     int serverSock{-1}; ///< Descripteur socket serveur
     int clientSock{-1}; ///< Descripteur socket client
 
@@ -31,7 +31,10 @@ class UdsTransport : public ITransport {
     Message parseMessage(const std::string& data) const;
 
   public:
-    UdsTransport() { Logger::log("[UdsTransport] Instance créée"); }
+    explicit UdsTransport(std::string path = "/tmp/smartpiano.sock")
+        : sockPath(std::move(path)) {
+        Logger::log("[UdsTransport] Instance créée sur {}", sockPath);
+    }
 
     ~UdsTransport() {
         stop();

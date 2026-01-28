@@ -24,8 +24,8 @@ void simpleClientUds(const std::string& path, const std::string& msgToSend) {
 }
 
 TEST_CASE("UdsTransport communication") {
-    UdsTransport transport;
     std::string socketPath = "test_uds_transport.sock";
+    UdsTransport transport(socketPath);
     if (transport.start()) {
         std::string msg = "TEST\nfoo=bar\n\n";
         std::thread clientThread(simpleClientUds, socketPath, msg);
