@@ -6,10 +6,8 @@
 #include <filesystem>
 #include <format>
 #include <fstream>
-#include <iomanip>
 #include <mutex>
 #include <print>
-#include <sstream>
 #include <string>
 
 class Logger {
@@ -21,19 +19,23 @@ class Logger {
 
   private:
     /**
-     * @brief Retourne horodatage formaté
-     * @return Horodatage "YYYY-MM-DD_HHhMMmSSsmmm"
+     * @brief Retourne heure formatée
+     * @return Horodatage "HH:MM:SS.mmm"
      */
-    static std::string getCurrentTimestamp() {
-        auto now = std::chrono::system_clock::now();
-        auto timeT = std::chrono::system_clock::to_time_t(now);
-        auto timeMs = std::chrono::duration_cast<std::chrono::milliseconds>(
-                          now.time_since_epoch()) %
-                      1000;
-        std::ostringstream timestamp;
-        timestamp << std::put_time(std::localtime(&timeT), "%Y-%m-%d_%Hh%Mm%Ss")
-                  << std::setw(3) << std::setfill('0') << timeMs.count();
-        return timestamp.str();
+    static std::string time() {
+        return std::format(
+            "{:%T}", std::chrono::zoned_time{std::chrono::current_zone(),
+                                             std::chrono::system_clock::now()});
+    }
+
+    /**
+     * @brief Retourne date formatée
+     * @return Horodatage "YYYY-MM-DD"
+     */
+    static std::string date() {
+        return std::format(
+            "{:%F}", std::chrono::zoned_time{std::chrono::current_zone(),
+                                             std::chrono::system_clock::now()});
     }
 
     /**
@@ -42,7 +44,7 @@ class Logger {
      */
     static void rotateLog(const std::string& filePath) {
         // Renomme fichier actuel comme sauvegarde
-        std::filesystem::rename(filePath, getCurrentTimestamp() + filePath);
+        std::filesystem::rename(filePath, date() + filePath);
         // Crée nouveau fichier vide
         std::ofstream newFile(filePath, std::ios::trunc);
         if (!newFile.is_open())
@@ -62,10 +64,10 @@ class Logger {
         // Écrit message dans fichier approprié
         std::ofstream file(path, std::ios::app);
         if (file.is_open())
-            std::println(file, "[{}] {}", getCurrentTimestamp(), message);
+            std::println(file, "[{} {}] {}", date(), time(), message);
         else {
             std::println(stderr, "[Logger] Impossible d'écrire dans fichier");
-            std::println(stderr, "[{}] {}", getCurrentTimestamp(), message);
+            std::println(stderr, "[{} {}] {}", date(), time(), message);
         }
     }
 
