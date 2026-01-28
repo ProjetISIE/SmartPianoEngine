@@ -184,7 +184,7 @@ duration=1234
 ### Tests Automatiques
 
 Les tests unitaires et tests d’intégration peuvent être exécutés manuellement
-avec la commande `cmake --build build --target test`.
+avec la commande `cmake --build build --target tests`.
 
 Ils sont automatiquement exécutés lors des builds avec [Nix].
 
