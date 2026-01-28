@@ -1,5 +1,6 @@
 {
   alsa-lib,
+  clang,
   cmake,
   doctest,
   llvm,
@@ -16,6 +17,7 @@ stdenv.mkDerivation {
   src = self;
   doCheck = true; # Enable tests
   nativeBuildInputs = [
+    clang # C/C++ compiler
     cmake # Modern build tool
     doctest # Testing framework
     llvm # For llvm-cov
