@@ -83,6 +83,10 @@ void GameEngine::processGameSession(const GameConfig& config) {
         if (readyMsg.getType() != "ready") {
             Logger::err("[GameEngine] Erreur: ready attendu, reçu {}",
                         readyMsg.getType());
+            if (!this->transport.isClientConnected()) {
+                Logger::err("[GameEngine] Transport déconnecté, arrêt session");
+                return;
+            }
             Message error("error",
                           {{"code", "state"},
                            {"message", "Message 'ready' ou 'quit' attendu"}});
