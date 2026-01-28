@@ -16,7 +16,11 @@ TEST_CASE("ChordRepository initialization and retrieval") {
             CHECK(hasC);
         }
     }
-    SUBCASE("Obtenir Accord invalide") {
+    SUBCASE("Obtenir Accord invalide (Tonality exists, Degree missing)") {
+        auto accord = ba.obtenirAccord("Do Majeur", "Z"); // Z doesn't exist
+        CHECK(accord.empty());
+    }
+    SUBCASE("Obtenir Accord invalide (Tonality missing)") {
         auto accord = ba.obtenirAccord("NonExistent", "I");
         CHECK(accord.empty());
     }

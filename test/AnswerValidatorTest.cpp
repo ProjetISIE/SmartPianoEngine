@@ -57,4 +57,9 @@ TEST_CASE("AnswerValidator::validerAccordRenversement") {
         std::vector<std::string> joue = {"c4", "e4", "g4"};
         CHECK_FALSE(vn.validerAccordRenversement(joue, attendu, 2));
     }
+
+    SUBCASE("Note too far apart (outside octave)") {
+        std::vector<std::string> joue = {"c4", "e6", "g6"}; // Spread too wide
+        CHECK_FALSE(vn.validerAccordRenversement(joue, attendu, 1));
+    }
 }
