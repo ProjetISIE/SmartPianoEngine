@@ -7,8 +7,6 @@ add_library(
   UdsTransport.cpp
   ChordRepository.cpp
   ChallengeFactory.cpp
-  GameManager.cpp
-  SocketManager.cpp
   AnswerValidator.cpp)
 target_include_directories(
   ${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include ${RTMIDI_INCLUDE_DIRS}

@@ -25,6 +25,9 @@ lang: fr
     - [Ajout d’un Mode de Jeu](#ajout-dun-mode-de-jeu)
     - [Ajout d’un Transport](#ajout-dun-transport)
   - [Architecture](#architecture)
+    - [Composants Musicaux](#composants-musicaux)
+    - [Utilitaires](#utilitaires)
+    - [Diagramme de Flux](#diagramme-de-flux)
 
 <!--toc:end-->
 

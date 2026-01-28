@@ -4,7 +4,7 @@ lang: fr
 
 <!--toc:start-->
 
-- [Smart Piano UDS Protocol Specification](#smart-piano-uds-protocol-specification)
+- [Protocole Smart Piano](#protocole-smart-piano)
   - [Format des messages](#format-des-messages)
   - [Types de messages](#types-de-messages)
     - [1. Client (interface utilisateur) → Serveur (moteur de jeu)](#1-client-interface-utilisateur-serveur-moteur-de-jeu)
