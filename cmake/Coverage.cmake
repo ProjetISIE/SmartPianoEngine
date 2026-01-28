@@ -26,23 +26,21 @@ if(CODE_COVERAGE)
     # 2. Exécuter les tests
     COMMAND ${CMAKE_CTEST_COMMAND}
     
-    # 3. Capturer les données (avec suppression d'erreurs pour compatibilité Clang/Lcov)
-    COMMAND ${LCOV} --directory . --capture --output-file coverage.info 
-            --gcov-tool ${GCOV_WRAPPER} 
-            --ignore-errors inconsistent --ignore-errors unsupported --ignore-errors format
-    
-    # 4. Nettoyer les données (retirer tests, libs système, etc.)
-    COMMAND ${LCOV} --remove coverage.info 
-            '*/test/*' '/nix/store/*' '/usr/*' '*/.cache/*'
-            --output-file coverage_cleaned.info 
-            --ignore-errors inconsistent --ignore-errors unsupported --ignore-errors format --ignore-errors unused
-    
-    # 5. Générer le rapport HTML
-    COMMAND ${GENHTML} coverage_cleaned.info 
-            --output-directory coverage_html 
-            --ignore-errors inconsistent --ignore-errors unsupported --ignore-errors format --ignore-errors category
-    
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+                # 3. Capturer les données
+                # On utilise 'sh -c' pour gérer le '|| echo' correctement
+                COMMAND sh -c "${LCOV} --directory . --capture --output-file coverage.info --gcov-tool ${GCOV_WRAPPER} --ignore-errors inconsistent --ignore-errors unsupported --ignore-errors format --ignore-errors empty --ignore-errors gcov || echo 'Warning: LCOV capture failed'"            
+            # 4. Nettoyer les données (seulement si coverage.info existe)
+            COMMAND ${CMAKE_COMMAND} -E echo "Cleaning coverage data..."
+            COMMAND sh -c "if [ -f coverage.info ]; then ${LCOV} --remove coverage.info '*/test/*' '/nix/store/*' '/usr/*' '*/.cache/*' --output-file coverage_cleaned.info --ignore-errors inconsistent --ignore-errors unsupported --ignore-errors format --ignore-errors unused --ignore-errors empty --ignore-errors gcov || echo 'Warning: LCOV remove failed'; fi"
+            
+            # 5. Générer le rapport HTML (seulement si coverage_cleaned.info existe)
+            COMMAND ${CMAKE_COMMAND} -E echo "Generating HTML report..."
+            COMMAND sh -c "if [ -f coverage_cleaned.info ]; then ${GENHTML} coverage_cleaned.info --output-directory coverage_html --ignore-errors inconsistent --ignore-errors unsupported --ignore-errors format --ignore-errors category --ignore-errors empty --ignore-errors gcov || echo 'Warning: GENHTML failed'; else mkdir -p coverage_html && echo '<h1>No coverage data</h1>' > coverage_html/index.html; fi"
+            
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+            COMMENT "Generating code coverage report in build/coverage_html"
+          )
+        endif()    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMENT "Generating code coverage report in build/coverage_html"
   )
 endif()

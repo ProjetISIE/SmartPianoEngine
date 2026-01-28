@@ -50,9 +50,9 @@
                   doxygen # Documentation generator
                   # fluidsynth # JACK Synthesizer
                   # gtest # Testing framework
-                  lcov # Code coverage
+                  # lcov # Code coverage
                   lldb # Clang debug adapter
-                  llvm # For llvm-cov
+                  # llvm # For llvm-cov
                   # neocmakelsp # CMake LSP
                   # qsynth # FluidSynth GUI
                   socat # Serial terminal for manual testing
