@@ -348,27 +348,82 @@ particulier celles des [Conventions de Code](#conventions-de-code).
 ## Architecture
 
 Voir [PROTOCOL](PROTOCOL.md) pour la spécification complète du protocole de
-communication entre le moteur de jeu et l’interface utilisateur.
+communication entre le moteur de jeu et l'interface utilisateur.
 
-- [`main`](src/main.cpp) Configure l’application, instancie les composants,
-  lance `GameEngine`
-- [`GameEngine`](include/GameEngine.hpp) Orchestre les différents composants
-  - [`ChordRepository`](include/ChordRepository.hpp)
-  - [`GameManager`](include/GameManager.hpp)
-  - [`ChallengeFactory`](include/ChallengeFactory.hpp)
-  - [`NoteReader`](include/NoteReader.hpp)
-  - [`Logger`](include/Logger.hpp)
-  - [`Message`](include/Message.hpp)
-  - [`Note`](include/Note.hpp)
-  - [`SocketManager`](include/SocketManager.hpp)
-  - [`AnswerValidator`](include/AnswerValidator.hpp)
-- [`IGameMode`](include/IGameMode.hpp) Définit le contrat des modes de jeu
-  - [`ChordGame`](include/ChordGame.hpp) Mode de jeu accords
-  - [`NoteGame`](include/NoteGame.hpp) Mode de jeu notes
-- [`ITransport`](include/ITransport.hpp) Abstraction de la communication
-  - [`UdsTransport`](include/UdsTransport.hpp) Transport Unix Domain Socket
-- [`IMidiInput`](include/IMidiInput.hpp) Abstraction de l’entrée MIDI
-  - [`RtMidiInput`](include/RtMidiInput.hpp) Entrée MIDI avec RtMidi
+L'architecture suit le principe **d'inversion de dépendances** avec des
+interfaces abstraites (`IGameMode`, `ITransport`, `IMidiInput`) permettant de
+découpler les composants et faciliter les tests et l'extensibilité.
+
+[`main`](src/main.cpp) point d'entrée de l'application. Configure la
+journalisation, instancie le transport (UDS) et l'entrée MIDI (RtMidi), crée le
+moteur de jeu puis lance la boucle d'événements principale.
+
+[`GameEngine`](include/GameEngine.hpp) **Orchestrateur central** qui coordonne
+le transport, l'entrée MIDI et les modes de jeu. Gère le cycle complet d'une
+session : connexion client, réception configuration, création du mode approprié,
+exécution de la partie.
+
+[`IGameMode`](include/IGameMode.hpp) Interface définissant le contrat pour tous
+les modes de jeu (`start()`, `play()`, `stop()`).
+
+- [`NoteGame`](include/NoteGame.hpp) Mode reconnaissance de notes individuelles
+- [`ChordGame`](include/ChordGame.hpp) Mode accords simples ou renversés
+
+[`ITransport`](include/ITransport.hpp) Interface définissant la communication
+bidirectionnelle client-serveur.
+
+- [`UdsTransport`](include/UdsTransport.hpp) Implémentation via Unix Domain
+  Socket avec sérialisation/parsing de messages selon le protocole défini
+- [`Message`](include/Message.hpp) Structure immuable représentant un message du
+  protocole (type + champs clé-valeur)
+
+[`IMidiInput`](include/IMidiInput.hpp) Interface pour la lecture MIDI.
+
+- [`RtMidiInput`](include/RtMidiInput.hpp) Implémentation utilisant la
+  bibliothèque RtMidi avec traitement asynchrone et conversion MIDI vers `Note`
+
+### Composants Musicaux
+
+[`Note`](include/Note.hpp) Classe immuable représentant une note musicale en
+notation standard (lettre a-g + altération optionnelle + octave 0-8).
+
+[`ChordRepository`](include/ChordRepository.hpp) Référentiel statique contenant
+tous les accords musicaux mappés par tonalité et degré avec leurs notes MIDI
+correspondantes (ex: Do majeur I = C4, E4, G4).
+
+[`ChallengeFactory`](include/ChallengeFactory.hpp) Générateur aléatoire de notes
+et d'accords (simples ou avec renversements) selon une gamme et un mode musical
+donné.
+
+[`AnswerValidator`](include/AnswerValidator.hpp) Validateur spécialisé qui
+compare notes et accords joués vs attendus, avec support des renversements
+d'accords.
+
+### Utilitaires
+
+[`Logger`](include/Logger.hpp) Système de journalisation thread-safe avec
+rotation automatique de fichiers logs (standard et erreurs), formatage avec
+timestamps.
+
+### Diagramme de Flux
+
+```
+main.cpp                                                                      
+  └─> GameEngine(transport, midi)                                             
+        ├─> transport.start()                                                 
+        └─> run() [boucle principale]                                         
+              ├─> transport.waitForClient()                                   
+              ├─> transport.receive() → Message config                        
+              ├─> createGameMode(config) → IGameMode                          
+              │     ├─> NoteGame                                              
+              │     └─> ChordGame                                             
+              └─> gameMode.play(transport, midi)                              
+                    ├─> ChallengeFactory.generate() → Challenge               
+                    ├─> transport.send(challenge)                             
+                    ├─> midi.readNotes() → Notes jouées                       
+                    ├─> AnswerValidator.validate() → Résultat                 
+                    └─> transport.send(result)
+```
 
 [CMake]: https://cmake.org
 [Clang]: https://clang.llvm.org
