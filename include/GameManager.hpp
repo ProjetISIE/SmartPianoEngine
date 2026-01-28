@@ -3,7 +3,6 @@
 
 #include "Logger.hpp"
 #include "ChallengeFactory.hpp"
-#include "NoteReader.hpp"
 #include "SocketManager.hpp"
 #include "AnswerValidator.hpp"
 
@@ -13,7 +12,6 @@ class GameManager {
     SocketManager socketManager; ///< Communication avec le client
     ChallengeFactory generateur;    ///< Génération notes et accords aléatoires
     AnswerValidator validateur;   ///< Validation des notes et accords joués
-    NoteReader lectureNote;      ///< Lecture des notes jouées par le client
     std::string jeuActuel;       ///< Type de jeu en cours (ex: "Jeu de note")
     std::string gammeActuelle;   ///< Gamme musicale utilisée (ex: "Do")
     std::string modeActuel;      ///< Mode utilisé (ex: "Majeur" ou "Mineur")

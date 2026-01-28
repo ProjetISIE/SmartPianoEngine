@@ -31,12 +31,6 @@ target_include_directories(${T5} PRIVATE ${CMAKE_SOURCE_DIR}/include)
 target_link_libraries(${T5} PRIVATE ${PROJECT_NAME} doctest::doctest)
 add_test(NAME ${T5} COMMAND ${T5})
 
-set(T6 NoteReaderTest)
-add_executable(${T6} ${T6}.cpp)
-target_include_directories(${T6} PRIVATE ${CMAKE_SOURCE_DIR}/include)
-target_link_libraries(${T6} PRIVATE ${PROJECT_NAME} doctest::doctest)
-add_test(NAME ${T6} COMMAND ${T6})
-
 set(T7 LoggerTest)
 add_executable(${T7} ${T7}.cpp)
 target_include_directories(${T7} PRIVATE ${CMAKE_SOURCE_DIR}/include)

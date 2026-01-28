@@ -7,7 +7,6 @@ add_library(
   UdsTransport.cpp
   ChordRepository.cpp
   ChallengeFactory.cpp
-  NoteReader.cpp
   GameManager.cpp
   SocketManager.cpp
   AnswerValidator.cpp)
