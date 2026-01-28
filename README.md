@@ -123,13 +123,15 @@ configurer l’environnement, et permettre in-fine d’effectuer des compilation
 être installé séparément).
 
 Pour compiler le projet, il est possible (pour tester) d’utiliser [CMake]
-(`cmake` puis `cmake --build .` depuis `build/`) directement depuis un
-environnement [Nix] activé, mais la solution préconisée (car reproductible) est
-d’utiliser `nix build` ; ou `nix build .#cross` pour compiler en ciblant
-l’architecture de la Raspberry Pi 4 (ARM64).
+(`cmake --build build`) directement depuis un environnement [Nix] activé, mais
+la solution préconisée (car reproductible) est d’utiliser `nix build` ; ou
+`nix build .#cross` pour compiler en ciblant l’architecture de la Raspberry Pi 4
+(ARM64).
 
 Le serveur peut être lancé avec `./result/bin/main`, ou `./build/main` si
-compilé avec [CMake]. Le moteur démarre et écoute sur `/tmp/smartpiano.sock`.
+compilé avec [CMake] (ou automatiquement après un build avec
+`cmake --build build --target run`). Le moteur démarre et écoute sur
+`/tmp/smartpiano.sock`.
 
 ### Test Manuel
 
@@ -182,9 +184,12 @@ duration=1234
 ### Tests Automatiques
 
 Les tests unitaires et tests d’intégration peuvent être exécutés manuellement
-avec la commande `ctest` depuis `build/`.
+avec la commande `cmake --build build --target test`.
 
 Ils sont automatiquement exécutés lors des builds avec [Nix].
+
+De plus, il est possible de générer un rapport de couverture de code avec
+`cmake --build build --target coverage`.
 
 ## Conventions de Code
 
