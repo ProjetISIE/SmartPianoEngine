@@ -20,5 +20,5 @@ target_link_libraries(${PROJECT_NAME}comm PUBLIC Threads::Threads dl pthread m)
 
 add_executable(main main.cpp)
 target_link_libraries(main ${PROJECT_NAME} ${PROJECT_NAME}comm)
-include(GNUInstallDirs)
-install(TARGETS main RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+# include(GNUInstallDirs)
+# install(TARGETS main RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

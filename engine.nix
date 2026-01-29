@@ -29,4 +29,12 @@ stdenv.mkDerivation {
     libjack2 # Audio interconnection lib
     rtmidi # MIDI lib
   ];
+  installPhase = ''
+    mkdir --parents --verbose $out/include
+    cp --recursive --verbose ${./include}/* $out/include/
+    mkdir --parents --verbose $out/lib
+    cp --verbose src/libenginecomm.a $out/lib/
+    mkdir --parents --verbose $out/bin
+    cp --verbose src/main $out/lib/
+  '';
 }
