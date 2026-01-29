@@ -35,6 +35,6 @@ stdenv.mkDerivation {
     mkdir --parents --verbose $out/lib
     cp --verbose src/libenginecomm.a $out/lib/
     mkdir --parents --verbose $out/bin
-    cp --verbose src/main $out/lib/
+    cp --verbose src/main $out/bin/engine
   '';
 }
