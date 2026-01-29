@@ -58,7 +58,8 @@ add_test(NAME ${T11} COMMAND ${T11})
 set(T13 UdsTransportTest)
 add_executable(${T13} ${T13}.cpp)
 target_include_directories(${T13} PRIVATE ${CMAKE_SOURCE_DIR}/include)
-target_link_libraries(${T13} PRIVATE ${PROJECT_NAME} doctest::doctest)
+target_link_libraries(${T13} PRIVATE ${PROJECT_NAME} ${PROJECT_NAME}comm
+                                     doctest::doctest)
 add_test(NAME ${T13} COMMAND ${T13})
 
 set(T14 AnswerValidatorTest)
@@ -70,5 +71,6 @@ add_test(NAME ${T14} COMMAND ${T14})
 set(T15 integrationTest)
 add_executable(${T15} ${T15}.cpp)
 target_include_directories(${T15} PRIVATE ${CMAKE_SOURCE_DIR}/include)
-target_link_libraries(${T15} PRIVATE ${PROJECT_NAME} doctest::doctest)
+target_link_libraries(${T15} PRIVATE ${PROJECT_NAME} ${PROJECT_NAME}comm
+                                     doctest::doctest)
 add_test(NAME ${T15} COMMAND ${T15})
