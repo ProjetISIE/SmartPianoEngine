@@ -133,6 +133,11 @@ compilé avec [CMake] (ou automatiquement après un build avec
 `cmake --build build --target run`). Le moteur démarre et écoute sur
 `/tmp/smartpiano.sock`.
 
+> Pour accélérer les opérations impliquant `cmake`, indiquer le nombre `N` de
+> threads correspondant au nombre de cœurs de processeur avec `-jN` (ex.
+> `cmake --build build -j4`) ou `--jobs N` pour `nix` (ex.
+> `nix build .#cross --jobs 4`)
+
 ### Test Manuel
 
 Il est possible de tester le moteur de jeu manuellement avec un client UDS tel
@@ -189,7 +194,8 @@ avec la commande `cmake --build build --target tests`.
 Ils sont automatiquement exécutés lors des builds avec [Nix].
 
 De plus, il est possible de générer un rapport de couverture de code avec
-`cmake --build build --target coverage`.
+`cmake --build build --target coverage`, puis d’en visualiser un résumé avec
+`llvm-cov report build/src/main -instr-profile=build/coverage.profdata -ignore-filename-regex="test/.*"`.
 
 ## Conventions de Code
 
