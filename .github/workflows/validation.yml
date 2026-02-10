@@ -28,19 +28,19 @@ jobs:
 
       - name: Configure & build project
         run: |
-          nix develop --command bash -c "cmake --build build -j$(nproc)"
+          nix develop --command bash -c "cmake --build . -j$(nproc)"
 
       - name: Run tests
         run: |
-          nix develop --command bash -c "cmake --build build --target tests"
+          nix develop --command bash -c "cmake --build . --target tests"
 
       - name: Measure code coverage
         run: |
-          nix develop --command bash -c "cmake --build build --target coverage"
+          nix develop --command bash -c "cmake --build . --target coverage"
 
       - name: Export coverage report totals as text 
         run: |
-          nix develop --command bash -c "llvm-cov report build/src/main -instr-profile=build/coverage.profdata -ignore-filename-regex='test/.*' | grep TOTAL > coverage.txt && cat coverage.txt"
+          nix develop --command bash -c "llvm-cov report src/main -instr-profile=coverage.profdata -ignore-filename-regex='test/.*' | grep TOTAL > coverage.txt && cat coverage.txt"
 
       # - name: Print coverage report stats
       #   run: |
