@@ -24,11 +24,7 @@ jobs:
         with:
           name: devenv
 
-      - name: Activation de l'environnement Nix
-        run: |
-          nix develop --command bash -c "echo 'Environment ready'"
-
-      - name: Compilation du projet
+      - name: Configuration et compilation du projet
         run: |
           nix develop --command bash -c "cd build && cmake --build . -j$(nproc)"
 
