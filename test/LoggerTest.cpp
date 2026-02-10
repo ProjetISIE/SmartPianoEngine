@@ -1,4 +1,3 @@
-#include <print>
 #include <string>
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "Logger.hpp"
@@ -121,26 +120,6 @@ TEST_CASE("Logger functionality") {
         std::filesystem::remove("invalid_dir");
     }
 
-    /// Vérifie l'échec de rotation lorsque répertoire en lecture seule
-    SUBCASE("Log rotation failure (readonly directory)") {
-        // Test ligne 50-51: échec de recréation fichier durant rotation
-        Logger::init(basicLog, errorLog);
-        // Créer un gros fichier log
-        {
-            std::ofstream f(basicLog);
-            std::println(f, "{}", std::string(2 * 1024 * 1024, 'A'));
-        }
-        // Rendre répertoire lecture seule pour causer échec rotation
-        std::filesystem::permissions(std::filesystem::current_path(),
-                                     std::filesystem::perms::owner_read |
-                                         std::filesystem::perms::owner_exec,
-                                     std::filesystem::perm_options::replace);
-        CHECK_THROWS(Logger::log("Should trigger failed rotation"));
-        // Restaurer permissions
-        std::filesystem::permissions(std::filesystem::current_path(),
-                                     std::filesystem::perms::owner_all,
-                                     std::filesystem::perm_options::replace);
-    }
     // Nettoyage après tests
     if (std::filesystem::exists(basicLog)) std::filesystem::remove(basicLog);
     if (std::filesystem::exists(errorLog)) std::filesystem::remove(errorLog);

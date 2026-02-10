@@ -229,3 +229,17 @@ TEST_CASE("RtMidiInput Real Implementation Instantiation") {
         // Attendu si pas système audio
     } catch (const std::exception&) {}
 }
+
+/// Vérifie retour vide quand readNotes appelé après arrêt (shouldStop=true)
+/// Valide gestion arrêt propre pendant attente notes
+TEST_CASE("RtMidiInput readNotes when stopped") {
+    TestableRtMidiInput input;
+    input.initialize();
+
+    // Arrêter immédiatement sans pousser notes
+    input.close();
+
+    // readNotes devrait retourner vecteur vide (lignes 78-81)
+    std::vector<Note> notes = input.readNotes();
+    CHECK(notes.empty());
+}

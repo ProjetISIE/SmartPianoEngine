@@ -100,3 +100,37 @@ TEST_CASE("NoteGame Unknown Scale Fallback") {
     midi.close(); // Arrêter attente notes
     if (gameThread.joinable()) gameThread.join();
 }
+
+/// Vérifie détection plusieurs notes incorrectes simultanées
+/// Valide que champ "incorrect" contient toutes notes fausses avec espaces
+TEST_CASE("NoteGame Multiple Incorrect Notes") {
+    MockTransport transport;
+    MockMidiInput midi;
+    GameConfig config;
+    config.scale = "c";
+    config.mode = "maj";
+    config.maxChallenges = 1;
+    NoteGame game(transport, midi, config);
+
+    game.start();
+    std::thread gameThread([&game]() { game.play(); });
+
+    Message msg1 = transport.waitForSentMessage();
+    std::string expectedNote = msg1.getField("note");
+
+    // Envoyer plusieurs notes incorrectes (couvre ligne 60 branch)
+    std::vector<std::string> wrongNotes;
+    if (expectedNote != "c4") wrongNotes.push_back("c4");
+    if (expectedNote != "d4") wrongNotes.push_back("d4");
+    if (expectedNote != "e4") wrongNotes.push_back("e4");
+    midi.pushNotes(wrongNotes);
+
+    Message res1 = transport.waitForSentMessage();
+    CHECK(res1.getType() == "result");
+    CHECK(res1.hasField("incorrect"));
+    // Vérifier que champ incorrect contient espaces (ligne 60)
+    std::string incorrect = res1.getField("incorrect");
+    CHECK(incorrect.find(" ") != std::string::npos);
+
+    if (gameThread.joinable()) gameThread.join();
+}
