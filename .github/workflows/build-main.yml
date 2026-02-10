@@ -9,7 +9,7 @@ jobs:
   build-nix:
     name: Build Automatique Nix
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout du code
         uses: actions/checkout@v4

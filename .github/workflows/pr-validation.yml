@@ -9,7 +9,7 @@ jobs:
   test-coverage:
     name: Tests et Couverture de Code
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout du code
         uses: actions/checkout@v4
