@@ -1,4 +1,4 @@
-name: Build avec Nix sur Main
+name: Nix Build of Main
 
 on:
   push:
@@ -7,37 +7,36 @@ on:
 
 jobs:
   build-nix:
-    name: Build Automatique Nix
+    name: Auto Nix Build
     runs-on: ubuntu-latest
     permissions:
       contents: read
 
     steps:
-      - name: Checkout du code
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Installation de Nix
+      - name: Install Nix
         uses: cachix/install-nix-action@v27
         with:
           nix_path: nixpkgs=channel:nixos-unstable
 
-      - name: Configuration de Cachix
-        uses: cachix/cachix-action@v15
-        with:
-          name: devenv
+      # - name: Config Cachix TODO
+      #   uses: cachix/cachix-action@v15
+      #   with:
+      #     name: devenv
 
-      - name: Build du projet avec Nix
+      - name: Build project with Nix
         run: |
           nix build --print-build-logs --jobs $(nproc)
 
-      - name: Vérification du résultat du build
+      - name: Check build outputs
         run: |
           ls -lh result/bin/
-          echo "✅ Build réussi"
 
-      - name: Upload de l'artefact
-        uses: actions/upload-artifact@v4
-        with:
-          name: smart-piano-engine
-          path: result/bin/engine
-          retention-days: 30
+      # - name: Upload artefact TODO
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: smart-piano-engine
+      #     path: result/bin/engine
+      #     retention-days: 30
