@@ -67,8 +67,7 @@
                 # Export compile commands JSON for LSP and other tools
                 shellHook = ''
                   mkdir --verbose build
-                  cd build
-                  cmake -DCMAKE_BUILD_TYPE=Debug -DCOVERAGE=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..
+                  cmake -DCMAKE_BUILD_TYPE=Debug -DCOVERAGE=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -S . -B build
                 '';
               };
         }
