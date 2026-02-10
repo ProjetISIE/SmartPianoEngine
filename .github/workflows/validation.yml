@@ -48,8 +48,8 @@ jobs:
 
       - name: Verify functions coverage is 100%
         run: |
-          nix develop --command bash -c "cat coverage.txt | awk '{print \$7}' | sed 's/%//')" # TODO
+          nix develop --command bash -c "[ \$(cat coverage.txt | awk '{print \$7}' | sed 's/%//') = '100.00%' ]"
 
       - name: Verify line coverage at least 90%
         run: |
-          nix develop --command bash -c "cat coverage.txt | awk '{print \$10}' | sed 's/%//')" # TODO
+          nix develop --command bash -c "[ \$(cat coverage.txt | awk '{print \$10}' | sed 's/%//') -ge 90 ]" # FIXME Field is text like 96.50%
