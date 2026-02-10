@@ -1,0 +1,70 @@
+name: Pull Request Validation
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test-coverage:
+    name: Tests et Couverture de Code
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+
+      - name: Installation de Nix
+        uses: cachix/install-nix-action@v27
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+
+      - name: Configuration de Cachix
+        uses: cachix/cachix-action@v15
+        with:
+          name: devenv
+
+      - name: Activation de l'environnement Nix
+        run: |
+          nix develop --command bash -c "echo 'Environment ready'"
+
+      - name: Compilation du projet
+        run: |
+          nix develop --command bash -c "cd build && cmake --build . -j$(nproc)"
+
+      - name: Exécution des tests
+        run: |
+          nix develop --command bash -c "cd build && cmake --build . --target tests"
+
+      - name: Exécution du main pour la couverture
+        run: |
+          nix develop --command bash -c "cd build && cmake --build . --target run"
+
+      - name: Fusion des données de couverture
+        run: |
+          nix develop --command bash -c "cd build && cmake --build . --target merge_coverage_data"
+
+      - name: Vérification de la couverture de code
+        run: |
+          nix develop --command bash -c "cd build && llvm-cov report src/main -instr-profile=coverage.profdata -ignore-filename-regex='test/.*' > coverage_report.txt && cat coverage_report.txt"
+
+      - name: Analyse de la couverture
+        run: |
+          nix develop --command bash -c "cd build && cat coverage_report.txt | grep 'TOTAL' | awk '{print \"Functions: \" \$3 \" Lines: \" \$8}' > coverage_summary.txt && cat coverage_summary.txt"
+
+      - name: Vérification des seuils de couverture
+        run: |
+          nix develop --command bash -c "cd build && \
+          FUNCTIONS=\$(cat coverage_report.txt | grep 'TOTAL' | awk '{print \$3}' | sed 's/%//') && \
+          LINES=\$(cat coverage_report.txt | grep 'TOTAL' | awk '{print \$8}' | sed 's/%//') && \
+          echo \"Couverture des fonctions: \$FUNCTIONS%\" && \
+          echo \"Couverture des lignes: \$LINES%\" && \
+          if (( \$(echo \"\$FUNCTIONS < 100\" | bc -l) )); then \
+            echo \"❌ ERREUR: La couverture des fonctions (\$FUNCTIONS%) est inférieure à 100%\" && \
+            exit 1; \
+          fi && \
+          if (( \$(echo \"\$LINES < 90\" | bc -l) )); then \
+            echo \"❌ ERREUR: La couverture des lignes (\$LINES%) est inférieure à 90%\" && \
+            exit 1; \
+          fi && \
+          echo \"✅ Couverture de code conforme aux conventions (Functions: \$FUNCTIONS%, Lines: \$LINES%)\""
