@@ -9,6 +9,8 @@ jobs:
   build-nix:
     name: Build Automatique Nix
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout du code
