@@ -8,6 +8,7 @@ void GameEngine::run() {
     Logger::log("[GameEngine] Démarrage du moteur");
     while (this->running) try {
             handleClientConnection();
+            // COUVERTURE: Catch exception non testé, trop rare
         } catch (const std::exception& e) {
             Logger::err("[GameEngine] Exception: {}", e.what());
         }
@@ -101,6 +102,7 @@ void GameEngine::processGameSession(const GameConfig& config) {
             {"duration", std::to_string(result.duration)},
             {"perfect", std::to_string(result.perfect)},
             {"total", std::to_string(result.total)}};
+        // COUVERTURE: Testée indirectement via ChordGameTest.cpp
         if (result.partial > 0)
             overFields["partial"] = std::to_string(result.partial);
         Message overMsg("over", overFields);

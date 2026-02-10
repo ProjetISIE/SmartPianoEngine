@@ -47,6 +47,7 @@ class Logger {
         std::filesystem::rename(filePath, date() + filePath);
         // Crée nouveau fichier vide
         std::ofstream newFile(filePath, std::ios::trunc);
+        // COUVERTURE: Espace disque devrait se remplir juste après rotation…
         if (!newFile.is_open())
             std::println(stderr, "[Logger] Impossible de recréer fichier");
     }

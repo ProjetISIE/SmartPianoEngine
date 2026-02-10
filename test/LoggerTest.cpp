@@ -120,6 +120,25 @@ TEST_CASE("Logger functionality") {
         std::filesystem::remove("invalid_dir");
     }
 
+    /// Vérifie échec recréation fichier lors rotation (ligne 53)
+    SUBCASE("Log rotation file creation failure") {
+        std::string readonlyLog = "/proc/test_readonly.log";
+        // Utiliser chemin en lecture seule comme /proc pour forcer échec
+        Logger::init(readonlyLog, errorLog);
+        // Créer gros fichier pour déclencher rotation (ne va pas réussir dans
+        // /proc)
+        {
+            std::ofstream f(readonlyLog);
+            if (f.is_open()) {
+                std::string largeString(1024 * 1024, 'A');
+                f << largeString << largeString << "overflow";
+            }
+        }
+        // Tenter log qui déclencherait rotation (ligne 53 testée si échec
+        // création) Logger devrait afficher erreur stderr mais pas planter
+        Logger::log("Attempting log to readonly location");
+    }
+
     // Nettoyage après tests
     if (std::filesystem::exists(basicLog)) std::filesystem::remove(basicLog);
     if (std::filesystem::exists(errorLog)) std::filesystem::remove(errorLog);

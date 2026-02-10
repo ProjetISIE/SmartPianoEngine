@@ -11,6 +11,7 @@ bool UdsTransport::start() {
     unlink(this->sockPath.c_str()); // Supprimer socket existant s'il existe
     // Créer socket Unix
     this->serverSock = socket(AF_UNIX, SOCK_STREAM, 0);
+    // COUVERTURE: Qu’en cas d’erreur noyau, épuisement descripteurs fichiers…
     if (this->serverSock < 0) {
         Logger::err("[UdsTransport] Erreur: Impossible de créer le socket");
         return false;
@@ -28,6 +29,7 @@ bool UdsTransport::start() {
         return false;
     }
     // Écouter les connexions
+    // COUVERTURE: Qu’en cas de socket invalide, permissions NOK…
     if (listen(this->serverSock, 1) < 0) {
         Logger::err(
             "[UdsTransport] Erreur: Impossible de mettre le socket en écoute");
@@ -45,6 +47,7 @@ void UdsTransport::waitForClient() {
         return;
     }
     this->clientSock = accept(this->serverSock, nullptr, nullptr);
+    // COUVERTURE: Qu’en cas de socket invalide, serveur mal initialisé…
     if (this->clientSock < 0) {
         Logger::err(
             "[UdsTransport] Erreur: Échec de l'acceptation de connexion");
@@ -82,6 +85,7 @@ Message UdsTransport::receive() {
     while (true) {
         ssize_t received =
             recv(this->clientSock, buffer, sizeof(buffer) - 1, 0);
+        // COUVERTURE: Échec recv() < 0 non testé…
         if (received < 0) {
             Logger::err("[UdsTransport] Erreur: Échec de réception");
             return Message("error");

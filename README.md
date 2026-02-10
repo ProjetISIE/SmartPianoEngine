@@ -197,6 +197,15 @@ De plus, il est possible de générer un rapport de couverture de code avec
 `cmake --build build --target coverage`, puis d’en visualiser un résumé avec
 `llvm-cov report build/src/main -instr-profile=build/coverage.profdata -ignore-filename-regex="test/.*"`.
 
+Sur la branche principale `main`, tous les tests automatiques (unitaires,
+intégration) doivent passer parfaitement, avec une couverture de `100%` des
+fonctions et d’au moins `90%` des lignes de code. Il faut s’assurer qu’une
+branche répond à ces critères avant de la fusionner dans `main`.
+
+L’objectif est de couvrir `100%` des lignes de codes, mais certains cas peuvent
+être trop difficiles à simuler en tests automatiques, auquel cas, ils doivent
+être commentés comme tel.
+
 ## Conventions de Code
 
 Norme utilisée du langage C++ la plus récente (stable), `C++23`. Utilisation de

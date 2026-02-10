@@ -77,6 +77,7 @@ std::vector<Note> RtMidiInput::readNotes() {
     // Attendre que des notes soient disponibles
     while (!notesAvailable.load()) {
         if (shouldStop) return {}; // Sortir si arrêt demandé
+        // COUVERTURE: Nécessite d’attendre dans tests mockés
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
     std::vector<Note> notes;
