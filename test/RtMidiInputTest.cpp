@@ -2,8 +2,9 @@
 #include "RtMidiInput.hpp"
 #include <deque>
 #include <doctest/doctest.h>
+#include <memory>
 #include <mutex>
-#include <rtmidi/RtMidi.h> // for RtMidiError
+#include <rtmidi/RtMidi.h>
 #include <thread>
 
 /// Mock pour IRtMidiIn permettant injection messages MIDI de test
@@ -70,17 +71,19 @@ class TestableRtMidiInput : public RtMidiInput {
     bool throwOnOpen = false;
 
   protected:
-    IRtMidiIn* createMidiIn() override {
+    std::unique_ptr<IRtMidiIn> createMidiIn() override {
         if (forceCreateError)
             throw RtMidiError("Mock creation error", RtMidiError::DRIVER_ERROR);
-        mockIn = new MockRtMidiIn();
-        mockIn->throwOnOpen = throwOnOpen;
-        return mockIn;
+        auto mock = std::make_unique<MockRtMidiIn>();
+        mock->throwOnOpen = throwOnOpen;
+        mockIn = mock.get();
+        return mock;
     }
 
-    IRtMidiOut* createMidiOut() override {
-        mockOut = new MockRtMidiOut();
-        return mockOut;
+    std::unique_ptr<IRtMidiOut> createMidiOut() override {
+        auto mock = std::make_unique<MockRtMidiOut>();
+        mockOut = mock.get();
+        return mock;
     }
 };
 
@@ -92,8 +95,6 @@ TEST_CASE("RtMidiInput initialization success") {
     CHECK(input.isReady());
     CHECK(input.mockIn->openPortCalled);
     CHECK(input.mockOut->openPortCalled);
-    input.close();
-    CHECK_FALSE(input.isReady());
 }
 
 /// Vérifie gestion exception lors traitement messages MIDI
@@ -111,8 +112,6 @@ TEST_CASE("RtMidiInput processing exception") {
 
     // Restaurer normal pour fermer proprement
     input.mockIn->throwOnGet = false;
-
-    input.close();
 }
 
 /// Vérifie échec initialisation lors création objets RtMidi
@@ -147,11 +146,9 @@ TEST_CASE("RtMidiInput message processing") {
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
 
     // Lire notes
-    std::vector<Note> notes = input.readNotes();
+    std::vector<Note> notes = input.readNotes({});
     CHECK(notes.size() == 1);
     CHECK(notes[0].toString() == "c4");
-
-    input.close();
 }
 
 /// Vérifie regroupement notes simultanées en accord (timeout 100ms)
@@ -170,7 +167,7 @@ TEST_CASE("RtMidiInput chord processing") {
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
 
     // Lire notes
-    std::vector<Note> notes = input.readNotes();
+    std::vector<Note> notes = input.readNotes({});
     CHECK(notes.size() == 2);
     // Ordre peut dépendre, mais habituellement préservé
     // Logique dans processMidiMessages: push_back
@@ -183,8 +180,6 @@ TEST_CASE("RtMidiInput chord processing") {
     }
     CHECK(foundC4);
     CHECK(foundE4);
-
-    input.close();
 }
 
 /// Expose méthodes protégées pour tester vraies implémentations RtMidi
@@ -204,7 +199,7 @@ TEST_CASE("RtMidiInput Real Implementation Instantiation") {
     // Tenter créer instances réelles
 
     try {
-        IRtMidiIn* in = input.createMidiIn();
+        auto in = input.createMidiIn();
         CHECK(in != nullptr);
         // Couvrir méthodes wrapper
         try {
@@ -213,18 +208,16 @@ TEST_CASE("RtMidiInput Real Implementation Instantiation") {
             std::vector<unsigned char> msg;
             in->getMessage(&msg);
         } catch (...) {}
-        delete in;
     } catch (const RtMidiError&) {
         // Attendu si pas système audio
     } catch (const std::exception&) {}
 
     try {
-        IRtMidiOut* out = input.createMidiOut();
+        auto out = input.createMidiOut();
         CHECK(out != nullptr);
         try {
             out->openVirtualPort("test_output");
         } catch (...) {}
-        delete out;
     } catch (const RtMidiError&) {
         // Attendu si pas système audio
     } catch (const std::exception&) {}
@@ -236,10 +229,9 @@ TEST_CASE("RtMidiInput readNotes when stopped") {
     TestableRtMidiInput input;
     input.initialize();
 
-    // Arrêter immédiatement sans pousser notes
-    input.close();
-
-    // readNotes devrait retourner vecteur vide (lignes 78-81)
-    std::vector<Note> notes = input.readNotes();
+    // readNotes devrait retourner vecteur vide avec un jeton d'arrêt
+    std::stop_source ssource;
+    ssource.request_stop();
+    std::vector<Note> notes = input.readNotes(ssource.get_token());
     CHECK(notes.empty());
 }

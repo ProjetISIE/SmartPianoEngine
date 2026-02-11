@@ -55,12 +55,11 @@ bool RtMidiInput::initialize() {
         midiIn->ignoreTypes(false, false, false);
 
         // Lancer thread de traitement MIDI
-        inputThread =
-            std::jthread(&RtMidiInput::processMidiMessages, this);
+        inputThread = std::jthread(
+            [this](std::stop_token st) { this->processMidiMessages(st); });
 
         Logger::log("[RtMidiInput] Ports JACK ouverts avec succès");
         return true;
-
     } catch (RtMidiError& error) {
         Logger::err("[RtMidiInput] Erreur ouverture ports: {}",
                     error.getMessage());
