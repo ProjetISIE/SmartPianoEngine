@@ -42,8 +42,8 @@ jobs:
 
       - name: Verify functions coverage is 100%
         run: |
-          nix develop --command bash -c "cat build/coverage.txt | awk '{gsub(/%/, \"\", \$7); if (\$7 == 100) { exit 0 } else { exit 1 }}'"
+          cat build/coverage.txt | awk '{ if ($7 + 0 == 100) exit 0; else exit 1 }'
 
       - name: Verify line coverage is at least 90%
         run: |
-          nix develop --command bash -c "cat build/coverage.txt | awk '{gsub(/%/, \"\", \$10); if (\$10 >= 90) { exit 0 } else { exit 1 }}'"
+          cat build/coverage.txt | awk '{ if ($10 + 0 > 90) exit 0; else exit 1 }'
