@@ -19,14 +19,14 @@ jobs:
         with:
           nix_path: nixpkgs=channel:nixos-unstable
 
-      - name: Install ALSA & kernel modules
+      - name: Install & force load ALSA
         run: |
           sudo apt-get update
           sudo apt-get install -y alsa-utils linux-modules-extra-$(uname -r)
-          sudo depmod -a 
     
-      - name: Load virtual MIDI module
-        run: |
+          sudo depmod -a
+          find /lib/modules/$(uname -r) -name "*virmidi*"
+    
           sudo modprobe snd-virmidi
           aconnect -l
 
