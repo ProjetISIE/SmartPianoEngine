@@ -32,18 +32,22 @@ jobs:
         run: |
           nix develop --command bash -c "cmake --build build --target tests"
 
+      - name: Run main
+        run: |
+          nix develop --command bash -c "cmake --build build --target run"
+
       - name: Measure code coverage
         run: |
           nix develop --command bash -c "cmake --build build --target coverage"
-
-      - name: Export coverage report totals as text 
+      
+      - name: Export coverage report totals as text
         run: |
           nix develop --command bash -c "llvm-cov report build/src/main -instr-profile=build/coverage.profdata -ignore-filename-regex='test/.*' > build/coverage.txt"
           cat build/coverage.txt
-
+      
       - name: Verify functions coverage is 100%
         run: |
-          grep TOTAL build/coverage.txt | awk '{ if ($7 + 0 > 95) exit 0; else exit 1 }' # FIXME Should be == 100, but lower on GitHub runner
+          grep TOTAL build/coverage.txt | awk '{ if ($7 + 0 == 100) exit 0; else exit 1 }'
 
       - name: Verify line coverage is at least 90%
         run: |
