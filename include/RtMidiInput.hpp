@@ -36,8 +36,8 @@ class IRtMidiOut {
  */
 class RtMidiInput : public IMidiInput {
   private:
-    std::unique_ptr<IRtMidiIn> midiIn;     ///< Instance RTMidi (Wrapper)
-    std::unique_ptr<IRtMidiOut> midiOut;   ///< Sortie MIDI (Wrapper)
+    std::unique_ptr<IRtMidiIn> midiIn;       ///< Instance RTMidi (Wrapper)
+    std::unique_ptr<IRtMidiOut> midiOut;     ///< Sortie MIDI (Wrapper)
     std::vector<Note> lastNotes;             ///< Dernières notes jouées
     std::atomic<bool> notesAvailable{false}; ///< Notes disponibles?
     std::mutex notesMutex;                   ///< Mutex pour accès aux notes

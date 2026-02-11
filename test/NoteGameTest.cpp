@@ -108,4 +108,3 @@ TEST_CASE("NoteGame Multiple Incorrect Notes") {
     std::string incorrect = res1.getField("incorrect");
     CHECK(incorrect.find(" ") != std::string::npos);
 }
-

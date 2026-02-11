@@ -226,4 +226,3 @@ TEST_CASE("ChordGame With Inversions Coverage") {
 
     CHECK(foundInversion); // Très probable avec 50 tentatives
 }
-

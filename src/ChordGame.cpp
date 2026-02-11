@@ -127,8 +127,6 @@ GameResult ChordGame::play(std::stop_token stopToken) {
     return result;
 }
 
-
-
 ChordGame::Chord ChordGame::generateRandomChord() {
     std::vector<int> degrees = getChordDegrees();
     std::uniform_int_distribution<> degreeDist(0, degrees.size() - 1);

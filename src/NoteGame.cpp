@@ -99,7 +99,6 @@ GameResult NoteGame::play(std::stop_token stopToken) {
     return result;
 }
 
-
 Note NoteGame::generateRandomNote() {
     std::vector<std::string> scaleNotes = getScaleNotes();
     std::uniform_int_distribution<> noteDist(0, scaleNotes.size() - 1);

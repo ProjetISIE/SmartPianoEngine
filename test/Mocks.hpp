@@ -33,8 +33,9 @@ class MockMidiInput : public IMidiInput {
     std::vector<Note> readNotes(std::stop_token stopToken) override {
         std::unique_lock<std::mutex> lock(mtx);
         // Wait for notes to be available or for stop to be requested
-        cv.wait(lock,
-                [this, &stopToken] { return !notesQueue.empty() || stopToken.stop_requested(); });
+        cv.wait(lock, [this, &stopToken] {
+            return !notesQueue.empty() || stopToken.stop_requested();
+        });
 
         if (stopToken.stop_requested()) {
             return {};
