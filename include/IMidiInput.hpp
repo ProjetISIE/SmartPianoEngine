@@ -2,6 +2,7 @@
 #define IMIDIINPUT_HPP
 
 #include "Note.hpp"
+#include <stop_token>
 #include <vector>
 
 /**
@@ -20,14 +21,10 @@ class IMidiInput {
 
     /**
      * @brief Lit les notes jouées (bloquant jusqu'à réception de notes)
+     * @param stopToken Jeton d'arrêt pour annuler l'attente
      * @return Vecteur de notes jouées
      */
-    virtual std::vector<Note> readNotes() = 0;
-
-    /**
-     * @brief Ferme l'entrée MIDI et libère les ressources
-     */
-    virtual void close() = 0;
+    virtual std::vector<Note> readNotes(std::stop_token stopToken) = 0;
 
     /**
      * @brief Vérifie si MIDI est initialisé et prêt

@@ -16,7 +16,7 @@ void NoteGame::start() {
     this->challengeId = 0;
 }
 
-GameResult NoteGame::play() {
+GameResult NoteGame::play(std::stop_token stopToken) {
     GameResult result = {0, 0, 0, 0};
     auto startTime = high_resolution_clock::now();
 
@@ -24,6 +24,10 @@ GameResult NoteGame::play() {
     const int maxChallenges = this->config.maxChallenges;
 
     for (int i = 0; i < maxChallenges; ++i) {
+        if (stopToken.stop_requested()) {
+            Logger::log("[NoteGame] Arrêt demandé, fin de partie anticipée");
+            break;
+        }
         // Générer une note aléatoire
         Note targetNote = generateRandomNote();
         this->challengeId++;
@@ -38,7 +42,7 @@ GameResult NoteGame::play() {
 
         // Attendre les notes jouées
         auto challengeStart = high_resolution_clock::now();
-        std::vector<Note> playedNotes = this->midi.readNotes();
+        std::vector<Note> playedNotes = this->midi.readNotes(stopToken);
         auto challengeEnd = high_resolution_clock::now();
 
         auto duration =
@@ -60,7 +64,8 @@ GameResult NoteGame::play() {
                 if (!incorrectNotes.empty()) incorrectNotes += " ";
                 incorrectNotes += note.toString();
             }
-            resultFields["incorrect"] = incorrectNotes;
+            if (!playedNotes.empty())
+                resultFields["incorrect"] = incorrectNotes;
         }
 
         Message resultMsg("result", resultFields);
@@ -94,10 +99,6 @@ GameResult NoteGame::play() {
     return result;
 }
 
-void NoteGame::stop() {
-    Logger::log("[NoteGame] Arrêt du jeu");
-    this->midi.close();
-}
 
 Note NoteGame::generateRandomNote() {
     std::vector<std::string> scaleNotes = getScaleNotes();

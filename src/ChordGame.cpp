@@ -19,7 +19,7 @@ void ChordGame::start() {
     this->challengeId = 0;
 }
 
-GameResult ChordGame::play() {
+GameResult ChordGame::play(std::stop_token stopToken) {
     GameResult result = {0, 0, 0, 0};
     auto startTime = high_resolution_clock::now();
 
@@ -28,6 +28,10 @@ GameResult ChordGame::play() {
     const int maxChallenges = this->config.maxChallenges;
 
     for (int i = 0; i < maxChallenges; ++i) {
+        if (stopToken.stop_requested()) {
+            Logger::log("[ChordGame] Arrêt demandé, fin de partie anticipée");
+            break;
+        }
         // Générer un accord aléatoire
         Chord targetChord = generateRandomChord();
         this->challengeId++;
@@ -49,7 +53,7 @@ GameResult ChordGame::play() {
 
         // Attendre les notes jouées
         auto challengeStart = high_resolution_clock::now();
-        std::vector<Note> playedNotes = this->midi.readNotes();
+        std::vector<Note> playedNotes = this->midi.readNotes(stopToken);
         auto challengeEnd = high_resolution_clock::now();
 
         auto duration =
@@ -123,10 +127,7 @@ GameResult ChordGame::play() {
     return result;
 }
 
-void ChordGame::stop() {
-    Logger::log("[ChordGame] Arrêt du jeu");
-    this->midi.close();
-}
+
 
 ChordGame::Chord ChordGame::generateRandomChord() {
     std::vector<int> degrees = getChordDegrees();

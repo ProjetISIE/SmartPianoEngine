@@ -2,6 +2,7 @@
 #include "Logger.hpp"
 #include <chrono>
 #include <map>
+#include <memory>
 #include <rtmidi/RtMidi.h>
 #include <thread>
 
@@ -46,7 +47,6 @@ bool RtMidiInput::initialize() {
     } catch (RtMidiError& error) {
         Logger::err("[RtMidiInput] Erreur création RtMidi: {}",
                     error.getMessage());
-        close();
         return false;
     }
     try {
@@ -55,8 +55,8 @@ bool RtMidiInput::initialize() {
         midiIn->ignoreTypes(false, false, false);
 
         // Lancer thread de traitement MIDI
-        shouldStop = false;
-        inputThread = std::thread(&RtMidiInput::processMidiMessages, this);
+        inputThread =
+            std::jthread(&RtMidiInput::processMidiMessages, this);
 
         Logger::log("[RtMidiInput] Ports JACK ouverts avec succès");
         return true;
@@ -64,19 +64,22 @@ bool RtMidiInput::initialize() {
     } catch (RtMidiError& error) {
         Logger::err("[RtMidiInput] Erreur ouverture ports: {}",
                     error.getMessage());
-        close();
         return false;
     }
 }
 
-IRtMidiIn* RtMidiInput::createMidiIn() { return new RtMidiInImpl(); }
+std::unique_ptr<IRtMidiIn> RtMidiInput::createMidiIn() {
+    return std::make_unique<RtMidiInImpl>();
+}
 
-IRtMidiOut* RtMidiInput::createMidiOut() { return new RtMidiOutImpl(); }
+std::unique_ptr<IRtMidiOut> RtMidiInput::createMidiOut() {
+    return std::make_unique<RtMidiOutImpl>();
+}
 
-std::vector<Note> RtMidiInput::readNotes() {
+std::vector<Note> RtMidiInput::readNotes(std::stop_token stopToken) {
     // Attendre que des notes soient disponibles
     while (!notesAvailable.load()) {
-        if (shouldStop) return {}; // Sortir si arrêt demandé
+        if (stopToken.stop_requested()) return {}; // Sortir si arrêt demandé
         // COUVERTURE: Nécessite d’attendre dans tests mockés
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
@@ -90,37 +93,18 @@ std::vector<Note> RtMidiInput::readNotes() {
     return notes;
 }
 
-void RtMidiInput::close() {
-    Logger::log("[RtMidiInput] Fermeture des ressources");
-
-    // Arrêter le thread
-    shouldStop = true;
-    if (inputThread.joinable()) {
-        inputThread.join();
-    }
-
-    if (midiIn) {
-        delete midiIn;
-        midiIn = nullptr;
-    }
-    if (midiOut) {
-        delete midiOut;
-        midiOut = nullptr;
-    }
-}
-
 bool RtMidiInput::isReady() const {
     return midiIn != nullptr && midiOut != nullptr;
 }
 
-void RtMidiInput::processMidiMessages() {
+void RtMidiInput::processMidiMessages(std::stop_token stopToken) {
     Logger::log("[RtMidiInput] Thread MIDI démarré");
     constexpr int CHORD_TIMEOUT_MS = 100; // Timeout pour accumulation d'accord
     std::vector<unsigned char> message;
     std::vector<Note> currentNotes;
     auto lastNoteTime = std::chrono::steady_clock::now();
     bool chordInProgress = false;
-    while (!shouldStop && midiIn) {
+    while (!stopToken.stop_requested() && midiIn) {
         try {
             midiIn->getMessage(&message);
             if (!message.empty() && message.size() >= 3) {

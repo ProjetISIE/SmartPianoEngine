@@ -14,11 +14,11 @@
 class MockMidiInput : public IMidiInput {
   public:
     bool initialized = false;
-    bool closed = false;
     bool initResult = true; // Default success
     std::deque<std::vector<Note>> notesQueue;
     std::mutex mtx;
     std::condition_variable cv;
+    std::stop_source stopSource;
 
     bool initialize() override {
         if (initResult) {
@@ -30,12 +30,13 @@ class MockMidiInput : public IMidiInput {
     void setInitializeResult(bool res) { initResult = res; }
     void setReady(bool ready) { initialized = ready; }
 
-    std::vector<Note> readNotes() override {
+    std::vector<Note> readNotes(std::stop_token stopToken) override {
         std::unique_lock<std::mutex> lock(mtx);
-        // Wait for notes to be available
-        cv.wait(lock, [this] { return !notesQueue.empty() || closed; });
+        // Wait for notes to be available or for stop to be requested
+        cv.wait(lock,
+                [this, &stopToken] { return !notesQueue.empty() || stopToken.stop_requested(); });
 
-        if (notesQueue.empty() && closed) {
+        if (stopToken.stop_requested()) {
             return {};
         }
 
@@ -44,15 +45,7 @@ class MockMidiInput : public IMidiInput {
         return notes;
     }
 
-    void close() override {
-        {
-            std::lock_guard<std::mutex> lock(mtx);
-            closed = true;
-        }
-        cv.notify_all();
-    }
-
-    bool isReady() const override { return initialized && !closed; }
+    bool isReady() const override { return initialized; }
 
     // Helper to push input
     void pushNotes(const std::vector<Note>& notes) {

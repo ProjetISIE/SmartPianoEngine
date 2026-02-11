@@ -4,7 +4,9 @@
 #include "IMidiInput.hpp"
 #include "Logger.hpp"
 #include <atomic>
+#include <memory>
 #include <mutex>
+#include <stop_token>
 #include <thread>
 #include <vector>
 
@@ -34,20 +36,20 @@ class IRtMidiOut {
  */
 class RtMidiInput : public IMidiInput {
   private:
-    IRtMidiIn* midiIn{nullptr};              ///< Instance RTMidi (Wrapper)
-    IRtMidiOut* midiOut{nullptr};            ///< Sortie MIDI (Wrapper)
+    std::unique_ptr<IRtMidiIn> midiIn;     ///< Instance RTMidi (Wrapper)
+    std::unique_ptr<IRtMidiOut> midiOut;   ///< Sortie MIDI (Wrapper)
     std::vector<Note> lastNotes;             ///< Dernières notes jouées
     std::atomic<bool> notesAvailable{false}; ///< Notes disponibles?
     std::mutex notesMutex;                   ///< Mutex pour accès aux notes
 
-    std::atomic<bool> shouldStop{false}; ///< Flag d'arrêt du thread
-    std::thread inputThread;             ///< Thread de traitement
+    std::jthread inputThread; ///< Thread de traitement
 
   private:
     /**
      * @brief Traite les messages MIDI reçus (thread séparé)
+     * @param stopToken Jeton d'arrêt pour le thread
      */
-    void processMidiMessages();
+    void processMidiMessages(std::stop_token stopToken);
 
     /**
      * @brief Convertit un numéro MIDI en Note
@@ -59,10 +61,7 @@ class RtMidiInput : public IMidiInput {
   public:
     RtMidiInput() { Logger::log("[RtMidiInput] Instance créée"); }
 
-    ~RtMidiInput() {
-        close();
-        Logger::log("[RtMidiInput] Instance détruite");
-    }
+    ~RtMidiInput() { Logger::log("[RtMidiInput] Instance détruite"); }
 
     /**
      * @brief Initialise l'entrée MIDI
@@ -72,14 +71,10 @@ class RtMidiInput : public IMidiInput {
 
     /**
      * @brief Lit les notes jouées (bloquant)
+     * @param stopToken Jeton d'arrêt pour annuler l'attente
      * @return Vecteur de notes jouées
      */
-    std::vector<Note> readNotes() override;
-
-    /**
-     * @brief Ferme l'entrée MIDI
-     */
-    void close() override;
+    std::vector<Note> readNotes(std::stop_token stopToken) override;
 
     /**
      * @brief Vérifie si MIDI est prêt
@@ -92,13 +87,13 @@ class RtMidiInput : public IMidiInput {
      * @brief Crée l'instance IRtMidiIn
      * @return Pointeur vers IRtMidiIn
      */
-    virtual IRtMidiIn* createMidiIn();
+    virtual std::unique_ptr<IRtMidiIn> createMidiIn();
 
     /**
      * @brief Crée l'instance IRtMidiOut
      * @return Pointeur vers IRtMidiOut
      */
-    virtual IRtMidiOut* createMidiOut();
+    virtual std::unique_ptr<IRtMidiOut> createMidiOut();
 };
 
 #endif // RTMIDIINPUT_HPP

@@ -6,6 +6,7 @@
 #include "ITransport.hpp"
 #include "Logger.hpp"
 #include <memory>
+#include <stop_token>
 
 /**
  * @brief Moteur de jeu principal
@@ -17,6 +18,7 @@ class GameEngine {
     IMidiInput& midi;                       ///< Référence à l'entrée MIDI
     std::unique_ptr<IGameMode> currentGame; ///< Mode de jeu actuel
     bool running{false};                    ///< État du moteur
+    std::stop_source gameStopSource;        ///< Source d'arrêt pour le jeu
 
   private:
     /**

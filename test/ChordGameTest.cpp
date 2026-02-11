@@ -21,7 +21,7 @@ TEST_CASE("ChordGame Flow") {
 
     transport.waitForClient(); // Simuler client connecté
     game.start();
-    std::thread gameThread([&game]() { game.play(); });
+    std::jthread gameThread([&](std::stop_token st) { game.play(st); });
 
     // Attente du défi (Accord)
     Message msg1 = transport.waitForSentMessage();
@@ -41,9 +41,6 @@ TEST_CASE("ChordGame Flow") {
     Message res1 = transport.waitForSentMessage();
     CHECK(res1.getType() == "result");
     CHECK(res1.hasField("correct"));
-
-    game.stop();
-    if (gameThread.joinable()) gameThread.join();
 }
 
 /// Vérifie gestion réponses partielles (quelques notes correctes seulement)
@@ -58,7 +55,7 @@ TEST_CASE("ChordGame Partial and Incorrect") {
 
     transport.waitForClient();
     game.start();
-    std::thread gameThread([&game]() { game.play(); });
+    std::jthread gameThread([&](std::stop_token st) { game.play(st); });
 
     Message msg1 = transport.waitForSentMessage();
     std::string notesStr = msg1.getField("notes");
@@ -82,8 +79,6 @@ TEST_CASE("ChordGame Partial and Incorrect") {
         // "incorrect" n'est PAS présent
         CHECK_FALSE(res1.hasField("incorrect"));
     }
-    game.stop();
-    if (gameThread.joinable()) gameThread.join();
 }
 
 /// Vérifie génération et validation accords avec renversements
@@ -98,7 +93,7 @@ TEST_CASE("ChordGame Inversions") {
     ChordGame game(transport, midi, config, true); // Avec renversements
     transport.waitForClient();
     game.start();
-    std::thread gameThread([&game]() { game.play(); });
+    std::jthread gameThread([&](std::stop_token st) { game.play(st); });
 
     bool seenInversion = false;
     for (int i = 0; i < 20; ++i) {
@@ -122,8 +117,6 @@ TEST_CASE("ChordGame Inversions") {
         if (i < 19) transport.pushIncoming(Message("ready"));
     }
     CHECK(seenInversion); // Devrait être très probable
-    game.stop();
-    if (gameThread.joinable()) gameThread.join();
 }
 
 /// Vérifie comportement avec gamme inconnue (doit fallback Do Majeur)
@@ -139,15 +132,12 @@ TEST_CASE("ChordGame Unknown Scale") {
 
     transport.waitForClient();
     game.start();
-    std::thread gameThread([&game]() { game.play(); });
+    std::jthread gameThread([&](std::stop_token st) { game.play(st); });
 
     Message msg = transport.waitForSentMessage();
     CHECK(msg.getType() == "chord"); // Devrait produire accord (Do Maj défaut)
     midi.pushNotes(std::vector<Note>{});
     transport.waitForSentMessage();
-
-    game.stop();
-    if (gameThread.joinable()) gameThread.join();
 }
 
 /// Vérifie gestion réponses complètement incorrectes (aucune note correcte)
@@ -164,7 +154,7 @@ TEST_CASE("ChordGame Completely Incorrect") {
 
     transport.waitForClient();
     game.start();
-    std::thread gameThread([&game]() { game.play(); });
+    std::jthread gameThread([&](std::stop_token st) { game.play(st); });
 
     Message msg = transport.waitForSentMessage();
     CHECK(msg.getType() == "chord");
@@ -174,9 +164,6 @@ TEST_CASE("ChordGame Completely Incorrect") {
     Message res = transport.waitForSentMessage();
     CHECK(res.getType() == "result");
     CHECK(res.hasField("incorrect"));
-
-    game.stop();
-    if (gameThread.joinable()) gameThread.join();
 }
 
 /// Vérifie gestion message non-ready entre défis (erreur protocole)
@@ -191,7 +178,7 @@ TEST_CASE("ChordGame Ready Message Error") {
 
     transport.waitForClient();
     game.start();
-    std::thread gameThread([&game]() { game.play(); });
+    std::jthread gameThread([&](std::stop_token st) { game.play(st); });
 
     // Premier défi
     Message msg1 = transport.waitForSentMessage();
@@ -202,9 +189,6 @@ TEST_CASE("ChordGame Ready Message Error") {
     // Envoyer mauvais message au lieu de "ready"
     transport.pushIncoming(Message("wrong"));
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
-    game.stop();
-    if (gameThread.joinable()) gameThread.join();
 }
 
 /// Vérifie couverture renversements appliqués (inversion > 0)
@@ -223,7 +207,7 @@ TEST_CASE("ChordGame With Inversions Coverage") {
     game.start();
 
     bool foundInversion = false;
-    std::thread gameThread([&game]() { game.play(); });
+    std::jthread gameThread([&](std::stop_token st) { game.play(st); });
 
     for (int i = 0; i < 50; ++i) {
         Message msg = transport.waitForSentMessage();
@@ -241,6 +225,5 @@ TEST_CASE("ChordGame With Inversions Coverage") {
     }
 
     CHECK(foundInversion); // Très probable avec 50 tentatives
-    game.stop();
-    if (gameThread.joinable()) gameThread.join();
 }
+

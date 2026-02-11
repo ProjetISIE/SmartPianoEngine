@@ -1,6 +1,7 @@
 #ifndef IGAMEMODE_HPP
 #define IGAMEMODE_HPP
 
+#include <stop_token>
 #include <string>
 
 /**
@@ -39,14 +40,10 @@ class IGameMode {
 
     /**
      * @brief Exécute une partie complète
+     * @param stopToken Jeton d'arrêt pour interrompre la partie
      * @return Résultat de la partie
      */
-    virtual GameResult play() = 0;
-
-    /**
-     * @brief Arrête le jeu
-     */
-    virtual void stop() = 0;
+    virtual GameResult play(std::stop_token stopToken) = 0;
 };
 
 #endif // IGAMEMODE_HPP

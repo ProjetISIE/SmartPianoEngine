@@ -5,6 +5,7 @@
 #include "IMidiInput.hpp"
 #include "ITransport.hpp"
 #include <random>
+#include <stop_token>
 #include <string>
 #include <vector>
 
@@ -87,14 +88,10 @@ class ChordGame : public IGameMode {
 
     /**
      * @brief Exécute une partie
+     * @param stopToken Jeton d'arrêt pour interrompre la partie
      * @return Résultat de la partie
      */
-    GameResult play() override;
-
-    /**
-     * @brief Arrête le jeu
-     */
-    void stop() override;
+    GameResult play(std::stop_token stopToken) override;
 };
 
 #endif // CHORDGAME_HPP

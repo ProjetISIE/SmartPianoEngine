@@ -17,9 +17,7 @@ void GameEngine::run() {
 
 void GameEngine::stop() {
     this->running = false;
-    if (this->currentGame) {
-        this->currentGame->stop();
-    }
+    this->gameStopSource.request_stop();
     this->transport.stop();
 }
 
@@ -72,13 +70,15 @@ void GameEngine::processGameSession(const GameConfig& config) {
         this->transport.send(error);
         return;
     }
+    // Réinitialiser la source d'arrêt pour la nouvelle session
+    this->gameStopSource = std::stop_source();
     bool sessionActive = true;
     while (sessionActive) {
         // Attendre que le client soit prêt (ou quit)
         Message readyMsg = this->transport.receive();
         if (readyMsg.getType() == "quit") {
             Logger::log("[GameEngine] Client demande arrêt de session");
-            this->currentGame->stop();
+            this->gameStopSource.request_stop();
             return; // Retour à l'état CONFIGURED
         }
         if (readyMsg.getType() != "ready") {
@@ -96,7 +96,7 @@ void GameEngine::processGameSession(const GameConfig& config) {
         }
         // Lancer la partie
         this->currentGame->start();
-        GameResult result = this->currentGame->play();
+        GameResult result = this->currentGame->play(gameStopSource.get_token());
         // Envoyer le résultat final (sans score)
         std::map<std::string, std::string> overFields{
             {"duration", std::to_string(result.duration)},

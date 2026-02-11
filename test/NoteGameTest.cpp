@@ -18,7 +18,7 @@ TEST_CASE("NoteGame Flow") {
     config.maxChallenges = 2; // Test avec 2 défis pour vérifier l'enchaînement
     NoteGame game(transport, midi, config);
     game.start();
-    std::thread gameThread([&game]() { game.play(); });
+    std::jthread gameThread([&](std::stop_token st) { game.play(st); });
     // Premier défi
     Message msg1 = transport.waitForSentMessage();
     CHECK(msg1.getType() == "note");
@@ -39,8 +39,6 @@ TEST_CASE("NoteGame Flow") {
     Message res2 = transport.waitForSentMessage();
     CHECK(res2.getType() == "result");
     CHECK(res2.hasField("correct"));
-    game.stop();
-    if (gameThread.joinable()) gameThread.join();
 }
 
 /// Vérifie détection et signalement réponse incorrecte
@@ -54,7 +52,7 @@ TEST_CASE("NoteGame Incorrect Answer") {
     config.maxChallenges = 1;
     NoteGame game(transport, midi, config);
     game.start();
-    std::thread gameThread([&game]() { game.play(); });
+    std::jthread gameThread([&](std::stop_token st) { game.play(st); });
     Message msg1 = transport.waitForSentMessage();
     std::string expectedNote = msg1.getField("note");
     // Envoyer note incorrecte
@@ -64,8 +62,6 @@ TEST_CASE("NoteGame Incorrect Answer") {
     CHECK(res1.getType() == "result");
     CHECK(res1.hasField("incorrect"));
     CHECK_FALSE(res1.hasField("correct"));
-    game.stop();
-    if (gameThread.joinable()) gameThread.join();
 }
 
 /// Vérifie comportement repli gamme invalide (doit utiliser Do Majeur par
@@ -79,12 +75,10 @@ TEST_CASE("NoteGame Unknown Scale Fallback") {
     config.maxChallenges = 1;
     NoteGame game(transport, midi, config);
     game.start();
-    std::thread gameThread([&game]() { game.play(); });
+    std::jthread gameThread([&](std::stop_token st) { game.play(st); });
     // Devrait fallback sur Do Majeur, donc générer une note
     Message msg1 = transport.waitForSentMessage();
     CHECK(msg1.getType() == "note");
-    game.stop();
-    if (gameThread.joinable()) gameThread.join();
 }
 
 /// Vérifie détection plusieurs notes incorrectes simultanées
@@ -98,7 +92,7 @@ TEST_CASE("NoteGame Multiple Incorrect Notes") {
     config.maxChallenges = 1;
     NoteGame game(transport, midi, config);
     game.start();
-    std::thread gameThread([&game]() { game.play(); });
+    std::jthread gameThread([&](std::stop_token st) { game.play(st); });
     Message msg1 = transport.waitForSentMessage();
     std::string expectedNote = msg1.getField("note");
     // Envoyer plusieurs notes incorrectes (couvre ligne 60 branch)
@@ -113,6 +107,5 @@ TEST_CASE("NoteGame Multiple Incorrect Notes") {
     // Vérifier que champ incorrect contient espaces (ligne 60)
     std::string incorrect = res1.getField("incorrect");
     CHECK(incorrect.find(" ") != std::string::npos);
-    game.stop();
-    if (gameThread.joinable()) gameThread.join();
 }
+
