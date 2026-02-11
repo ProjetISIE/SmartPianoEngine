@@ -1,7 +1,6 @@
 on:
   pull_request:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   test-coverage:
@@ -24,11 +23,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y alsa-utils linux-modules-extra-$(uname -r)
           # No virmidi module on Actions TODO mock MIDI for this env
-
-      # - name: Config Cachix TODO
-      #   uses: cachix/cachix-action@v15
-      #   with:
-      #     name: devenv
 
       - name: Configure & build project
         run: |
