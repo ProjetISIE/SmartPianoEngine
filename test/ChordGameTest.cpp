@@ -42,6 +42,7 @@ TEST_CASE("ChordGame Flow") {
     CHECK(res1.getType() == "result");
     CHECK(res1.hasField("correct"));
 
+    game.stop();
     if (gameThread.joinable()) gameThread.join();
 }
 
@@ -67,12 +68,8 @@ TEST_CASE("ChordGame Partial and Incorrect") {
     while (std::getline(ss, segment, ' ')) notes.push_back(segment);
 
     // Envoyer seulement 1 note correcte (Partiel)
-    if (!notes.empty()) {
-        midi.pushNotes({notes[0]});
-    } else {
-        midi.pushNotes(std::vector<Note>{});
-    }
-
+    if (!notes.empty()) midi.pushNotes({notes[0]});
+    else midi.pushNotes(std::vector<Note>{});
     Message res1 = transport.waitForSentMessage();
     CHECK(res1.getType() == "result");
 
@@ -85,7 +82,7 @@ TEST_CASE("ChordGame Partial and Incorrect") {
         // "incorrect" n'est PAS présent
         CHECK_FALSE(res1.hasField("incorrect"));
     }
-
+    game.stop();
     if (gameThread.joinable()) gameThread.join();
 }
 
@@ -122,12 +119,10 @@ TEST_CASE("ChordGame Inversions") {
         transport.waitForSentMessage(); // result
 
         // Envoyer ready seulement si on attend un autre tour
-        if (i < 19) {
-            transport.pushIncoming(Message("ready"));
-        }
+        if (i < 19) transport.pushIncoming(Message("ready"));
     }
-
     CHECK(seenInversion); // Devrait être très probable
+    game.stop();
     if (gameThread.joinable()) gameThread.join();
 }
 
@@ -151,6 +146,7 @@ TEST_CASE("ChordGame Unknown Scale") {
     midi.pushNotes(std::vector<Note>{});
     transport.waitForSentMessage();
 
+    game.stop();
     if (gameThread.joinable()) gameThread.join();
 }
 
@@ -179,6 +175,7 @@ TEST_CASE("ChordGame Completely Incorrect") {
     CHECK(res.getType() == "result");
     CHECK(res.hasField("incorrect"));
 
+    game.stop();
     if (gameThread.joinable()) gameThread.join();
 }
 
@@ -206,6 +203,7 @@ TEST_CASE("ChordGame Ready Message Error") {
     transport.pushIncoming(Message("wrong"));
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
+    game.stop();
     if (gameThread.joinable()) gameThread.join();
 }
 
@@ -239,12 +237,10 @@ TEST_CASE("ChordGame With Inversions Coverage") {
 
         midi.pushNotes(std::vector<Note>{});
         transport.waitForSentMessage(); // result
-
-        if (i < 49) {
-            transport.pushIncoming(Message("ready"));
-        }
+        if (i < 49) transport.pushIncoming(Message("ready"));
     }
 
     CHECK(foundInversion); // Très probable avec 50 tentatives
+    game.stop();
     if (gameThread.joinable()) gameThread.join();
 }
