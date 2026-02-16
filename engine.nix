@@ -1,12 +1,11 @@
 {
-  alsa-lib,
   clang,
   cmake,
   doctest,
   llvm,
-  libjack2,
   ninja,
   pkg-config,
+  pkgs,
   rtmidi,
   self,
   stdenv,
@@ -25,9 +24,11 @@ stdenv.mkDerivation {
     pkg-config # Build tool
   ];
   buildInputs = [
-    alsa-lib # Audio lib
-    libjack2 # Audio interconnection lib
     rtmidi # MIDI lib
+  ]
+  ++ pkgs.lib.optionals stdenv.isLinux [
+    pkgs.alsa-lib # Audio lib
+    pkgs.libjack2 # Audio interconnection lib
   ];
   installPhase = ''
     mkdir --parents --verbose $out/include

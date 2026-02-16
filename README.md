@@ -111,7 +111,7 @@ d’exploitations, architectures ou configurations, sans garantie.
 | Contrôle qualité C++             | [clang-tidy]             |
 | Débogage C++                     | [lldb]                   |
 | Test manuel communication socket | [socat]                  |
-| Éditeur de code                  | [VS Code], [Helix]…      |
+| Édition du code                  | [VS Code], [Helix]…      |
 
 ## Compilation & Exécution
 
