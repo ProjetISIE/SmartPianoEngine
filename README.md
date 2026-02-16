@@ -74,6 +74,13 @@ développement (`C++`).
 - `maj` : Majeur
 - `min` : Mineur
 
+## Retour Audio
+
+**Smart Piano** ne produit pas de son en lui-même, il traite simplement les
+données _MIDI_ (les notes jouées) en fonction d’exercices. Pour entendre un son
+de piano, il est nécessaire de router aussi les données _MIDI_ vers un
+synthétiseur tel que [FluidSynth] tournant en parallèle.
+
 ## Matériel
 
 Smart Piano a été conçu pour fonctionner avec :
@@ -462,6 +469,7 @@ main.cpp
 [doctest]: https://github.com/doctest/doctest
 [Doxygen]: https://www.doxygen.nl
 [Doxygen Docs]: https://www.doxygen.nl/manual
+[FluidSynth]: https://www.fluidsynth.org
 [Git]: https://git-scm.com
 [Helix]: https://helix-editor.com
 [lcov]: https://github.com/linux-test-project/lcov
