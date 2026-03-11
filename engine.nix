@@ -1,6 +1,6 @@
 {
-  clang,
   cmake,
+  cppcheck,
   doctest,
   llvm,
   ninja,
@@ -12,12 +12,13 @@
 }:
 stdenv.mkDerivation {
   pname = "engine";
-  version = "0.0.0";
+  version = "0.1.0";
   src = self;
-  doCheck = true; # Enable tests
+  doCheck = false; # Already in check coverage
   nativeBuildInputs = [
-    clang # C/C++ compiler
+    # clang # C/C++ compiler
     cmake # Modern build tool
+    cppcheck # C++ Static analysis
     doctest # Testing framework
     llvm # For llvm-cov
     ninja # Modern build tool
