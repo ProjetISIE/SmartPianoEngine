@@ -22,54 +22,73 @@ GameResult NoteGame::play() {
     int perfectCount = 0;
     const int maxChallenges = this->config.maxChallenges;
 
+    Logger::log("[NoteGame] Début boucle: {} challenges", maxChallenges);
+
     for (int i = 0; i < maxChallenges; ++i) {
-        // Générer une note via la factory commune
+        Logger::log("[NoteGame] Début challenge {}/{}", i + 1, maxChallenges);
+        
         std::string targetNoteStr =
             factory.generateNote(config.scale, config.mode);
         this->challengeId++;
 
-        // Envoyer le challenge
         Message challenge("note", {{"note", targetNoteStr},
                                    {"id", std::to_string(this->challengeId)}});
         this->transport.send(challenge);
 
-        Logger::log("[NoteGame] Challenge {}: {}", this->challengeId,
+        Logger::log("[NoteGame] Défi envoyé: id={} note={}", this->challengeId,
                     targetNoteStr);
 
-        // Attendre les notes jouées
         auto challengeStart = high_resolution_clock::now();
         std::vector<Note> playedNotes = this->midi.readNotes();
         auto challengeEnd = high_resolution_clock::now();
 
         auto duration =
             duration_cast<milliseconds>(challengeEnd - challengeStart).count();
+        Logger::log("[NoteGame] Notes reçues (nb={})", playedNotes.size());
 
-        // Valider avec AnswerValidator
         bool correct = false;
+        std::string correctNotes;
+        std::string incorrectNotes;
+
+        for (const auto& played : playedNotes) {
+            std::string playedNoteStr = played.toString();
+            if (validator.valider(playedNoteStr, targetNoteStr)) {
+                if (!correctNotes.empty()) correctNotes += " ";
+                correctNotes += playedNoteStr;
+                correct = true;
+            } else {
+                if (!incorrectNotes.empty()) incorrectNotes += " ";
+                incorrectNotes += playedNoteStr;
+            }
+        }
+
         std::map<std::string, std::string> resultFields{
             {"id", std::to_string(this->challengeId)},
             {"duration", std::to_string(duration)}};
 
-        if (!playedNotes.empty()) {
-            std::string playedNoteStr = playedNotes[0].toString();
-            if (validator.valider(playedNoteStr, targetNoteStr)) {
-                resultFields["correct"] = playedNoteStr;
-                correct = true;
-                perfectCount++;
-            } else {
-                resultFields["incorrect"] = playedNoteStr;
-            }
+        if (!correctNotes.empty()) resultFields["correct"] = correctNotes;
+        if (!incorrectNotes.empty()) resultFields["incorrect"] = incorrectNotes;
+
+        if (correctNotes.empty() && incorrectNotes.empty()) {
+            resultFields["incorrect"] = "none";
         }
 
-        Message resultMsg("result", resultFields);
-        this->transport.send(resultMsg);
+        if (correct && incorrectNotes.empty() && playedNotes.size() == 1) {
+            perfectCount++;
+        }
 
-        Logger::log("[NoteGame] Résultat: {}",
-                    correct ? "correct" : "incorrect");
+        this->transport.send(Message("result", resultFields));
+        Logger::log("[NoteGame] Résultat envoyé");
 
         if (i < maxChallenges - 1) {
+            Logger::log("[NoteGame] En attente de 'ready'...");
             Message readyMsg = this->transport.receive();
-            if (readyMsg.getType() != "ready") break;
+            Logger::log("[NoteGame] Message reçu après result: '{}'", readyMsg.getType());
+            if (readyMsg.getType() != "ready") {
+                Logger::err("[NoteGame] Abandon car attendu 'ready', reçu '{}'",
+                            readyMsg.getType());
+                break;
+            }
         }
     }
 
@@ -78,10 +97,11 @@ GameResult NoteGame::play() {
     result.perfect = perfectCount;
     result.total = maxChallenges;
 
+    Logger::log("[NoteGame] play() se termine");
     return result;
 }
 
 void NoteGame::stop() {
-    Logger::log("[NoteGame] Arrêt du jeu");
+    Logger::log("[NoteGame] stop() appelé");
     this->midi.close();
 }
