@@ -66,11 +66,11 @@
             cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCOVERAGE=ON
           '';
           buildPhase = ''
-            cmake --build build
+            cmake --build build -j16
           '';
           checkPhase = ''
-            cmake --build build --target tests
-            cmake --build build --target coverage
+            cmake --build build --target tests -j16
+            cmake --build build --target coverage -j16
             llvm-cov report build/src/main -instr-profile=build/coverage.profdata -ignore-filename-regex='test/.*' > build/coverage.txt
             cat build/coverage.txt
             echo "Verifying functions coverage is > 90%"
@@ -116,7 +116,7 @@
               # Export compile commands JSON for LSP and other tools
               shellHook = ''
                 mkdir --verbose build
-                cmake -DCMAKE_BUILD_TYPE=Debug -DCOVERAGE=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -S . -B build
+                cmake -DCMAKE_BUILD_TYPE=Debug -DCOVERAGE=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -GNinja -S . -B build
               '';
             };
       });
