@@ -5,8 +5,7 @@
     { self, nixpkgs }:
     let
       localSystems = [
-        "x86_64-linux"
-        # "aarch64-linux"
+        "x86_64-linux" # "aarch64-linux"
         "aarch64-darwin"
       ];
       forAllSystems =
@@ -69,8 +68,7 @@
             cmake --build build -j16
           '';
           checkPhase = ''
-            cmake --build build --target tests -j16
-            cmake --build build --target coverage -j1
+            cmake --build build --target coverage -j1 # Multithread breaks tests
             llvm-cov report build/src/main -instr-profile=build/coverage.profdata -ignore-filename-regex='test/.*' > build/coverage.txt
             cat build/coverage.txt
             echo "Verifying functions coverage is > 90%"
@@ -80,12 +78,8 @@
           '';
           installPhase = ''
             mkdir -p $out
-            if [ -f "build/coverage.txt" ]; then
-              cp build/coverage.txt $out/
-            fi
-            if [ -d "build/coverage" ]; then
-              cp -R build/coverage $out/html
-            fi
+            [ -f "build/coverage.txt" ] && cp build/coverage.txt $out/
+            [ -d "build/coverage" ] && cp -R build/coverage $out/html
           '';
         };
       });
@@ -102,14 +96,12 @@
                 clang-uml # UML diagram generator
                 cmake-format # CMake formatter
                 cmake-language-server # Cmake LSP
-                # cppcheck # C++ Static analysis
                 doxygen # Documentation generator
-                # fluidsynth # JACK Synthesizer
+                fluidsynth # JACK Synthesizer
                 lldb # Clang debug adapter
-                # neocmakelsp # CMake LSP
-                # qsynth # FluidSynth GUI
+                qsynth # FluidSynth GUI
                 socat # Serial terminal for manual testing
-                # valgrind # Debugging and profiling
+                valgrind # Debugging and profiling
               ];
               nativeBuildInputs = self.packages.${pkgs.stdenv.hostPlatform.system}.smart-piano.nativeBuildInputs;
               buildInputs = self.packages.${pkgs.stdenv.hostPlatform.system}.smart-piano.buildInputs;
