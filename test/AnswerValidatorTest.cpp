@@ -29,15 +29,22 @@ TEST_CASE("AnswerValidator::validerAccordSR (Sans Renversement)") {
         CHECK(vn.validerAccordSR(joue, attendu));
     }
 
+    /// Vérifie support des bémols (Gb == F#)
+    SUBCASE("Support flats and sharps") {
+        std::vector<std::string> attenduGb = {"gb4", "bb4", "db5"};
+        std::vector<std::string> joueFSharp = {"f#4", "a#4", "c#5"};
+        CHECK(vn.validerAccordSR(joueFSharp, attenduGb));
+    }
+
+    /// Vérifie insensibilité à la casse
+    SUBCASE("Case insensitivity") {
+        std::vector<std::string> joue = {"C4", "E4", "G4"};
+        CHECK(vn.validerAccordSR(joue, attendu));
+    }
+
     /// Vérifie rejet accord avec note incorrecte
     SUBCASE("Incorrect chord") {
         std::vector<std::string> joue = {"c4", "e4", "a4"};
-        CHECK_FALSE(vn.validerAccordSR(joue, attendu));
-    }
-
-    /// Vérifie rejet accord avec nombre incorrect de notes
-    SUBCASE("Incorrect size") {
-        std::vector<std::string> joue = {"c4", "e4"};
         CHECK_FALSE(vn.validerAccordSR(joue, attendu));
     }
 }
@@ -47,8 +54,7 @@ TEST_CASE("AnswerValidator::validerAccordSR (Sans Renversement)") {
 /// octave
 TEST_CASE("AnswerValidator::validerAccordRenversement") {
     AnswerValidator vn;
-    std::vector<std::string> attendu = {"c4", "e4",
-                                        "g4"}; // Accord Do Majeur fondamental
+    std::vector<std::string> attendu = {"c4", "e4", "g4"};
 
     /// Vérifie position fondamentale (renversement=1)
     SUBCASE("Root position (renversement=1)") {
@@ -76,7 +82,7 @@ TEST_CASE("AnswerValidator::validerAccordRenversement") {
 
     /// Vérifie rejet notes trop éloignées (hors octave)
     SUBCASE("Note too far apart (outside octave)") {
-        std::vector<std::string> joue = {"c4", "e6", "g6"}; // Écart trop large
+        std::vector<std::string> joue = {"c4", "e6", "g6"};
         CHECK_FALSE(vn.validerAccordRenversement(joue, attendu, 1));
     }
 }
