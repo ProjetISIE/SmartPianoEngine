@@ -14,14 +14,15 @@ jobs:
       contents: read
 
     steps:
-      - uses: actions/checkout@v5
-      - uses: cachix/install-nix-action@v31.10.0
+      - uses: actions/checkout@v6
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v21
         with:
-          github_access_token: ${{ secrets.GITHUB_TOKEN }}
-          extra_nix_config: |
+          extra-conf: |
             extra-substituters = https://cache.garnix.io
             extra-trusted-public-keys = cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g=
-      - uses: DeterminateSystems/magic-nix-cache-action@v13
-      - name: Install Project Dependencies
+      - name: Magic Nix Cache
+        uses: DeterminateSystems/magic-nix-cache-action@v13
+      - name: Initial Project Build
         run: nix develop --command cmake --build build
         continue-on-error: true

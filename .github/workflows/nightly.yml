@@ -1,81 +1,53 @@
 on:
   schedule:
-    - cron: '0 2 * * *' # TODO
-  workflow_dispatch: # Allow manual trigger
+    - cron: '0 2 * * *'
+  workflow_dispatch:
 
 permissions:
   pull-requests: write
-  contents: read
+  contents: write
   issues: write
   checks: read
   statuses: read
 
 jobs:
-  nix:
-    name: Wait for Garnix
+  nightly:
+    name: Nightly Maintenance
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v4
-      - name: Sleep hoping Garnix evaluation will start after
-        run: sleep 30
-      - name: Wait for Garnix flake.nix evaluation
-        uses: lewagon/wait-on-check-action@v1.5.0
+      - uses: actions/checkout@v6
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v21
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-          check-regexp: 'Evaluate flake.nix'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Wait for Garnix packages
-        uses: lewagon/wait-on-check-action@v1.5.0
-        with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-          check-regexp: 'package.*'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          fail-on-no-checks: false
-      - uses: cachix/install-nix-action@v31.10.0
-        with:
-          github_access_token: ${{ secrets.GITHUB_TOKEN }}
-          extra_nix_config: |
+          extra-conf: |
             extra-substituters = https://cache.garnix.io
             extra-trusted-public-keys = cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g=
-      - uses: DeterminateSystems/magic-nix-cache-action@v13
-  
-  update:
-    name: Update Dependencies
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    needs: nix
-    permissions:
-      pull-requests: write
-    steps:
-    - name: Update flake inputs
-      run: nix flake update
-    # - name: Renovate bot ? TODO
-    - name: Create Pull Request
-      uses: peter-evans/create-pull-request@v7
-      with:
-        commit-message: 'chore: update flake.lock, check deps freshness'
-        title: 'chore: update flake.lock, check deps freshness'
-        body: Automated nightly update of Nix flake inputs and dependencies
-        branch: nightly/update-deps
-        delete-branch: true
-
-  audit:
-    name: Dependency Audit
-    runs-on: ubuntu-latest
-    needs: nix
-    timeout-minutes: 30
-    steps:
-      - name: Audit Dependencies
-        run: echo TODO Audit dependencies
-
-  mutation:
-    name: Mutation Testing
-    runs-on: ubuntu-latest
-    needs: nix
-    timeout-minutes: 180
-    steps:
-    - name: Build
-      run: nix build
-    - name: Test Mutants
-      run: echo TODO Full mutation testing
+      - name: Magic Nix Cache
+        uses: DeterminateSystems/magic-nix-cache-action@v13
+      - name: Update flake inputs
+        id: update
+        run: |
+          nix flake update
+          if ! git diff --exit-code flake.lock; then
+            echo "updated=true" >> $GITHUB_OUTPUT
+          fi
+      - name: Create Pull Request for Updates
+        if: steps.update.outputs.updated == 'true'
+        uses: peter-evans/create-pull-request@v8
+        with:
+          commit-message: 'chore: update flake.lock'
+          title: 'chore: update flake.lock (Nightly)'
+          body: Nightly update of flake inputs, verified by `nix flake check`
+          branch: nightly/update-deps
+          delete-branch: true
+      - name: Audit Dependencies & Flake Check
+        run: |
+          nix flake check --all-systems --no-build
+          # We can also add specifically the coverage check as a sanity check
+          nix build .#checks.x86_64-linux.coverage
+      - name: Mutation Testing Placeholder
+        run: |
+          echo "Mutation testing is currently a placeholder"
+          echo "Future: Integrate with a C++ mutation testing tool like Mull"
+          nix build
