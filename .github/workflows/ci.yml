@@ -1,0 +1,71 @@
+on:
+  pull_request:
+  workflow_dispatch: # Allow manual trigger
+
+permissions:
+  pull-requests: write
+  contents: read
+  issues: write
+  checks: read
+  statuses: read
+
+jobs:
+  nix:
+    name: Setup Nix Env
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      checks: read
+      statuses: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Sleep hoping Garnix evaluation will start after
+        run: sleep 30
+      - name: Wait for Garnix flake.nix evaluation
+        uses: lewagon/wait-on-check-action@v1.5.0
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          check-regexp: 'Evaluate flake.nix'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          fail-on-no-checks: false
+      - name: Wait for Garnix packages
+        uses: lewagon/wait-on-check-action@v1.5.0
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          check-regexp: 'check.*'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          fail-on-no-checks: false
+      - uses: cachix/install-nix-action@v31.10.0
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+          extra_nix_config: |
+            extra-substituters = https://cache.garnix.io
+            extra-trusted-public-keys = cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g=
+      - uses: DeterminateSystems/magic-nix-cache-action@v13
+
+  coverage:
+    name: Unit Test measuring Coverage
+    needs: nix
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Run Unit Tests with Coverage (from Garnix cache)
+        run: nix build .#checks.x86_64-linux.coverage -o coverage
+      - name: Process Coverage Report
+        id: coverage_report
+        run: |
+          HTML=$(grep -o "<table>.*</table>" coverage/html/index.html)
+          TXT=$(cat coverage/coverage.txt)
+          echo "REPORT<<EOF" >> $GITHUB_OUTPUT
+          echo -e "$REPORT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          # TODO Process TXT to fail test if below 80% (or change to JSON)
+      - name: Post Coverage Comment
+        if: always() && github.event_name == 'pull_request'
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ### 📊 Coverage Report
+            
+            ${{ steps.coverage_report.outputs.REPORT }}

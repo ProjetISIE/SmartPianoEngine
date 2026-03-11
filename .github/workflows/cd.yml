@@ -1,0 +1,91 @@
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  workflow_dispatch: # Allow manual trigger
+
+permissions:
+  pull-requests: write
+  contents: read
+  issues: write
+  checks: read
+  statuses: read
+
+jobs:
+  nix:
+    name: Wait for Garnix
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      checks: read
+      statuses: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Sleep hoping Garnix evaluation will start after
+        run: sleep 30
+      - name: Wait for Garnix flake.nix evaluation
+        uses: lewagon/wait-on-check-action@v1.5.0
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          check-regexp: 'Evaluate flake.nix'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Wait for Garnix packages
+        uses: lewagon/wait-on-check-action@v1.5.0
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          check-regexp: 'package.*'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          fail-on-no-checks: false
+      - uses: cachix/install-nix-action@v31.10.0
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+          extra_nix_config: |
+            extra-substituters = https://cache.garnix.io
+            extra-trusted-public-keys = cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g=
+      - uses: DeterminateSystems/magic-nix-cache-action@v13
+
+  prerelease:
+    name: Rolling Release
+    runs-on: ubuntu-latest
+    needs: nix
+    timeout-minutes: 30
+    if: github.ref == 'refs/heads/main'
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+    - name: Build
+      run: nix build
+    - name: Publish Rolling Release
+      run: |
+        DATE=$(date -u +%Y-%m-%d)
+        TAG="rolling-$DATE"
+        if gh release view "$TAG" >/dev/null 2>&1; then
+          echo "Rolling release for $DATE already exists. Skipping."
+        else
+          gh release list --limit 100 | grep "rolling-" | while read -r line; do
+            OLD_TAG=$(echo "$line" | awk '{print $1}')
+            OLD_DATE=${OLD_TAG#rolling-}
+            if [ "$(date -d "$OLD_DATE" +%s)" -lt "$(date -d "7 days ago" +%s)" ]; then
+               gh release delete "$OLD_TAG" --yes --cleanup-tag
+            fi
+          done
+          gh release create "$TAG" "SmartPianoEngine" --title "Rolling $DATE" --notes "Automated rolling release for $DATE" --prerelease
+        fi
+
+  release:
+    name: Stable Release
+    runs-on: ubuntu-latest
+    needs: nix
+    timeout-minutes: 30
+    if: startsWith(github.ref, 'refs/tags/v')
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+    - name: Build
+      run: nix build
+    - name: Publish Stable Release
+      run: |
+        TAG=${GITHUB_REF#refs/tags/}
+        gh release create "$TAG" "SmartPianoEngine" --title "SmartPiano $TAG" --notes "Release $TAG"
