@@ -5,8 +5,8 @@
     { self, nixpkgs }:
     let
       localSystems = [
-        "aarch64-linux"
         "x86_64-linux"
+        # "aarch64-linux"
         "aarch64-darwin"
       ];
       forAllSystems =
@@ -63,14 +63,14 @@
             ++ [ pkgs.lcov ];
           buildInputs = (self.packages.${pkgs.stdenv.hostPlatform.system}.smart-piano.buildInputs or [ ]);
           configurePhase = ''
-            cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCOVERAGE=ON
+            cmake -DCMAKE_BUILD_TYPE=Debug -DCOVERAGE=ON -GNinja -S . -B build
           '';
           buildPhase = ''
             cmake --build build -j16
           '';
           checkPhase = ''
             cmake --build build --target tests -j16
-            cmake --build build --target coverage -j16
+            cmake --build build --target coverage -j1
             llvm-cov report build/src/main -instr-profile=build/coverage.profdata -ignore-filename-regex='test/.*' > build/coverage.txt
             cat build/coverage.txt
             echo "Verifying functions coverage is > 90%"
