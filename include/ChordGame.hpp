@@ -32,8 +32,9 @@ class ChordGame : public IGameMode {
      * @param config Configuration du jeu
      * @param withInversions true pour mode avec renversements
      */
-    ChordGame(ITransport& transport, IMidiInput& midi, ChallengeFactory& factory,
-              const GameConfig& config, bool withInversions = false);
+    ChordGame(ITransport& transport, IMidiInput& midi,
+              ChallengeFactory& factory, const GameConfig& config,
+              bool withInversions = false);
 
     /**
      * @brief Démarre le jeu

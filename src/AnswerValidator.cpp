@@ -17,8 +17,8 @@ bool AnswerValidator::valider(const std::string& noteJouee,
 
 int AnswerValidator::getNoteValue(std::string noteName) const {
     static const std::map<std::string, int> notesMidi = {
-        {"C", 0},  {"C#", 1}, {"DB", 1},  {"D", 2},  {"D#", 3}, {"EB", 3},
-        {"E", 4},  {"F", 5},  {"F#", 6},  {"GB", 6}, {"G", 7},  {"G#", 8},
+        {"C", 0},  {"C#", 1}, {"DB", 1},  {"D", 2},   {"D#", 3}, {"EB", 3},
+        {"E", 4},  {"F", 5},  {"F#", 6},  {"GB", 6},  {"G", 7},  {"G#", 8},
         {"AB", 8}, {"A", 9},  {"A#", 10}, {"BB", 10}, {"B", 11}};
 
     std::transform(noteName.begin(), noteName.end(), noteName.begin(),
