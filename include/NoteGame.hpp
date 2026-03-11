@@ -1,6 +1,8 @@
 #ifndef NOTEGAME_HPP
 #define NOTEGAME_HPP
 
+#include "AnswerValidator.hpp"
+#include "ChallengeFactory.hpp"
 #include "IGameMode.hpp"
 #include "IMidiInput.hpp"
 #include "ITransport.hpp"
@@ -10,38 +12,27 @@
 
 /**
  * @brief Jeu de reconnaissance de notes individuelles
- *
  * Le joueur doit jouer la note affichée
  */
 class NoteGame : public IGameMode {
   private:
-    ITransport& transport; ///< Référence au transport
-    IMidiInput& midi;      ///< Référence à l'entrée MIDI
-    GameConfig config;     ///< Configuration du jeu
-    std::mt19937 rng;      ///< Générateur aléatoire
-    int challengeId;       ///< ID du challenge actuel
-
-  private:
-    /**
-     * @brief Génère une note aléatoire dans la gamme
-     * @return Note générée
-     */
-    Note generateRandomNote();
-
-    /**
-     * @brief Obtient les notes de la gamme configurée
-     * @return Vecteur de notes possibles
-     */
-    std::vector<std::string> getScaleNotes();
+    ITransport& transport;     ///< Référence au transport
+    IMidiInput& midi;          ///< Référence à l'entrée MIDI
+    ChallengeFactory& factory; ///< Référence à la factory
+    GameConfig config;         ///< Configuration du jeu
+    AnswerValidator validator; ///< Validateur de réponses
+    int challengeId;           ///< ID du challenge actuel
 
   public:
     /**
      * @brief Constructeur
      * @param transport Transport pour communication
      * @param midi Entrée MIDI
+     * @param factory Factory pour générer les challenges
      * @param config Configuration du jeu
      */
-    NoteGame(ITransport& transport, IMidiInput& midi, const GameConfig& config);
+    NoteGame(ITransport& transport, IMidiInput& midi, ChallengeFactory& factory,
+             const GameConfig& config);
 
     /**
      * @brief Démarre le jeu

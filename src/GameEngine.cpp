@@ -115,13 +115,14 @@ void GameEngine::processGameSession(const GameConfig& config) {
 std::unique_ptr<IGameMode>
 GameEngine::createGameMode(const GameConfig& config) {
     if (config.gameType == "note")
-        return std::make_unique<NoteGame>(this->transport, this->midi, config);
+        return std::make_unique<NoteGame>(this->transport, this->midi,
+                                          this->factory, config);
     else if (config.gameType == "chord")
-        return std::make_unique<ChordGame>(this->transport, this->midi, config,
-                                           false);
+        return std::make_unique<ChordGame>(this->transport, this->midi,
+                                           this->factory, config, false);
     else if (config.gameType == "inversed")
-        return std::make_unique<ChordGame>(this->transport, this->midi, config,
-                                           true);
+        return std::make_unique<ChordGame>(this->transport, this->midi,
+                                           this->factory, config, true);
     Logger::err("[GameEngine] Mode de jeu inconnu: {}", config.gameType);
     return nullptr;
 }
