@@ -56,6 +56,21 @@ class AnswerValidator {
     validerAccordRenversement(const std::vector<std::string>& accordJoue,
                               const std::vector<std::string>& accordAttendu,
                               uint32_t renversement);
+
+  private:
+    /**
+     * @brief Convertit un nom de note en valeur MIDI modulo 12
+     * @param note Nom de la note (ex: "C", "Gb", "D#")
+     * @return Valeur MIDI (0-11) ou -1 si invalide
+     */
+    int getNoteValue(std::string noteName) const;
+
+    /**
+     * @brief Convertit une note avec octave en valeur MIDI absolue
+     * @param note Str de la note (ex: "C4")
+     * @return Valeur MIDI absolue ou -1 si invalide
+     */
+    int getAbsoluteMidiValue(const std::string& noteStr) const;
 };
 
 #endif // ANSWERVALIDATOR_HPP

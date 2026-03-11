@@ -1,44 +1,57 @@
 #ifndef CHALLENGEFACTORY_HPP
 #define CHALLENGEFACTORY_HPP
 
+#include <map>
+#include <random>
 #include <string>
 #include <vector>
 
-// Classe pour générer des notes et des accords aléatoires
+/**
+ * @brief Classe ChallengeFactory
+ * Centralise la génération aléatoire de notes et d'accords
+ * harmonisée avec le protocole (c, d, e, f, g, a, b / maj, min)
+ */
 class ChallengeFactory {
+  private:
+    std::mt19937 rng; ///< Générateur de nombres aléatoires
+
+    // Tables de gammes harmonisées avec le protocole
+    static const std::map<std::string, std::vector<std::string>> scales;
+
   public:
-    ChallengeFactory(); ///< Constructeur par défaut
+    ChallengeFactory();
 
     /**
-     * @brief Génère une note aléatoire dans une gamme et un mode spécifiques
-     * @param gamme La gamme musicale (ex: "Do", "Re"…)
-     * @param mode Le mode musical (ex: "Majeur", "Mineur")
-     * @return Une chaîne de caractères représentant la note générée (ex: "C4")
+     * @brief Génère une note aléatoire dans une gamme et un mode
+     * @param scale Gamme (c, d, e, f, g, a, b)
+     * @param mode Mode (maj, min)
+     * @return Note au format string (ex: "c4")
      */
-    std::string generer(const std::string& gamme, const std::string& mode);
+    std::string generateNote(const std::string& scale, const std::string& mode);
 
     /**
-     * @brief Génère un accord aléatoire dans une gamme et un mode spécifiques
-     * @param gamme La gamme musicale (ex: "Do", "Re"…)
-     * @param mode Le mode musical (ex: "Majeur", "Mineur")
-     * @return Une paire contenant le nom de l'accord et un vecteur de notes
-     * (ex: {"Do majeur", {"C4", "E4", "G4"}})
+     * @brief Génère un accord aléatoire
+     * @param scale Gamme (c, d, e, f, g, a, b)
+     * @param mode Mode (maj, min)
+     * @return Paire {nom de l'accord, vecteur de notes}
      */
     std::pair<std::string, std::vector<std::string>>
-    genererAccord(const std::string& gamme, const std::string& mode);
+    generateChord(const std::string& scale, const std::string& mode);
 
     /**
-     * @brief Génère un accord avec un renversement aléatoire.
-     *
-     * @param gamme La gamme musicale (ex: "Do", "Re"…).
-     * @param mode Le mode musical (ex: "Majeur", "Mineur").
-     * @return Un tuple contenant le nom de l'accord, un vecteur de notes et le
-     * numéro de (renversement-1) (ex: {"Do majeur", {"E4", "G4", "C5"}, 2 = 3
-     * ème renversement})
+     * @brief Génère un accord avec renversement
+     * @param scale Gamme (c, d, e, f, g, a, b)
+     * @param mode Mode (maj, min)
+     * @return Tuple {nom, notes, renversement(1-3)}
      */
     std::tuple<std::string, std::vector<std::string>, int>
-    genererAccordRenversement(const std::string& gamme,
-                              const std::string& mode);
+    generateInversedChord(const std::string& scale, const std::string& mode);
+
+    /**
+     * @brief Récupère les notes d'une gamme
+     */
+    static std::vector<std::string> getScaleNotes(const std::string& scale,
+                                                  const std::string& mode);
 };
 
 #endif // CHALLENGEFACTORY_HPP

@@ -1,15 +1,14 @@
 #include "ChordGame.hpp"
 #include "Logger.hpp"
 #include <chrono>
-#include <map>
 
 using namespace std::chrono;
 
 ChordGame::ChordGame(ITransport& transport, IMidiInput& midi,
-                     const GameConfig& config, bool withInversions)
-    : transport(transport), midi(midi), config(config),
-      withInversions(withInversions), rng(std::random_device{}()),
-      challengeId(0) {
+                     ChallengeFactory& factory, const GameConfig& config,
+                     bool withInversions)
+    : transport(transport), midi(midi), factory(factory), config(config),
+      withInversions(withInversions), challengeId(0) {
     Logger::log("[ChordGame] Instance créée (inversions={})",
                 withInversions ? "oui" : "non");
 }
@@ -22,30 +21,43 @@ void ChordGame::start() {
 GameResult ChordGame::play() {
     GameResult result = {0, 0, 0, 0};
     auto startTime = high_resolution_clock::now();
-
     int perfectCount = 0;
     int partialCount = 0;
     const int maxChallenges = this->config.maxChallenges;
 
     for (int i = 0; i < maxChallenges; ++i) {
-        // Générer un accord aléatoire
-        Chord targetChord = generateRandomChord();
+        // Générer un accord via la factory
+        std::string name;
+        std::vector<std::string> targetNotes;
+        int inversion = 1;
+
+        if (withInversions) {
+            auto tuple =
+                factory.generateInversedChord(config.scale, config.mode);
+            name = std::get<0>(tuple);
+            targetNotes = std::get<1>(tuple);
+            inversion = std::get<2>(tuple);
+        } else {
+            auto pair = factory.generateChord(config.scale, config.mode);
+            name = pair.first;
+            targetNotes = pair.second;
+        }
+
         this->challengeId++;
 
         // Envoyer le challenge
         std::string notesStr;
-        for (size_t j = 0; j < targetChord.notes.size(); ++j) {
+        for (size_t j = 0; j < targetNotes.size(); ++j) {
             if (j > 0) notesStr += " ";
-            notesStr += targetChord.notes[j].toString();
+            notesStr += targetNotes[j];
         }
 
-        Message challenge("chord", {{"name", targetChord.name},
+        Message challenge("chord", {{"name", name},
                                     {"notes", notesStr},
                                     {"id", std::to_string(this->challengeId)}});
         this->transport.send(challenge);
 
-        Logger::log("[ChordGame] Challenge {}: {}", this->challengeId,
-                    targetChord.name);
+        Logger::log("[ChordGame] Challenge {}: {}", this->challengeId, name);
 
         // Attendre les notes jouées
         auto challengeStart = high_resolution_clock::now();
@@ -55,26 +67,37 @@ GameResult ChordGame::play() {
         auto duration =
             duration_cast<milliseconds>(challengeEnd - challengeStart).count();
 
-        // Valider l'accord
-        int correctCount = validateChord(playedNotes, targetChord.notes);
+        // Valider avec AnswerValidator
+        std::vector<std::string> playedNotesStr;
+        for (const auto& n : playedNotes) playedNotesStr.push_back(n.toString());
 
-        // Construire les listes de notes correctes et incorrectes
+        bool isValid = false;
+        if (withInversions) {
+            isValid = validator.validerAccordRenversement(
+                playedNotesStr, targetNotes, inversion);
+        } else {
+            isValid = validator.validerAccordSR(playedNotesStr, targetNotes);
+        }
+
+        // Déterminer correct/incorrect pour le message résultat
         std::string correctNotes;
         std::string incorrectNotes;
+        int correctCount = 0;
 
-        for (const auto& played : playedNotes) {
+        for (const auto& played : playedNotesStr) {
             bool found = false;
-            for (const auto& expected : targetChord.notes) {
+            for (const auto& expected : targetNotes) {
                 if (played == expected) {
                     if (!correctNotes.empty()) correctNotes += " ";
-                    correctNotes += played.toString();
+                    correctNotes += played;
                     found = true;
+                    correctCount++;
                     break;
                 }
             }
             if (!found) {
                 if (!incorrectNotes.empty()) incorrectNotes += " ";
-                incorrectNotes += played.toString();
+                incorrectNotes += played;
             }
         }
 
@@ -83,42 +106,27 @@ GameResult ChordGame::play() {
             {"duration", std::to_string(duration)}};
         if (!correctNotes.empty()) resultFields["correct"] = correctNotes;
         if (!incorrectNotes.empty()) resultFields["incorrect"] = incorrectNotes;
-        Message resultMsg("result", resultFields);
+        this->transport.send(Message("result", resultFields));
 
-        // Déterminer si parfait ou partiel
-        if (correctCount == static_cast<int>(targetChord.notes.size()) &&
-            incorrectNotes.empty()) {
+        if (isValid && incorrectNotes.empty()) {
             perfectCount++;
             Logger::log("[ChordGame] Résultat: parfait");
         } else if (correctCount > 0) {
             partialCount++;
             Logger::log("[ChordGame] Résultat: partiel");
-        } else Logger::log("[ChordGame] Résultat: incorrect");
+        }
 
-        this->transport.send(resultMsg);
-
-        // Attendre le message "ready" pour le prochain challenge
         if (i < maxChallenges - 1) {
             Message readyMsg = this->transport.receive();
-            if (readyMsg.getType() != "ready") {
-                Logger::err("[ChordGame] Erreur: ready attendu, reçu '{}'",
-                            readyMsg.getType());
-                break;
-            }
+            if (readyMsg.getType() != "ready") break;
         }
     }
 
     auto endTime = high_resolution_clock::now();
-    auto totalDuration =
-        duration_cast<milliseconds>(endTime - startTime).count();
-
-    result.duration = totalDuration;
+    result.duration = duration_cast<milliseconds>(endTime - startTime).count();
     result.perfect = perfectCount;
     result.partial = partialCount;
     result.total = maxChallenges;
-
-    Logger::log("[ChordGame] Partie terminée: parfait={} partiel={}/{}",
-                perfectCount, partialCount, maxChallenges);
 
     return result;
 }
@@ -126,94 +134,4 @@ GameResult ChordGame::play() {
 void ChordGame::stop() {
     Logger::log("[ChordGame] Arrêt du jeu");
     this->midi.close();
-}
-
-ChordGame::Chord ChordGame::generateRandomChord() {
-    std::vector<int> degrees = getChordDegrees();
-    std::uniform_int_distribution<> degreeDist(0, degrees.size() - 1);
-    std::uniform_int_distribution<> octaveDist(3, 4); // Octaves 3-4
-    int degree = degrees[degreeDist(rng)];
-    int octave = octaveDist(rng);
-    Chord chord = buildChord(degree, octave);
-    // Appliquer un renversement si demandé
-    if (withInversions) {
-        std::uniform_int_distribution<> inversionDist(0, 2);
-        int inversion = inversionDist(rng);
-        if (inversion > 0) chord = applyInversion(chord, inversion);
-    }
-    return chord;
-}
-
-std::vector<int> ChordGame::getChordDegrees() {
-    // Pour simplifier, utiliser les degrés I, IV, V (les plus courants)
-    return {1, 4, 5};
-}
-
-ChordGame::Chord ChordGame::buildChord(int degree, int octave) {
-    // Notes de la gamme selon la configuration
-    std::map<std::string, std::vector<std::string>> scaleNotes;
-    scaleNotes["c_maj"] = {"c", "d", "e", "f", "g", "a", "b"};
-    scaleNotes["d_maj"] = {"d", "e", "f#", "g", "a", "b", "c#"};
-    scaleNotes["e_maj"] = {"e", "f#", "g#", "a", "b", "c#", "d#"};
-    scaleNotes["f_maj"] = {"f", "g", "a", "a#", "c", "d", "e"};
-    scaleNotes["g_maj"] = {"g", "a", "b", "c", "d", "e", "f#"};
-    scaleNotes["a_maj"] = {"a", "b", "c#", "d", "e", "f#", "g#"};
-    scaleNotes["b_maj"] = {"b", "c#", "d#", "e", "f#", "g#", "a#"};
-    std::string key = config.scale + "_" + config.mode;
-    auto it = scaleNotes.find(key);
-    std::vector<std::string> notes =
-        (it != scaleNotes.end()) ? it->second : scaleNotes["c_maj"];
-    // Construire l'accord à partir du degré (fondamentale, tierce, quinte)
-    int root = degree - 1; // Indexé à 0
-    int third = (root + 2) % 7;
-    int fifth = (root + 4) % 7;
-    Chord chord;
-    // Nom de l'accord
-    std::string rootName = notes[root];
-    rootName[0] = std::toupper(rootName[0]); // Majuscule
-    chord.name = rootName;
-    if (config.mode == "maj") chord.name += " majeur";
-    else chord.name += " mineur";
-    // Notes de l'accord
-    chord.notes.push_back(Note(notes[root], octave));
-    chord.notes.push_back(Note(notes[third], octave));
-    chord.notes.push_back(Note(notes[fifth], octave));
-    chord.inversion = 0;
-    return chord;
-}
-
-ChordGame::Chord ChordGame::applyInversion(const Chord& chord, int inversion) {
-    Chord inverted = chord;
-    inverted.inversion = inversion;
-    inverted.name = chord.name + " " + std::to_string(inversion);
-    // Premier renversement: déplacer la première note une octave plus haut
-    if (inversion == 1) {
-        Note first = inverted.notes[0];
-        inverted.notes.erase(inverted.notes.begin());
-        inverted.notes.push_back(Note(first.getName(), first.getOctave() + 1));
-    }
-    // Deuxième renversement: déplacer les deux premières notes une octave plus
-    // haut
-    else if (inversion == 2) {
-        Note first = inverted.notes[0];
-        Note second = inverted.notes[1];
-        inverted.notes.erase(inverted.notes.begin(),
-                             inverted.notes.begin() + 2);
-        inverted.notes.push_back(Note(first.getName(), first.getOctave() + 1));
-        inverted.notes.push_back(
-            Note(second.getName(), second.getOctave() + 1));
-    }
-    return inverted;
-}
-
-int ChordGame::validateChord(const std::vector<Note>& played,
-                             const std::vector<Note>& expected) {
-    int correctCount = 0;
-    for (const auto& playedNote : played)
-        for (const auto& expectedNote : expected)
-            if (playedNote == expectedNote) {
-                correctCount++;
-                break;
-            }
-    return correctCount;
 }

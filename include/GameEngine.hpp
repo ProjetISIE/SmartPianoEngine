@@ -1,6 +1,7 @@
 #ifndef GAMEENGINE_HPP
 #define GAMEENGINE_HPP
 
+#include "ChallengeFactory.hpp"
 #include "IGameMode.hpp"
 #include "IMidiInput.hpp"
 #include "ITransport.hpp"
@@ -16,6 +17,7 @@ class GameEngine {
     ITransport& transport;                  ///< Référence au transport
     IMidiInput& midi;                       ///< Référence à l'entrée MIDI
     std::unique_ptr<IGameMode> currentGame; ///< Mode de jeu actuel
+    ChallengeFactory factory;               ///< Fabrique de challenges
     bool running{false};                    ///< État du moteur
 
   private:

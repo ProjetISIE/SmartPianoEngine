@@ -1,22 +1,21 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "NoteGame.hpp"
+#include "ChallengeFactory.hpp"
 #include "Mocks.hpp"
+#include "NoteGame.hpp"
 #include <doctest/doctest.h>
 #include <thread>
 
 /// Vérifie le déroulement complet d'une partie en mode Note
 /// Valide envoi défis, validation réponses correctes et enchaînement défis
 TEST_CASE("NoteGame Flow") {
-    // Vérifie le déroulement d'une partie de type "Note"
-    // Le test valide que le jeu envoie les défis (notes) et valide correctement
-    // les entrées MIDI simulées
     MockTransport transport;
     MockMidiInput midi;
+    ChallengeFactory factory;
     GameConfig config;
-    config.scale = "Do";
-    config.mode = "Majeur";
-    config.maxChallenges = 2; // Test avec 2 défis pour vérifier l'enchaînement
-    NoteGame game(transport, midi, config);
+    config.scale = "c";
+    config.mode = "maj";
+    config.maxChallenges = 2;
+    NoteGame game(transport, midi, factory, config);
     game.start();
     std::thread gameThread([&game]() { game.play(); });
     // Premier défi
@@ -48,11 +47,12 @@ TEST_CASE("NoteGame Flow") {
 TEST_CASE("NoteGame Incorrect Answer") {
     MockTransport transport;
     MockMidiInput midi;
+    ChallengeFactory factory;
     GameConfig config;
     config.scale = "c";
     config.mode = "maj";
     config.maxChallenges = 1;
-    NoteGame game(transport, midi, config);
+    NoteGame game(transport, midi, factory, config);
     game.start();
     std::thread gameThread([&game]() { game.play(); });
     Message msg1 = transport.waitForSentMessage();
@@ -73,11 +73,12 @@ TEST_CASE("NoteGame Incorrect Answer") {
 TEST_CASE("NoteGame Unknown Scale Fallback") {
     MockTransport transport;
     MockMidiInput midi;
+    ChallengeFactory factory;
     GameConfig config;
     config.scale = "unknown";
     config.mode = "mode";
     config.maxChallenges = 1;
-    NoteGame game(transport, midi, config);
+    NoteGame game(transport, midi, factory, config);
     game.start();
     std::thread gameThread([&game]() { game.play(); });
     // Devrait fallback sur Do Majeur, donc générer une note
@@ -92,16 +93,17 @@ TEST_CASE("NoteGame Unknown Scale Fallback") {
 TEST_CASE("NoteGame Multiple Incorrect Notes") {
     MockTransport transport;
     MockMidiInput midi;
+    ChallengeFactory factory;
     GameConfig config;
     config.scale = "c";
     config.mode = "maj";
     config.maxChallenges = 1;
-    NoteGame game(transport, midi, config);
+    NoteGame game(transport, midi, factory, config);
     game.start();
     std::thread gameThread([&game]() { game.play(); });
     Message msg1 = transport.waitForSentMessage();
     std::string expectedNote = msg1.getField("note");
-    // Envoyer plusieurs notes incorrectes (couvre ligne 60 branch)
+    // Envoyer plusieurs notes incorrectes
     std::vector<std::string> wrongNotes;
     if (expectedNote != "c4") wrongNotes.push_back("c4");
     if (expectedNote != "d4") wrongNotes.push_back("d4");
@@ -110,7 +112,7 @@ TEST_CASE("NoteGame Multiple Incorrect Notes") {
     Message res1 = transport.waitForSentMessage();
     CHECK(res1.getType() == "result");
     CHECK(res1.hasField("incorrect"));
-    // Vérifier que champ incorrect contient espaces (ligne 60)
+    // Vérifier que champ incorrect contient espaces
     std::string incorrect = res1.getField("incorrect");
     CHECK(incorrect.find(" ") != std::string::npos);
     game.stop();
