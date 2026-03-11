@@ -50,6 +50,12 @@ jobs:
           echo "$TXT" >> $GITHUB_OUTPUT
           echo '```' >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
+          FUNCTIONS=$(jq '.data[0].totals.functions.percent' coverage/coverage.json)
+          LINES=$(jq '.data[0].totals.lines.percent' coverage/coverage.json)
+          echo "Functions: $FUNCTIONS%"
+          echo "Lines: $LINES%"
+          jq -e '.data[0].totals.functions.percent >= 90' coverage/coverage.json > /dev/null || (echo "FAILED: Function coverage is below 90%" && exit 1)
+          jq -e '.data[0].totals.lines.percent >= 80' coverage/coverage.json > /dev/null || (echo "FAILED: Line coverage is below 80%" && exit 1)
       - name: Post Coverage Comment
         if: always() && github.event_name == 'pull_request'
         uses: peter-evans/create-or-update-comment@v4
