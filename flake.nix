@@ -63,7 +63,10 @@
           src = self;
           nativeBuildInputs =
             (self.packages.${pkgs.stdenv.hostPlatform.system}.smart-piano.nativeBuildInputs or [ ])
-            ++ [ pkgs.lcov ];
+            ++ [
+              pkgs.lcov
+              pkgs.jq
+            ];
           buildInputs = (self.packages.${pkgs.stdenv.hostPlatform.system}.smart-piano.buildInputs or [ ]);
           configurePhase = ''
             cmake -DCMAKE_BUILD_TYPE=Debug -DCOVERAGE=ON -GNinja -S . -B build
@@ -73,12 +76,24 @@
           '';
           checkPhase = ''
             cmake --build build --target coverage -j1 # Multithread breaks tests
+            # Text report for the CI comment
             llvm-cov report build/src/main -instr-profile=build/coverage.profdata -ignore-filename-regex='test/.*' > build/coverage.txt
             cat build/coverage.txt
-            echo "Verifying functions coverage is > 90%"
-            grep TOTAL build/coverage.txt | awk '{ if ($7 + 0 > 90) exit 0; else { print "Function coverage is " $7 "% (< 90%)"; exit 1 } }'
-            echo "Verifying line coverage is > 90%"
-            grep TOTAL build/coverage.txt | awk '{ if ($10 + 0 > 90) exit 0; else { print "Line coverage is " $10 "% (< 90%)"; exit 1 } }'
+
+            # JSON export for threshold verification
+            llvm-cov export build/src/main -instr-profile=build/coverage.profdata -ignore-filename-regex='test/.*' --summary-only > build/coverage.json
+
+            # Extract totals
+            FUNCTIONS=$(jq '.data[0].totals.functions.percent' build/coverage.json)
+            LINES=$(jq '.data[0].totals.lines.percent' build/coverage.json)
+
+            echo "#### Coverage thresholds check ####"
+            echo "Function coverage: $FUNCTIONS% (Required: 90%)"
+            echo "Line coverage:     $LINES% (Required: 80%)"
+
+            # Check thresholds (using jq for float comparison)
+            jq -e '.data[0].totals.functions.percent >= 90' build/coverage.json > /dev/null || (echo "FAILED: Function coverage is below 90%" && exit 1)
+            jq -e '.data[0].totals.lines.percent >= 80' build/coverage.json > /dev/null || (echo "FAILED: Line coverage is below 80%" && exit 1)
           '';
           installPhase = ''
             mkdir -p $out
