@@ -1,6 +1,6 @@
 on:
   pull_request:
-  workflow_dispatch: # Allow manual trigger
+  workflow_dispatch:
 
 permissions:
   pull-requests: write
@@ -10,56 +10,46 @@ permissions:
   statuses: read
 
 jobs:
-  nix:
-    name: Setup Nix Env
+  coverage:
+    name: Unit Test & Coverage
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-    permissions:
-      checks: read
-      statuses: read
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - name: Sleep hoping Garnix evaluation will start after
-        run: sleep 30
-      - name: Wait for Garnix flake.nix evaluation
+      - name: Wait for Garnix evaluation
         uses: lewagon/wait-on-check-action@v1.5.0
         with:
+          check-regexp: 'Evaluate flake\.nix'
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
-          check-regexp: 'Evaluate flake.nix'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           fail-on-no-checks: false
-      - name: Wait for Garnix packages
+      - name: Wait for Garnix check(s)
         uses: lewagon/wait-on-check-action@v1.5.0
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           check-regexp: 'check.*'
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           fail-on-no-checks: false
-      - uses: cachix/install-nix-action@v31.10.0
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v21
         with:
-          github_access_token: ${{ secrets.GITHUB_TOKEN }}
-          extra_nix_config: |
+          extra-conf: |
             extra-substituters = https://cache.garnix.io
             extra-trusted-public-keys = cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g=
-      - uses: DeterminateSystems/magic-nix-cache-action@v13
-
-  coverage:
-    name: Unit Test measuring Coverage
-    needs: nix
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - name: Run Unit Tests with Coverage (from Garnix cache)
+      - name: Magic Nix Cache
+        uses: DeterminateSystems/magic-nix-cache-action@v13
+      - name: Pull Coverage from Garnix
         run: nix build .#checks.x86_64-linux.coverage -o coverage
       - name: Process Coverage Report
         id: coverage_report
         run: |
-          HTML=$(grep -o "<table>.*</table>" coverage/html/index.html)
           TXT=$(cat coverage/coverage.txt)
           echo "REPORT<<EOF" >> $GITHUB_OUTPUT
-          echo -e "$REPORT" >> $GITHUB_OUTPUT
+          echo "#### Coverage Summary" >> $GITHUB_OUTPUT
+          echo '```' >> $GITHUB_OUTPUT
+          echo "$TXT" >> $GITHUB_OUTPUT
+          echo '```' >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
-          # TODO Process TXT to fail test if below 80% (or change to JSON)
       - name: Post Coverage Comment
         if: always() && github.event_name == 'pull_request'
         uses: peter-evans/create-or-update-comment@v4
