@@ -22,29 +22,21 @@ GameResult NoteGame::play() {
     int perfectCount = 0;
     const int maxChallenges = this->config.maxChallenges;
 
-    Logger::log("[NoteGame] Début boucle: {} challenges", maxChallenges);
-
     for (int i = 0; i < maxChallenges; ++i) {
-        Logger::log("[NoteGame] Début challenge {}/{}", i + 1, maxChallenges);
-        
-        std::string targetNoteStr =
-            factory.generateNote(config.scale, config.mode);
+        std::string targetNoteStr = factory.generateNote(config.scale, config.mode);
         this->challengeId++;
 
         Message challenge("note", {{"note", targetNoteStr},
                                    {"id", std::to_string(this->challengeId)}});
         this->transport.send(challenge);
 
-        Logger::log("[NoteGame] Défi envoyé: id={} note={}", this->challengeId,
-                    targetNoteStr);
+        Logger::log("[NoteGame] Défi {} envoyé: {}", this->challengeId, targetNoteStr);
 
         auto challengeStart = high_resolution_clock::now();
         std::vector<Note> playedNotes = this->midi.readNotes();
         auto challengeEnd = high_resolution_clock::now();
 
-        auto duration =
-            duration_cast<milliseconds>(challengeEnd - challengeStart).count();
-        Logger::log("[NoteGame] Notes reçues (nb={})", playedNotes.size());
+        auto duration = duration_cast<milliseconds>(challengeEnd - challengeStart).count();
 
         bool correct = false;
         std::string correctNotes;
@@ -71,6 +63,9 @@ GameResult NoteGame::play() {
 
         if (correctNotes.empty() && incorrectNotes.empty()) {
             resultFields["incorrect"] = "none";
+            Logger::log("[NoteGame] Aucune note jouée");
+        } else {
+            Logger::log("[NoteGame] Résultat: correct='{}' incorrect='{}'", correctNotes, incorrectNotes);
         }
 
         if (correct && incorrectNotes.empty() && playedNotes.size() == 1) {
@@ -78,15 +73,11 @@ GameResult NoteGame::play() {
         }
 
         this->transport.send(Message("result", resultFields));
-        Logger::log("[NoteGame] Résultat envoyé");
 
         if (i < maxChallenges - 1) {
-            Logger::log("[NoteGame] En attente de 'ready'...");
             Message readyMsg = this->transport.receive();
-            Logger::log("[NoteGame] Message reçu après result: '{}'", readyMsg.getType());
             if (readyMsg.getType() != "ready") {
-                Logger::err("[NoteGame] Abandon car attendu 'ready', reçu '{}'",
-                            readyMsg.getType());
+                Logger::err("[NoteGame] Attendu 'ready', reçu '{}'", readyMsg.getType());
                 break;
             }
         }
@@ -97,11 +88,10 @@ GameResult NoteGame::play() {
     result.perfect = perfectCount;
     result.total = maxChallenges;
 
-    Logger::log("[NoteGame] play() se termine");
     return result;
 }
 
 void NoteGame::stop() {
-    Logger::log("[NoteGame] stop() appelé");
+    Logger::log("[NoteGame] Arrêt du jeu");
     this->midi.close();
 }
