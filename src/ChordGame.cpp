@@ -69,7 +69,8 @@ GameResult ChordGame::play() {
 
         // Valider avec AnswerValidator
         std::vector<std::string> playedNotesStr;
-        for (const auto& n : playedNotes) playedNotesStr.push_back(n.toString());
+        for (const auto& n : playedNotes)
+            playedNotesStr.push_back(n.toString());
 
         bool isValid = false;
         if (withInversions) {

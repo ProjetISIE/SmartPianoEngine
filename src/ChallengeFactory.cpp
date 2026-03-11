@@ -60,9 +60,10 @@ ChallengeFactory::generateChord(const std::string& scale,
     rootName[0] = std::toupper(rootName[0]);
     std::string name = rootName + (mode == "maj" ? " majeur" : " mineur");
 
-    std::vector<std::string> chordNotes = {notes[root] + std::to_string(octave),
-                                           notes[third] + std::to_string(octave),
-                                           notes[fifth] + std::to_string(octave)};
+    std::vector<std::string> chordNotes = {
+        notes[root] + std::to_string(octave),
+        notes[third] + std::to_string(octave),
+        notes[fifth] + std::to_string(octave)};
     return {name, chordNotes};
 }
 

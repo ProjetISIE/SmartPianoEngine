@@ -8,7 +8,8 @@
 TEST_CASE("ChallengeFactory") {
     ChallengeFactory gen;
 
-    /// Vérifie génération note aléatoire dans gamme Do Majeur (sans altérations)
+    /// Vérifie génération note aléatoire dans gamme Do Majeur (sans
+    /// altérations)
     SUBCASE("Generate note in Do Majeur") {
         std::string note = gen.generateNote("c", "maj");
         std::regex pattern("^[a-g][#b]?[0-9]$");
@@ -45,7 +46,8 @@ TEST_CASE("ChallengeFactory") {
 
     /// Vérifie comportement avec paramètres invalides (gamme inconnue)
     SUBCASE("Invalid parameters fallback") {
-        // Devrait fallback sur Do Majeur selon implémentation (au lieu de chaine vide)
+        // Devrait fallback sur Do Majeur selon implémentation (au lieu de
+        // chaine vide)
         std::string note = gen.generateNote("invalid", "maj");
         CHECK(!note.empty());
         auto [nom, notes] = gen.generateChord("invalid", "maj");
