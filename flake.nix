@@ -79,25 +79,13 @@
             # Text report for the CI comment
             llvm-cov report build/src/main -instr-profile=build/coverage.profdata -ignore-filename-regex='test/.*' > build/coverage.txt
             cat build/coverage.txt
-
             # JSON export for threshold verification
             llvm-cov export build/src/main -instr-profile=build/coverage.profdata -ignore-filename-regex='test/.*' --summary-only > build/coverage.json
-
-            # Extract totals
-            FUNCTIONS=$(jq '.data[0].totals.functions.percent' build/coverage.json)
-            LINES=$(jq '.data[0].totals.lines.percent' build/coverage.json)
-
-            echo "#### Coverage thresholds check ####"
-            echo "Function coverage: $FUNCTIONS% (Required: 90%)"
-            echo "Line coverage:     $LINES% (Required: 80%)"
-
-            # Check thresholds (using jq for float comparison)
-            jq -e '.data[0].totals.functions.percent >= 90' build/coverage.json > /dev/null || (echo "FAILED: Function coverage is below 90%" && exit 1)
-            jq -e '.data[0].totals.lines.percent >= 80' build/coverage.json > /dev/null || (echo "FAILED: Line coverage is below 80%" && exit 1)
           '';
           installPhase = ''
             mkdir -p $out
             [ -f "build/coverage.txt" ] && cp build/coverage.txt $out/
+            [ -f "build/coverage.json" ] && cp build/coverage.json $out/
             [ -d "build/coverage" ] && cp -R build/coverage $out/html
           '';
         };
