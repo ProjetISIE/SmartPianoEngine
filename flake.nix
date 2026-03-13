@@ -61,6 +61,7 @@
         coverage = pkgs.clangStdenv.mkDerivation {
           name = "coverage-check";
           src = self;
+          doCheck = true;
           nativeBuildInputs =
             (self.packages.${pkgs.stdenv.hostPlatform.system}.smart-piano.nativeBuildInputs or [ ])
             ++ [
@@ -84,9 +85,9 @@
           '';
           installPhase = ''
             mkdir -p $out
-            [ -f "build/coverage.txt" ] && cp build/coverage.txt $out/
-            [ -f "build/coverage.json" ] && cp build/coverage.json $out/
-            [ -d "build/coverage" ] && cp -R build/coverage $out/html
+            if [ -f "build/coverage.txt" ]; then cp build/coverage.txt $out/; fi
+            if [ -f "build/coverage.json" ]; then cp build/coverage.json $out/; fi
+            if [ -d "build/coverage" ]; then cp -R build/coverage $out/html; fi
           '';
         };
       });
