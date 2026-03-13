@@ -11,57 +11,50 @@ permissions:
 
 jobs:
   coverage:
-    name: Unit Test & Coverage
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
-      - name: Wait for Garnix evaluation
-        uses: lewagon/wait-on-check-action@v1.5.0
-        with:
-          check-regexp: 'Evaluate flake\.nix'
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          fail-on-no-checks: false
-      - name: Wait for Garnix check(s)
-        uses: lewagon/wait-on-check-action@v1.5.0
-        with:
-          check-regexp: 'check.*'
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          fail-on-no-checks: false
-      - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@v21
-        with:
-          extra-conf: |
-            extra-substituters = https://cache.garnix.io
-            extra-trusted-public-keys = cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g=
-      - name: Magic Nix Cache
-        uses: DeterminateSystems/magic-nix-cache-action@v13
-      - name: Pull Coverage from Garnix
-        run: nix build .#checks.x86_64-linux.coverage -o coverage
-      - name: Process Coverage Report
-        id: coverage_report
-        run: |
-          TXT=$(cat coverage/coverage.txt)
-          echo "REPORT<<EOF" >> $GITHUB_OUTPUT
-          echo "#### Coverage Summary" >> $GITHUB_OUTPUT
-          echo '```' >> $GITHUB_OUTPUT
-          echo "$TXT" >> $GITHUB_OUTPUT
-          echo '```' >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-          FUNCTIONS=$(jq '.data[0].totals.functions.percent' coverage/coverage.json)
-          LINES=$(jq '.data[0].totals.lines.percent' coverage/coverage.json)
-          echo "Functions: $FUNCTIONS%"
-          echo "Lines: $LINES%"
-          jq -e '.data[0].totals.functions.percent >= 90' coverage/coverage.json > /dev/null || (echo "FAILED: Function coverage is below 90%" && exit 1)
-          jq -e '.data[0].totals.lines.percent >= 80' coverage/coverage.json > /dev/null || (echo "FAILED: Line coverage is below 80%" && exit 1)
-      - name: Post Coverage Comment
-        if: always() && github.event_name == 'pull_request'
-        uses: peter-evans/create-or-update-comment@v4
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            ### 📊 Coverage Report
-            
-            ${{ steps.coverage_report.outputs.REPORT }}
+    - uses: actions/checkout@v6
+    - uses: cachix/install-nix-action@v31
+      with:
+        github_access_token: ${{ secrets.GITHUB_TOKEN }}
+        extra_nix_config: |
+          extra-substituters = https://cache.garnix.io
+          extra-trusted-public-keys = cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g=
+    - uses: DeterminateSystems/magic-nix-cache-action@v13
+    - run: sleep 15 #  Sleep hoping Garnix evaluation will start after
+    - uses: lewagon/wait-on-check-action@v1.5.0
+      with:
+        ref: ${{ github.event.pull_request.head.sha || github.sha }}
+        check-regexp: 'Evaluate flake.nix'
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+    - uses: lewagon/wait-on-check-action@v1.5.0
+      with:
+        ref: ${{ github.event.pull_request.head.sha || github.sha }}
+        check-regexp: 'check coverage.*'
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        fail-on-no-checks: false
+    - run: nix build .#checks.x86_64-linux.coverage -o coverage # From Garnix
+    - run: | # Process
+        TXT=$(cat coverage/coverage.txt)
+        echo "REPORT<<EOF" >> $GITHUB_OUTPUT
+        echo "#### Coverage Summary" >> $GITHUB_OUTPUT
+        echo '```' >> $GITHUB_OUTPUT
+        echo "$TXT" >> $GITHUB_OUTPUT
+        echo '```' >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+        FUNCTIONS=$(jq '.data[0].totals.functions.percent' coverage/coverage.json)
+        LINES=$(jq '.data[0].totals.lines.percent' coverage/coverage.json)
+        echo "Functions: $FUNCTIONS%"
+        echo "Lines: $LINES%"
+        jq -e '.data[0].totals.functions.percent >= 90' coverage/coverage.json > /dev/null || (echo "FAILED: Function coverage is below 90%" && exit 1)
+        jq -e '.data[0].totals.lines.percent >= 80' coverage/coverage.json > /dev/null || (echo "FAILED: Line coverage is below 80%" && exit 1)
+      id: coverage_report
+    - if: always() && github.event_name == 'pull_request'
+      uses: peter-evans/create-or-update-comment@v5
+      with:
+        issue-number: ${{ github.event.pull_request.number }}
+        body: |
+          ### 📊 Coverage Report
+          
+          ${{ steps.coverage_report.outputs.REPORT }}
