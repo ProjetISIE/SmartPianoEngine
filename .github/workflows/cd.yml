@@ -15,45 +15,38 @@ permissions:
 
 jobs:
   release:
-    name: Releases
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
     - uses: actions/checkout@v6
-    - name: Wait for Garnix evaluation
-      uses: lewagon/wait-on-check-action@v1.5.0
+    - uses: cachix/install-nix-action@v31
       with:
-        check-regexp: 'Evaluate flake\.nix'
-        ref: ${{ github.sha }}
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
-        fail-on-no-checks: false
-    - name: Wait for Garnix package(s)
-      uses: lewagon/wait-on-check-action@v1.5.0
-      with:
-        check-regexp: 'package.*'
-        ref: ${{ github.sha }}
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
-        fail-on-no-checks: false
-    - name: Install Nix
-      uses: DeterminateSystems/nix-installer-action@v21
-      with:
-        extra-conf: |
+        github_access_token: ${{ secrets.GITHUB_TOKEN }}
+        extra_nix_config: |
           extra-substituters = https://cache.garnix.io
           extra-trusted-public-keys = cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g=
-    - name: Magic Nix Cache
-      uses: DeterminateSystems/magic-nix-cache-action@v13
-    - name: Build
-      run: nix build .#smart-piano -o result
-    - name: Prepare Artifact
-      run: tar -chzvf smart-piano-engine.tar.gz -C result .
-    - name: Publish Rolling Release
-      if: github.ref == 'refs/heads/main'
+    - uses: DeterminateSystems/magic-nix-cache-action@v13
+    - run: sleep 15 #  Sleep hoping Garnix evaluation will start after
+    - uses: lewagon/wait-on-check-action@v1.5.0
+      with:
+        ref: ${{ github.event.pull_request.head.sha || github.sha }}
+        check-regexp: 'Evaluate flake.nix'
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+    - uses: lewagon/wait-on-check-action@v1.5.0
+      with:
+        ref: ${{ github.event.pull_request.head.sha || github.sha }}
+        check-regexp: 'devShell.*'
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        fail-on-no-checks: false
+    - run: nix build .#smart-piano -o result
+    - run: tar -chzvf smart-piano-engine.tar.gz -C result .
+    - if: github.ref == 'refs/heads/main'
       run: |
         DATE=$(date -u +%Y-%m-%d)
         TAG="rolling-$DATE"
-        if gh release view "$TAG" >/dev/null 2>&1; then
+        if gh release view "$TAG" >/dev/null 2>&1; then # TODO Delete instead
           echo "Rolling release for $DATE already exists. Updating artifacts."
           gh release upload "$TAG" smart-piano-engine.tar.gz --clobber
         else
@@ -68,8 +61,7 @@ jobs:
           done
           gh release create "$TAG" smart-piano-engine.tar.gz --title "Rolling $DATE" --notes "Automated rolling release for $DATE" --prerelease
         fi
-    - name: Publish Stable Release
-      if: startsWith(github.ref, 'refs/tags/v')
+    - if: startsWith(github.ref, 'refs/tags/v')
       run: |
         TAG=${GITHUB_REF#refs/tags/}
         gh release create "$TAG" smart-piano-engine.tar.gz --title "SmartPiano $TAG" --notes "Release $TAG"
