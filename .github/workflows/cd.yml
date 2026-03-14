@@ -42,11 +42,9 @@ jobs:
         fail-on-no-checks: false
     - run: nix build -o result
     - run: tar -chzvf smart-piano-engine.tar.gz -C result .
-    - if: github.ref == 'refs/heads/main'
-      run: |
-        DATE=$(date -u +%Y-%m-%dT%H:%M:%S)
-        TAG="pre-$DATE"
-        # Cleanup old rolling releases (> 7 days or < 12 hours)
+    - name: Cleanup Pre-Releases
+      if: github.ref == 'refs/heads/main'
+      run: | # Cleanup old rolling releases (> 7 days or < 12 hours)
         gh release list --limit 100 | grep "pre-" | while read -r line; do
           OLD_TAG=$(echo "$line" | awk '{print $1}')
           OLD_DATE=${OLD_TAG#pre-}
@@ -56,8 +54,13 @@ jobs:
              gh release delete "$OLD_TAG" --yes --cleanup-tag
           fi
         done
+    - name: Publish Timestamped Pre-Release
+      if: github.ref == 'refs/heads/main'
+      run: |
+        TAG="pre-$(date -u +%Y-%m-%dT%H-%M-%S)"
         gh release create "$TAG" smart-piano-engine.tar.gz --title "$DATE" --notes "Automated pre-release for $DATE" --prerelease
-    - if: startsWith(github.ref, 'refs/tags/v')
+    - name: Publish Semantically Versionned Release
+      if: startsWith(github.ref, 'refs/tags/v')
       run: |
         TAG=${GITHUB_REF#refs/tags/}
         gh release create "$TAG" smart-piano-engine.tar.gz --title "SmartPiano $TAG" --notes "Release $TAG"
