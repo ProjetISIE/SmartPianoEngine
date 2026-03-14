@@ -90,18 +90,18 @@
                   [
                     bashInteractive
                     clang-tools # Clang CLIs, including LSP
-                    clang-uml # UML diagram generator
                     cmake-format # CMake formatter
                     cmake-language-server # Cmake LSP
                     doxygen # Documentation generator
                     lldb # Clang debug adapter
-                    socat # Serial terminal for manual testing
-                    valgrind # Debugging and profiling
                   ]
                   ++ lib.optionals stdenv.isLinux [
                     alsa-utils # aconnect…
+                    clang-uml # UML diagram generator
                     fluidsynth # JACK Synthesizer
                     qsynth # FluidSynth GUI
+                    socat # Serial terminal for manual testing
+                    valgrind # Debugging and profiling
                   ];
                 inputsFrom = [ defaultPkg ];
                 # Export compile commands JSON for LSP and other tools
