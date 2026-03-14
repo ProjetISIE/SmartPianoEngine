@@ -107,8 +107,9 @@
                   ];
                 inputsFrom = [ defaultPkg ];
                 # Export compile commands JSON for LSP and other tools
-                shellHook = ''
+                shellHook = pkgs.lib.optionalString pkgs.stdenv.isLinux ''
                   export LD_LIBRARY_PATH="${pkgs.lib.makeLibraryPath defaultPkg.buildInputs}:$LD_LIBRARY_PATH"
+                '' + ''
                   cmake -S . -B build -GNinja -DCMAKE_BUILD_TYPE=Debug \
                     -DCOVERAGE=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
                 '';

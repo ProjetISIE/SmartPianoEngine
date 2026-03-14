@@ -40,7 +40,7 @@ jobs:
         check-regexp: 'package smart-piano.*'
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         fail-on-no-checks: false
-    - run: nix build .#smart-piano -o result
+    - run: nix build .#smart-piano-engine -o result
     - run: tar -chzvf smart-piano-engine.tar.gz -C result .
     - if: github.ref == 'refs/heads/main'
       run: |
