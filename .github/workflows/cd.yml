@@ -45,20 +45,20 @@ jobs:
     - name: Cleanup Pre-Releases
       if: github.ref == 'refs/heads/main'
       run: | # Cleanup old rolling releases (> 7 days or < 12 hours)
-        gh release list --limit 100 | grep "pre-" | while read -r line; do
-          OLD_TAG=$(echo "$line" | awk '{print $1}')
-          OLD_DATE=${OLD_TAG#pre-}
-          # Simple date comparison
-          TIMESTAMP=$(date -d "$OLD_DATE" +%s)
-          if [ "$TIMESTAMP" -lt "$(date -d "7 days ago" +%s)" ] || [ "$TIMESTAMP" -gt "$(date -d "12 hours ago" +%s)" ]; then
+        SEVEN_DAYS_AGO=$(date -d "7 days ago" +%s)
+        TWELVE_HOURS_AGO=$(date -d "12 hours ago" +%s)
+        gh release list --limit 100 --json tagName,createdAt --jq '.[] | "\(.tagName) \(.createdAt)"' | grep -E '^pre-[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}-[0-9]{2}-[0-9]{2} ' | while read -r OLD_TAG CREATED_AT; do
+          TIMESTAMP=$(date -d "$CREATED_AT" +%s)
+          if [ "$TIMESTAMP" -lt "$SEVEN_DAYS_AGO" ] || [ "$TIMESTAMP" -gt "$TWELVE_HOURS_AGO" ]; then
              gh release delete "$OLD_TAG" --yes --cleanup-tag
           fi
         done
     - name: Publish Timestamped Pre-Release
       if: github.ref == 'refs/heads/main'
       run: |
+        NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
         TAG="pre-$(date -u +%Y-%m-%dT%H-%M-%S)"
-        gh release create "$TAG" smart-piano-engine.tar.gz --title "$DATE" --notes "Automated pre-release for $DATE" --prerelease
+        gh release create "$TAG" smart-piano-engine.tar.gz --title "Pre-release $NOW" --notes "Automated pre-release for $NOW" --prerelease
     - name: Publish Semantically Versionned Release
       if: startsWith(github.ref, 'refs/tags/v')
       run: |
