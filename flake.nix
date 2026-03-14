@@ -98,6 +98,7 @@
                   ++ lib.optionals stdenv.isLinux [
                     alsa-utils # aconnect…
                     clang-uml # UML diagram generator
+                    cppcheck # C++ Static analysis
                     fluidsynth # JACK Synthesizer
                     qsynth # FluidSynth GUI
                     socat # Serial terminal for manual testing
