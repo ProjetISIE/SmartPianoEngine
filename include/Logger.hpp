@@ -3,6 +3,7 @@
 
 #include <chrono>
 #include <cstdio>
+#include <ctime>
 #include <filesystem>
 #include <format>
 #include <fstream>
@@ -20,12 +21,16 @@ class Logger {
   private:
     /**
      * @brief Retourne heure formatée
-     * @return Horodatage "HH:MM:SS.mmm"
+     * @return Horodatage "HH:MM:SS"
      */
     static std::string time() {
-        return std::format(
-            "{:%T}", std::chrono::zoned_time{std::chrono::current_zone(),
-                                             std::chrono::system_clock::now()});
+        auto now = std::chrono::system_clock::now();
+        std::time_t t = std::chrono::system_clock::to_time_t(now);
+        std::tm local_tm{};
+        localtime_r(&t, &local_tm);
+        char buf[9];
+        std::strftime(buf, sizeof(buf), "%T", &local_tm);
+        return std::string(buf);
     }
 
     /**
@@ -33,9 +38,13 @@ class Logger {
      * @return Horodatage "YYYY-MM-DD"
      */
     static std::string date() {
-        return std::format(
-            "{:%F}", std::chrono::zoned_time{std::chrono::current_zone(),
-                                             std::chrono::system_clock::now()});
+        auto now = std::chrono::system_clock::now();
+        std::time_t t = std::chrono::system_clock::to_time_t(now);
+        std::tm local_tm{};
+        localtime_r(&t, &local_tm);
+        char buf[11];
+        std::strftime(buf, sizeof(buf), "%F", &local_tm);
+        return std::string(buf);
     }
 
     /**
