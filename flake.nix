@@ -85,20 +85,24 @@
                 stdenv = pkgs.clangStdenv; # Clang instead of GCC
               }
               {
-                packages = with pkgs; [
-                  alsa-utils # aconnect…
-                  bashInteractive
-                  clang-tools # Clang CLIs, including LSP
-                  clang-uml # UML diagram generator
-                  cmake-format # CMake formatter
-                  cmake-language-server # Cmake LSP
-                  doxygen # Documentation generator
-                  fluidsynth # JACK Synthesizer
-                  lldb # Clang debug adapter
-                  qsynth # FluidSynth GUI
-                  socat # Serial terminal for manual testing
-                  valgrind # Debugging and profiling
-                ];
+                packages =
+                  with pkgs;
+                  [
+                    bashInteractive
+                    clang-tools # Clang CLIs, including LSP
+                    clang-uml # UML diagram generator
+                    cmake-format # CMake formatter
+                    cmake-language-server # Cmake LSP
+                    doxygen # Documentation generator
+                    fluidsynth # JACK Synthesizer
+                    lldb # Clang debug adapter
+                    qsynth # FluidSynth GUI
+                    socat # Serial terminal for manual testing
+                    valgrind # Debugging and profiling
+                  ]
+                  ++ lib.optionals stdenv.isLinux [
+                    alsa-utils # aconnect…
+                  ];
                 inputsFrom = [ defaultPkg ];
                 # Export compile commands JSON for LSP and other tools
                 shellHook = ''
