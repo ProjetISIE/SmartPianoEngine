@@ -94,14 +94,14 @@
                     cmake-format # CMake formatter
                     cmake-language-server # Cmake LSP
                     doxygen # Documentation generator
-                    fluidsynth # JACK Synthesizer
                     lldb # Clang debug adapter
-                    qsynth # FluidSynth GUI
                     socat # Serial terminal for manual testing
                     valgrind # Debugging and profiling
                   ]
                   ++ lib.optionals stdenv.isLinux [
                     alsa-utils # aconnect…
+                    fluidsynth # JACK Synthesizer
+                    qsynth # FluidSynth GUI
                   ];
                 inputsFrom = [ defaultPkg ];
                 # Export compile commands JSON for LSP and other tools
