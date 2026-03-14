@@ -42,7 +42,7 @@
         {
           coverage = pkgs.clangStdenv.mkDerivation {
             name = "coverage-check";
-            src = ./.;
+            src = pkgs.lib.cleanSource ./.;
             doCheck = true;
             nativeBuildInputs = defaultPkg.nativeBuildInputs ++ [
               pkgs.lcov
