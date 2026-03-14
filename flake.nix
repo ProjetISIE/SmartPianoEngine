@@ -86,6 +86,7 @@
               }
               {
                 packages = with pkgs; [
+                  alsa-utils # aconnect…
                   bashInteractive
                   clang-tools # Clang CLIs, including LSP
                   clang-uml # UML diagram generator
