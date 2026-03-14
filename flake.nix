@@ -30,7 +30,8 @@
           smart-piano-engine = makeEngine pkgs;
         }
         // nixpkgs.lib.optionalAttrs (system == "x86_64-linux") {
-          smart-piano-engine-aarch64 = makeEngine pkgs.pkgsCross.aarch64-multiplatform;
+          aarch64-linux-default = makeEngine pkgs.pkgsCross.aarch64-multiplatform;
+          aarch64-linux-smart-piano-engine = makeEngine pkgs.pkgsCross.aarch64-multiplatform;
         }
       );
       checks = forSystems (
