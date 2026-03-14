@@ -89,9 +89,13 @@ TEST_CASE("Logger functionality") {
         // Vérifier si fichier a été archivé avec date
         // La logique de rotation: rename(filePath, date() + filePath)
         // Il faut obtenir la chaîne de date
-        auto now = std::chrono::zoned_time{std::chrono::current_zone(),
-                                           std::chrono::system_clock::now()};
-        std::string dateStr = std::format("{:%F}", now);
+        auto now = std::chrono::system_clock::now();
+        std::time_t t = std::chrono::system_clock::to_time_t(now);
+        std::tm local_tm{};
+        localtime_r(&t, &local_tm);
+        char dateBuf[11];
+        std::strftime(dateBuf, sizeof(dateBuf), "%F", &local_tm);
+        std::string dateStr = dateBuf;
         std::string rotatedFile = dateStr + basicLog;
 
         CHECK(std::filesystem::exists(rotatedFile));
