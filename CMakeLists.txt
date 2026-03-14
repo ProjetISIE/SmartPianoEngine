@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 project(
   engine # Smart Piano Engine
-  VERSION 0.0.0
+  VERSION 1.0.1
   LANGUAGES CXX)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
