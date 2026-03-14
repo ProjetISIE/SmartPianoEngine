@@ -12,13 +12,10 @@
         "x86_64-linux" # "aarch64-linux"
         "aarch64-darwin"
       ];
-      forAllSystems =
-        f: nixpkgs.lib.genAttrs localSystems (system: f (import nixpkgs { inherit system; }));
-      forAllSystemsWithCross =
+      crossSystem = "aarch64-linux";
+      forSystems = f: nixpkgs.lib.genAttrs localSystems (system: f (import nixpkgs { inherit system; }));
+      forCross =
         f:
-        let
-          crossSystem = "aarch64-linux";
-        in
         nixpkgs.lib.genAttrs localSystems (
           localSystem:
           f (import nixpkgs { inherit localSystem; }) (
@@ -30,34 +27,24 @@
         );
     in
     {
-      packages = forAllSystems (
-        pkgs:
-        let
-          smart-piano = pkgs.callPackage ./engine.nix {
-            inherit self pkgs;
-            stdenv = pkgs.clangStdenv;
-          };
-        in
-        {
-          inherit smart-piano;
-          default = smart-piano;
-        }
-      );
-      crossPackages = forAllSystemsWithCross (
-        pkgs: crossPkgs:
-        let
-          cross-smart-piano = crossPkgs.callPackage ./engine.nix {
+      packages = forSystems (pkgs: rec {
+        smart-piano = pkgs.callPackage ./engine.nix {
+          inherit self pkgs;
+          stdenv = pkgs.clangStdenv;
+        };
+        default = smart-piano;
+      });
+      crossPackages = forCross (
+        pkgs: crossPkgs: rec {
+          smart-piano = crossPkgs.callPackage ./engine.nix {
             inherit self;
             stdenv = crossPkgs.clangStdenv;
             pkgs = crossPkgs;
           };
-        in
-        {
-          inherit cross-smart-piano;
-          default = cross-smart-piano;
+          default = smart-piano;
         }
       );
-      checks = forAllSystems (pkgs: {
+      checks = forSystems (pkgs: {
         coverage = pkgs.clangStdenv.mkDerivation {
           name = "coverage-check";
           src = self;
@@ -91,7 +78,7 @@
           '';
         };
       });
-      devShells = forAllSystems (pkgs: {
+      devShells = forSystems (pkgs: {
         default =
           pkgs.mkShell.override
             {
