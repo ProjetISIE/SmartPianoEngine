@@ -37,30 +37,26 @@ jobs:
     - uses: lewagon/wait-on-check-action@v1.5.0
       with:
         ref: ${{ github.event.pull_request.head.sha || github.sha }}
-        check-regexp: 'devShell.*'
+        check-regexp: 'package smart-piano.*'
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         fail-on-no-checks: false
     - run: nix build .#smart-piano -o result
     - run: tar -chzvf smart-piano-engine.tar.gz -C result .
     - if: github.ref == 'refs/heads/main'
       run: |
-        DATE=$(date -u +%Y-%m-%d)
-        TAG="rolling-$DATE"
-        if gh release view "$TAG" >/dev/null 2>&1; then # TODO Delete instead
-          echo "Rolling release for $DATE already exists. Updating artifacts."
-          gh release upload "$TAG" smart-piano-engine.tar.gz --clobber
-        else
-          # Cleanup old rolling releases (> 7 days)
-          gh release list --limit 100 | grep "rolling-" | while read -r line; do
-            OLD_TAG=$(echo "$line" | awk '{print $1}')
-            OLD_DATE=${OLD_TAG#rolling-}
-            # Simple date comparison (YYYY-MM-DD)
-            if [ "$(date -d "$OLD_DATE" +%s)" -lt "$(date -d "7 days ago" +%s)" ]; then
-               gh release delete "$OLD_TAG" --yes --cleanup-tag
-            fi
-          done
-          gh release create "$TAG" smart-piano-engine.tar.gz --title "Rolling $DATE" --notes "Automated rolling release for $DATE" --prerelease
-        fi
+        DATE=$(date -u +%Y-%m-%dT%H:%M:%S)
+        TAG="pre-$DATE"
+        # Cleanup old rolling releases (> 7 days or < 12 hours)
+        gh release list --limit 100 | grep "pre-" | while read -r line; do
+          OLD_TAG=$(echo "$line" | awk '{print $1}')
+          OLD_DATE=${OLD_TAG#pre-}
+          # Simple date comparison
+          TIMESTAMP=$(date -d "$OLD_DATE" +%s)
+          if [ "$TIMESTAMP" -lt "$(date -d "7 days ago" +%s)" ] || [ "$TIMESTAMP" -gt "$(date -d "12 hours ago" +%s)" ]; then
+             gh release delete "$OLD_TAG" --yes --cleanup-tag
+          fi
+        done
+        gh release create "$TAG" smart-piano-engine.tar.gz --title "$DATE" --notes "Automated pre-release for $DATE" --prerelease
     - if: startsWith(github.ref, 'refs/tags/v')
       run: |
         TAG=${GITHUB_REF#refs/tags/}
