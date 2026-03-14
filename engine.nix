@@ -18,12 +18,12 @@ stdenv.mkDerivation {
   nativeBuildInputs = [
     cmake # Modern build tool
     cppcheck # C++ Static analysis
-    doctest # Testing framework
     llvm # For llvm-cov
     ninja # Modern build tool
     pkg-config # Build tool
   ];
   buildInputs = [
+    doctest # Testing framework
     rtmidi # MIDI lib
   ]
   ++ lib.optionals stdenv.isLinux [
