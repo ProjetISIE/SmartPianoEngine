@@ -1,22 +1,21 @@
 {
+  lib,
+  stdenv,
   cmake,
   cppcheck,
   doctest,
   llvm,
   ninja,
   pkg-config,
-  pkgs,
   rtmidi,
-  self,
-  stdenv,
+  alsa-lib,
+  libjack2,
 }:
 stdenv.mkDerivation {
   pname = "engine";
   version = "0.1.0";
-  src = self;
-  doCheck = false; # Already in check coverage
+  src = lib.cleanSource ./.;
   nativeBuildInputs = [
-    # clang # C/C++ compiler
     cmake # Modern build tool
     cppcheck # C++ Static analysis
     doctest # Testing framework
@@ -27,16 +26,18 @@ stdenv.mkDerivation {
   buildInputs = [
     rtmidi # MIDI lib
   ]
-  ++ pkgs.lib.optionals stdenv.isLinux [
-    pkgs.alsa-lib # Audio lib
-    pkgs.libjack2 # Audio interconnection lib
+  ++ lib.optionals stdenv.isLinux [
+    alsa-lib # Audio lib
+    libjack2 # Audio interconnection lib
   ];
   installPhase = ''
+    runHook preInstall
     mkdir --parents --verbose $out/include
     cp --recursive --verbose ${./include}/* $out/include/
     mkdir --parents --verbose $out/lib
     cp --verbose src/libenginecomm.a $out/lib/
     mkdir --parents --verbose $out/bin
     cp --verbose src/main $out/bin/engine
+    runHook postInstall
   '';
 }
