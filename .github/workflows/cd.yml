@@ -37,10 +37,10 @@ jobs:
     - uses: lewagon/wait-on-check-action@v1.5.0
       with:
         ref: ${{ github.event.pull_request.head.sha || github.sha }}
-        check-regexp: 'package smart-piano.*'
+        check-regexp: 'package default.*'
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         fail-on-no-checks: false
-    - run: nix build .#smart-piano -o result
+    - run: nix build -o result
     - run: tar -chzvf smart-piano-engine.tar.gz -C result .
     - if: github.ref == 'refs/heads/main'
       run: |
