@@ -16,15 +16,25 @@
 class IRtMidiIn {
   public:
     virtual ~IRtMidiIn() = default;
+    virtual void
+    openPort(unsigned int portNumber = 0,
+             const std::string& portName = std::string("RtMidi Input")) = 0;
     virtual void openVirtualPort(const std::string& portName) = 0;
     virtual void ignoreTypes(bool midiSysex, bool midiTime, bool midiSense) = 0;
     virtual double getMessage(std::vector<unsigned char>* message) = 0;
+    virtual unsigned int getPortCount() = 0;
+    virtual std::string getPortName(unsigned int portNumber) = 0;
 };
 
 class IRtMidiOut {
   public:
     virtual ~IRtMidiOut() = default;
+    virtual void
+    openPort(unsigned int portNumber = 0,
+             const std::string& portName = std::string("RtMidi Output")) = 0;
     virtual void openVirtualPort(const std::string& portName) = 0;
+    virtual unsigned int getPortCount() = 0;
+    virtual std::string getPortName(unsigned int portNumber) = 0;
 };
 
 /**

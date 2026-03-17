@@ -14,6 +14,10 @@ class RtMidiInImpl : public IRtMidiIn {
         midi = new RtMidiIn(RtMidi::Api::UNSPECIFIED, "SmartPianoEngine");
     }
     ~RtMidiInImpl() override { delete midi; }
+    void openPort(unsigned int portNumber,
+                  const std::string& portName) override {
+        midi->openPort(portNumber, portName);
+    }
     void openVirtualPort(const std::string& portName) override {
         midi->openVirtualPort(portName);
     }
@@ -22,6 +26,10 @@ class RtMidiInImpl : public IRtMidiIn {
     }
     double getMessage(std::vector<unsigned char>* message) override {
         return midi->getMessage(message);
+    }
+    unsigned int getPortCount() override { return midi->getPortCount(); }
+    std::string getPortName(unsigned int portNumber) override {
+        return midi->getPortName(portNumber);
     }
 };
 
@@ -33,8 +41,16 @@ class RtMidiOutImpl : public IRtMidiOut {
         midi = new RtMidiOut(RtMidi::Api::UNSPECIFIED, "SmartPianoEngine");
     }
     ~RtMidiOutImpl() override { delete midi; }
+    void openPort(unsigned int portNumber,
+                  const std::string& portName) override {
+        midi->openPort(portNumber, portName);
+    }
     void openVirtualPort(const std::string& portName) override {
         midi->openVirtualPort(portName);
+    }
+    unsigned int getPortCount() override { return midi->getPortCount(); }
+    std::string getPortName(unsigned int portNumber) override {
+        return midi->getPortName(portNumber);
     }
 };
 
@@ -50,19 +66,51 @@ bool RtMidiInput::initialize() {
         return false;
     }
     try {
-        midiIn->openVirtualPort("input");
+        // Essayer de détecter un clavier matériel
+        unsigned int nPorts = midiIn->getPortCount();
+        bool hardwareFound = false;
+        Logger::log("[RtMidiInput] Nombre de ports MIDI trouvés: {}",
+                    std::to_string(nPorts));
+
+        for (unsigned int i = 0; i < nPorts; i++) {
+            std::string portName = midiIn->getPortName(i);
+            Logger::log("[RtMidiInput] Port {}: {}", std::to_string(i),
+                        portName);
+            // On cherche un clavier (ex: "reface CP", "USB MIDI", etc.)
+            // On évite de se connecter à soi-même ou à "Midi Through"
+            if (portName.find("SmartPianoEngine") == std::string::npos &&
+                portName.find("Through") == std::string::npos) {
+                Logger::log("[RtMidiInput] Tentative d'ouverture du port: {}",
+                            portName);
+                midiIn->openPort(i);
+                hardwareFound = true;
+                Logger::log("[RtMidiInput] Connecté au port matériel: {}",
+                            portName);
+                break;
+            }
+        }
+
+        if (!hardwareFound) {
+            Logger::log("[RtMidiInput] Aucun clavier détecté, "
+                        "ouverture d'un port virtuel");
+            midiIn->openVirtualPort("input");
+        }
+
+        // Toujours ouvrir un port de sortie virtuel (optionnel, pour d'autres
+        // usages)
         midiOut->openVirtualPort("output");
+
         midiIn->ignoreTypes(false, false, false);
 
         // Lancer thread de traitement MIDI
         shouldStop = false;
         inputThread = std::thread(&RtMidiInput::processMidiMessages, this);
 
-        Logger::log("[RtMidiInput] Ports JACK ouverts avec succès");
+        Logger::log("[RtMidiInput] Initialisation terminée avec succès");
         return true;
 
     } catch (RtMidiError& error) {
-        Logger::err("[RtMidiInput] Erreur ouverture ports: {}",
+        Logger::err("[RtMidiInput] Erreur initialisation MIDI: {}",
                     error.getMessage());
         close();
         return false;

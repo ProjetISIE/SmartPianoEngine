@@ -13,14 +13,26 @@ class MockRtMidiIn : public IRtMidiIn {
     std::deque<std::vector<unsigned char>> messageQueue;
     std::mutex queueMutex;
     bool openPortCalled = false;
+    bool openVirtualPortCalled = false;
     bool throwOnOpen = false;
     bool throwOnGet = false;
+    std::vector<std::string> mockPorts = {"SmartPianoEngine Port",
+                                          "Midi Through", "reface CP"};
+
+    void openPort(unsigned int portNumber,
+                  const std::string& portName) override {
+        (void)portNumber;
+        (void)portName;
+        if (throwOnOpen)
+            throw RtMidiError("Mock error", RtMidiError::DRIVER_ERROR);
+        openPortCalled = true;
+    }
 
     void openVirtualPort(const std::string& portName) override {
         (void)portName;
         if (throwOnOpen)
             throw RtMidiError("Mock error", RtMidiError::DRIVER_ERROR);
-        openPortCalled = true;
+        openVirtualPortCalled = true;
     }
 
     void ignoreTypes(bool midiSysex, bool midiTime, bool midiSense) override {
@@ -41,6 +53,12 @@ class MockRtMidiIn : public IRtMidiIn {
         return 0.0;
     }
 
+    unsigned int getPortCount() override { return mockPorts.size(); }
+    std::string getPortName(unsigned int portNumber) override {
+        if (portNumber < mockPorts.size()) return mockPorts[portNumber];
+        return "";
+    }
+
     void pushMessage(const std::vector<unsigned char>& msg) {
         std::lock_guard<std::mutex> lock(queueMutex);
         messageQueue.push_back(msg);
@@ -52,10 +70,24 @@ class MockRtMidiIn : public IRtMidiIn {
 class MockRtMidiOut : public IRtMidiOut {
   public:
     bool openPortCalled = false;
+    bool openVirtualPortCalled = false;
+
+    void openPort(unsigned int portNumber,
+                  const std::string& portName) override {
+        (void)portNumber;
+        (void)portName;
+        openPortCalled = true;
+    }
 
     void openVirtualPort(const std::string& portName) override {
         (void)portName;
-        openPortCalled = true;
+        openVirtualPortCalled = true;
+    }
+
+    unsigned int getPortCount() override { return 0; }
+    std::string getPortName(unsigned int portNumber) override {
+        (void)portNumber;
+        return "";
     }
 };
 
@@ -84,16 +116,39 @@ class TestableRtMidiInput : public RtMidiInput {
     }
 };
 
-/// Vérifie initialisation réussie et ouverture ports virtuels MIDI
-/// Valide que initialize ouvre ports entrée/sortie et marque comme prêt
-TEST_CASE("RtMidiInput initialization success") {
+/// Vérifie initialisation réussie et ouverture ports MIDI
+/// Valide que initialize ouvre ports (matériel ou virtuel) et marque comme prêt
+TEST_CASE("RtMidiInput initialization success (hardware detection)") {
     TestableRtMidiInput input;
     CHECK(input.initialize());
     CHECK(input.isReady());
+    // Dans le mock par défaut, "reface CP" est trouvé
     CHECK(input.mockIn->openPortCalled);
-    CHECK(input.mockOut->openPortCalled);
+    CHECK_FALSE(input.mockIn->openVirtualPortCalled);
+    CHECK(input.mockOut->openVirtualPortCalled);
     input.close();
     CHECK_FALSE(input.isReady());
+}
+
+/// Vérifie repli sur port virtuel si aucun matériel détecté
+class FallbackRtMidiInput : public TestableRtMidiInput {
+  protected:
+    IRtMidiIn* createMidiIn() override {
+        auto m = new MockRtMidiIn();
+        m->mockPorts = {"SmartPianoEngine Port", "Midi Through"};
+        mockIn = m;
+        return m;
+    }
+};
+
+TEST_CASE("RtMidiInput fallback to virtual when no hardware found") {
+    FallbackRtMidiInput input;
+    CHECK(input.initialize());
+    CHECK(input.isReady());
+    CHECK_FALSE(input.mockIn->openPortCalled);
+    CHECK(input.mockIn->openVirtualPortCalled);
+    CHECK(input.mockOut->openVirtualPortCalled);
+    input.close();
 }
 
 /// Vérifie gestion exception lors traitement messages MIDI
