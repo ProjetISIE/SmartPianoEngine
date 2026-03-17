@@ -1,6 +1,7 @@
 #include "ChordGame.hpp"
 #include "Logger.hpp"
 #include <chrono>
+#include <thread>
 
 using namespace std::chrono;
 
@@ -59,9 +60,30 @@ GameResult ChordGame::play() {
 
         Logger::log("[ChordGame] Challenge {}: {}", this->challengeId, name);
 
-        // Attendre les notes jouées
+        // Attendre les notes jouées (non-bloquant avec interruption possible)
         auto challengeStart = high_resolution_clock::now();
-        std::vector<Note> playedNotes = this->midi.readNotes();
+        std::vector<Note> playedNotes;
+        bool quitRequested = false;
+
+        while (!this->midi.hasNotes()) {
+            if (this->transport.hasMessage()) {
+                Message msg = this->transport.receive();
+                if (msg.getType() == "quit") {
+                    Logger::log(
+                        "[ChordGame] Quitter demandé pendant challenge");
+                    quitRequested = true;
+                    break;
+                }
+            }
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
+
+        if (quitRequested) {
+            result.total = i;
+            break;
+        }
+
+        playedNotes = this->midi.readNotes();
         auto challengeEnd = high_resolution_clock::now();
 
         auto duration =
@@ -119,15 +141,25 @@ GameResult ChordGame::play() {
 
         if (i < maxChallenges - 1) {
             Message readyMsg = this->transport.receive();
-            if (readyMsg.getType() != "ready") break;
+            if (readyMsg.getType() == "quit") {
+                Logger::log("[ChordGame] Client demande arrêt session");
+                result.total = i + 1;
+                break;
+            }
+            if (readyMsg.getType() != "ready") {
+                Logger::err("[ChordGame] Attendu 'ready', reçu '{}'",
+                            readyMsg.getType());
+                result.total = i + 1;
+                break;
+            }
         }
+        result.total = i + 1;
     }
 
     auto endTime = high_resolution_clock::now();
     result.duration = duration_cast<milliseconds>(endTime - startTime).count();
     result.perfect = perfectCount;
     result.partial = partialCount;
-    result.total = maxChallenges;
 
     return result;
 }

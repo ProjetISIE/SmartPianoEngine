@@ -1,11 +1,21 @@
 #include "UdsTransport.hpp"
 #include "Logger.hpp"
 #include <cstring>
+#include <poll.h>
 #include <sstream>
 #include <string>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
+
+bool UdsTransport::hasMessage() const {
+    if (this->clientSock < 0) return false;
+    struct pollfd pfd;
+    pfd.fd = this->clientSock;
+    pfd.events = POLLIN;
+    int ret = poll(&pfd, 1, 0);
+    return ret > 0 && (pfd.revents & POLLIN);
+}
 
 bool UdsTransport::start() {
     unlink(this->sockPath.c_str()); // Supprimer socket existant s'il existe

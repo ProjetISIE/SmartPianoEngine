@@ -54,6 +54,11 @@ class MockMidiInput : public IMidiInput {
 
     bool isReady() const override { return initialized && !closed; }
 
+    bool hasNotes() const override {
+        std::lock_guard<std::mutex> lock(const_cast<std::mutex&>(mtx));
+        return !notesQueue.empty() || closed;
+    }
+
     // Helper to push input
     void pushNotes(const std::vector<Note>& notes) {
         std::lock_guard<std::mutex> lock(mtx);
@@ -119,6 +124,11 @@ class MockTransport : public ITransport {
     }
 
     bool isClientConnected() const override { return connected; }
+
+    bool hasMessage() const override {
+        std::lock_guard<std::mutex> lock(const_cast<std::mutex&>(mtx));
+        return !incomingMessages.empty();
+    }
 
     // Helper
     void pushIncoming(const Message& msg) {

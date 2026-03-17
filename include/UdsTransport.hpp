@@ -65,6 +65,12 @@ class UdsTransport : public ITransport {
     Message receive() override;
 
     /**
+     * @brief Vérifie si un message est disponible
+     * @return true si des données attendent d'être lues
+     */
+    bool hasMessage() const override;
+
+    /**
      * @brief Arrête le serveur
      */
     void stop() override;

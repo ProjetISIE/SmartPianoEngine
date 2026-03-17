@@ -1,6 +1,7 @@
 #include "NoteGame.hpp"
 #include "Logger.hpp"
 #include <chrono>
+#include <thread>
 
 using namespace std::chrono;
 
@@ -35,7 +36,29 @@ GameResult NoteGame::play() {
                     targetNoteStr);
 
         auto challengeStart = high_resolution_clock::now();
-        std::vector<Note> playedNotes = this->midi.readNotes();
+        std::vector<Note> playedNotes;
+        bool quitRequested = false;
+
+        // Boucle d'attente non-bloquante pour MIDI ou Transport
+        while (!this->midi.hasNotes()) {
+            if (this->transport.hasMessage()) {
+                Message msg = this->transport.receive();
+                if (msg.getType() == "quit") {
+                    Logger::log(
+                        "[NoteGame] Quitter demandé pendant le challenge");
+                    quitRequested = true;
+                    break;
+                }
+            }
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
+
+        if (quitRequested) {
+            result.total = i; // Ce challenge n'est pas compté
+            break;
+        }
+
+        playedNotes = this->midi.readNotes();
         auto challengeEnd = high_resolution_clock::now();
 
         auto duration =
@@ -80,18 +103,25 @@ GameResult NoteGame::play() {
 
         if (i < maxChallenges - 1) {
             Message readyMsg = this->transport.receive();
+            if (readyMsg.getType() == "quit") {
+                Logger::log(
+                    "[NoteGame] Client demande arrêt pendant la session");
+                result.total = i + 1;
+                break;
+            }
             if (readyMsg.getType() != "ready") {
                 Logger::err("[NoteGame] Attendu 'ready', reçu '{}'",
                             readyMsg.getType());
+                result.total = i + 1;
                 break;
             }
         }
+        result.total = i + 1;
     }
 
     auto endTime = high_resolution_clock::now();
     result.duration = duration_cast<milliseconds>(endTime - startTime).count();
     result.perfect = perfectCount;
-    result.total = maxChallenges;
 
     return result;
 }

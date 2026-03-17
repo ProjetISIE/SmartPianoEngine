@@ -138,6 +138,8 @@ std::vector<Note> RtMidiInput::readNotes() {
     return notes;
 }
 
+bool RtMidiInput::hasNotes() const { return notesAvailable.load(); }
+
 void RtMidiInput::close() {
     Logger::log("[RtMidiInput] Fermeture des ressources");
 

@@ -35,6 +35,12 @@ class ITransport {
     virtual Message receive() = 0;
 
     /**
+     * @brief Vérifie si un message est en attente
+     * @return true si un message est disponible
+     */
+    virtual bool hasMessage() const = 0;
+
+    /**
      * @brief Arrête le serveur de transport
      */
     virtual void stop() = 0;

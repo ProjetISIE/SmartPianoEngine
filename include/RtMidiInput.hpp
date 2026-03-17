@@ -87,6 +87,12 @@ class RtMidiInput : public IMidiInput {
     std::vector<Note> readNotes() override;
 
     /**
+     * @brief Vérifie si des notes sont disponibles
+     * @return true si des notes sont prêtes à être lues
+     */
+    bool hasNotes() const override;
+
+    /**
      * @brief Ferme l'entrée MIDI
      */
     void close() override;

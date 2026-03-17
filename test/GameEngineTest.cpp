@@ -195,6 +195,57 @@ TEST_CASE("GameEngine Session Interruptions") {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
+    /// Vérifie gestion quit après un challenge (pendant session)
+    SUBCASE("Quit during session (after challenge)") {
+        Message configMsg(
+            "config",
+            {{"game", "note"}, {"scale", "c"}, {"mode", "maj"}, {"max", "5"}});
+        transport.pushIncoming(configMsg);
+        transport.waitForSentMessage(); // Ack
+
+        transport.pushIncoming(Message("ready"));
+        transport.waitForSentMessage(); // Challenge
+
+        // Jouer des notes pour terminer le challenge
+        midi.pushNotes({"c4"});
+        transport.waitForSentMessage(); // Result
+
+        // Maintenant, au lieu de ready, on envoie quit
+        transport.pushIncoming(Message("quit"));
+
+        // On doit recevoir "over"
+        Message over = transport.waitForSentMessage();
+        CHECK(over.getType() == "over");
+        CHECK(over.getField("total") == "1");
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    }
+
+    /// Vérifie gestion quit PENDANT un challenge
+    SUBCASE("Quit during session (during challenge)") {
+        Message configMsg(
+            "config",
+            {{"game", "note"}, {"scale", "c"}, {"mode", "maj"}, {"max", "5"}});
+        transport.pushIncoming(configMsg);
+        transport.waitForSentMessage(); // Ack
+
+        transport.pushIncoming(Message("ready"));
+        transport.waitForSentMessage(); // Challenge
+
+        // Ne pas jouer de notes. Envoyer quit à la place.
+        // Problème: le moteur est bloqué dans midi.readNotes()
+        // On va envoyer quit, et GameEngine doit pouvoir le traiter.
+        // Mais GameEngine::processGameSession appelle play() qui est bloquant.
+
+        transport.pushIncoming(Message("quit"));
+
+        // On attend "over"
+        Message over = transport.waitForSentMessage();
+        CHECK(over.getType() == "over");
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    }
+
     engine.stop();
     if (engineThread.joinable()) engineThread.join();
 }

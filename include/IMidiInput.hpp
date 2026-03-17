@@ -25,6 +25,12 @@ class IMidiInput {
     virtual std::vector<Note> readNotes() = 0;
 
     /**
+     * @brief Vérifie si des notes sont disponibles
+     * @return true si des notes sont prêtes à être lues
+     */
+    virtual bool hasNotes() const = 0;
+
+    /**
      * @brief Ferme l'entrée MIDI et libère les ressources
      */
     virtual void close() = 0;
