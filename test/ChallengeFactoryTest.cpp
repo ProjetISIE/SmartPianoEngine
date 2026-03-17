@@ -44,6 +44,34 @@ TEST_CASE("ChallengeFactory") {
         CHECK(renv <= 3);
     }
 
+    /// Vérifie que les accords ne dépassent pas une octave (12 demi-tons)
+    SUBCASE("Chord Span") {
+        auto noteToValue = [](const std::string& n) {
+            static const std::map<char, int> baseValues = {
+                {'c', 0}, {'d', 2}, {'e', 4}, {'f', 5}, {'g', 7}, {'a', 9}, {'b', 11}};
+            int val = baseValues.at(n[0]);
+            size_t i = 1;
+            if (i < n.size() && (n[i] == '#' || n[i] == 'b')) {
+                if (n[i] == '#') val += 1;
+                else val -= 1;
+                i++;
+            }
+            int octave = n[i] - '0';
+            return val + (octave + 1) * 12;
+        };
+
+        for (int i = 0; i < 100; ++i) {
+            auto [nom, notes, renv] = gen.generateInversedChord("c", "maj");
+            int minVal = 1000, maxVal = -1000;
+            for (const auto& n : notes) {
+                int val = noteToValue(n);
+                if (val < minVal) minVal = val;
+                if (val > maxVal) maxVal = val;
+            }
+            CHECK(maxVal - minVal <= 12);
+        }
+    }
+
     /// Vérifie comportement avec paramètres invalides (gamme inconnue)
     SUBCASE("Invalid parameters fallback") {
         // Devrait fallback sur Do Majeur selon implémentation (au lieu de
