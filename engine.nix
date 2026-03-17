@@ -13,7 +13,7 @@
 }:
 stdenv.mkDerivation {
   pname = "engine";
-  version = "1.2.0";
+  version = "2.0.0";
   src = lib.cleanSource ./.;
   nativeBuildInputs = [
     cmake # Modern build tool
