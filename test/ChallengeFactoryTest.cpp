@@ -14,8 +14,14 @@ TEST_CASE("ChallengeFactory") {
         std::string note = gen.generateNote("c", "maj");
         std::regex pattern("^[a-g][#b]?[0-9]$");
         CHECK(std::regex_match(note, pattern));
-        CHECK(note.find('#') == std::string::npos);
-        CHECK(note.find('b') == std::string::npos);
+        // On vérifie qu'il n'y a pas d'altération (# ou b en 2ème position)
+        if (note.size() > 2) { // Cas avec altération ex: c#4
+             CHECK(note[1] != '#');
+             CHECK(note[1] != 'b');
+        } else {
+             // Si taille 2, format est "c4", donc pas d'altération
+             CHECK(note.size() == 2);
+        }
     }
 
     /// Vérifie génération note dans gamme Sol Majeur
@@ -48,7 +54,8 @@ TEST_CASE("ChallengeFactory") {
     SUBCASE("Chord Span") {
         auto noteToValue = [](const std::string& n) {
             static const std::map<char, int> baseValues = {
-                {'c', 0}, {'d', 2}, {'e', 4}, {'f', 5}, {'g', 7}, {'a', 9}, {'b', 11}};
+                {'c', 0}, {'d', 2}, {'e', 4}, {'f', 5},
+                {'g', 7}, {'a', 9}, {'b', 11}};
             int val = baseValues.at(n[0]);
             size_t i = 1;
             if (i < n.size() && (n[i] == '#' || n[i] == 'b')) {
@@ -69,6 +76,22 @@ TEST_CASE("ChallengeFactory") {
                 if (val > maxVal) maxVal = val;
             }
             CHECK(maxVal - minVal <= 12);
+        }
+    }
+
+    /// Vérifie qu'on n'a pas deux fois le même accord de suite (racine +
+    /// octave)
+    SUBCASE("Chord Entropy") {
+        std::string lastFull;
+        for (int i = 0; i < 50; ++i) {
+            auto [nom, notes] = gen.generateChord("c", "maj");
+            std::string currentFull = nom;
+            for (const auto& n : notes) currentFull += n;
+
+            if (!lastFull.empty()) {
+                CHECK(currentFull != lastFull);
+            }
+            lastFull = currentFull;
         }
     }
 

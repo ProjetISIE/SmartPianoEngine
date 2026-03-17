@@ -14,6 +14,8 @@
 class ChallengeFactory {
   private:
     std::mt19937 rng; ///< Générateur de nombres aléatoires
+    int lastChordIdx{-1};
+    int lastOctave{-1};
 
     // Tables de gammes harmonisées avec le protocole
     static const std::map<std::string, std::vector<std::string>> scales;

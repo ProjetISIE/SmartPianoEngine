@@ -30,10 +30,8 @@ static int noteToValue(const std::string& noteName, int octave) {
         {'c', 0}, {'d', 2}, {'e', 4}, {'f', 5}, {'g', 7}, {'a', 9}, {'b', 11}};
     int val = baseValues.at(noteName[0]);
     if (noteName.size() > 1) {
-        if (noteName[1] == '#')
-            val += 1;
-        else if (noteName[1] == 'b')
-            val -= 1;
+        if (noteName[1] == '#') val += 1;
+        else if (noteName[1] == 'b') val -= 1;
     }
     return val + (octave + 1) * 12;
 }
@@ -59,15 +57,20 @@ std::pair<std::string, std::vector<std::string>>
 ChallengeFactory::generateChord(const std::string& scale,
                                 const std::string& mode) {
     auto notes = getScaleNotes(scale, mode);
-    // Degrés I, IV, V
-    static const std::vector<int> degrees = {0, 3, 4};
-    std::uniform_int_distribution<> degDist(0, degrees.size() - 1);
+    std::uniform_int_distribution<> degDist(0, 6);
     std::uniform_int_distribution<> octaveDist(3, 4);
 
-    int rootIdx = degrees[degDist(rng)];
+    int rootIdx, baseOctave;
+    do {
+        rootIdx = degDist(rng);
+        baseOctave = octaveDist(rng);
+    } while (rootIdx == lastChordIdx && baseOctave == lastOctave);
+
+    lastChordIdx = rootIdx;
+    lastOctave = baseOctave;
+
     int thirdIdx = (rootIdx + 2) % 7;
     int fifthIdx = (rootIdx + 4) % 7;
-    int baseOctave = octaveDist(rng);
 
     int rootVal = noteToValue(notes[rootIdx], baseOctave);
 
@@ -87,7 +90,19 @@ ChallengeFactory::generateChord(const std::string& scale,
 
     std::string rootName = notes[rootIdx];
     rootName[0] = std::toupper(rootName[0]);
-    std::string name = rootName + (mode == "maj" ? " majeur" : " mineur");
+
+    // Détermination du type d'accord (majeur, mineur, diminué)
+    std::string chordType;
+    if (mode == "maj") {
+        if (rootIdx == 0 || rootIdx == 3 || rootIdx == 4) chordType = " majeur";
+        else if (rootIdx == 6) chordType = " diminué";
+        else chordType = " mineur";
+    } else { // mineur
+        if (rootIdx == 2 || rootIdx == 5 || rootIdx == 6) chordType = " majeur";
+        else if (rootIdx == 1) chordType = " diminué";
+        else chordType = " mineur";
+    }
+    std::string name = rootName + chordType;
 
     std::vector<std::string> chordNotes = {
         notes[rootIdx] + std::to_string(baseOctave),
