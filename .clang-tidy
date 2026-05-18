@@ -22,6 +22,8 @@ CheckOptions:
     VariableCase:          camelBack
     GlobalVariableCase:    camelBack
     ParameterCase:         camelBack
+    MemberCase:            camelBack
+    MemberSuffix:          "-"
     NamespaceCase:         lower_case
 ...
 
