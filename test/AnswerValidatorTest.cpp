@@ -7,8 +7,10 @@
 TEST_CASE("AnswerValidator::valider") {
     AnswerValidator vn;
     CHECK(vn.valider("c4", "c4"));
+    CHECK(vn.valider("c4", "c3")); // Différentes octaves
     CHECK_FALSE(vn.valider("c4", "d4"));
     CHECK(vn.valider("d#5", "d#5"));
+    CHECK(vn.valider("d#5", "d#3")); // Différentes octaves
 }
 
 /// Vérifie la validation d'accords sans renversement
