@@ -16,11 +16,11 @@ TEST_CASE("ChallengeFactory") {
         CHECK(std::regex_match(note, pattern));
         // On vérifie qu'il n'y a pas d'altération (# ou b en 2ème position)
         if (note.size() > 2) { // Cas avec altération ex: c#4
-             CHECK(note[1] != '#');
-             CHECK(note[1] != 'b');
+            CHECK(note[1] != '#');
+            CHECK(note[1] != 'b');
         } else {
-             // Si taille 2, format est "c4", donc pas d'altération
-             CHECK(note.size() == 2);
+            // Si taille 2, format est "c4", donc pas d'altération
+            CHECK(note.size() == 2);
         }
     }
 

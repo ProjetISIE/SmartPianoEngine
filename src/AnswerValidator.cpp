@@ -7,15 +7,18 @@
 #include <sys/types.h>
 #include <vector>
 
-// Validation d'une seule note jouee par rapport a une note attendue (en ignorant l'octave)
+// Validation d'une seule note jouee par rapport a une note attendue (en
+// ignorant l'octave)
 bool AnswerValidator::valider(const std::string& noteJouee,
                               const std::string& noteAttendue) {
     Logger::log("[AnswerValidator] Validation note {} = {}", noteJouee,
                 noteAttendue);
     std::string n1 = noteJouee;
     std::string n2 = noteAttendue;
-    if (!n1.empty() && std::isdigit(static_cast<unsigned char>(n1.back()))) n1.pop_back();
-    if (!n2.empty() && std::isdigit(static_cast<unsigned char>(n2.back()))) n2.pop_back();
+    if (!n1.empty() && std::isdigit(static_cast<unsigned char>(n1.back())))
+        n1.pop_back();
+    if (!n2.empty() && std::isdigit(static_cast<unsigned char>(n2.back())))
+        n2.pop_back();
     std::transform(n1.begin(), n1.end(), n1.begin(), ::toupper);
     std::transform(n2.begin(), n2.end(), n2.begin(), ::toupper);
     return n1 == n2;
