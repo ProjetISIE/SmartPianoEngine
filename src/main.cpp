@@ -24,8 +24,8 @@ void signalHandler(int signum) {
 }
 
 int main(int argc, char* argv[]) {
-    Logger::init();
-    // Gestion de --timeout pour les tests/profilage
+    bool verbose = false;
+    // Gestion de --timeout pour les tests/profilage et --verbose/-v
     for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];
         if (arg == "--timeout" && i + 1 < argc) {
@@ -36,8 +36,12 @@ int main(int argc, char* argv[]) {
                         std::chrono::milliseconds(timeoutMs));
                     std::raise(SIGINT);
                 }).detach();
+        } else if (arg == "--verbose" || arg == "-v") {
+            verbose = true;
         }
     }
+    Logger::init();
+    Logger::setVerbose(verbose);
     Logger::log("[MAIN] === Démarrage Smart Piano Engine ===");
     std::println("[MAIN] Appuyer sur Ctrl+C pour arrêter Smart Piano Engine");
     // Configuration gestionnaires de signaux de terminaison
