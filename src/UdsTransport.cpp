@@ -80,8 +80,6 @@ void UdsTransport::send(const Message& msg) {
         Logger::err("[UdsTransport] Erreur: Échec de l'envoi du message");
         return;
     }
-
-    Logger::log("[UdsTransport] Message envoyé: type={}", msg.getType());
 }
 
 Message UdsTransport::receive() {
@@ -107,15 +105,14 @@ Message UdsTransport::receive() {
             return Message("error");
         }
         buffer[received] = '\0';
-        if (std::string(buffer).find("\n") != std::string::npos)
-            Logger::log("[UdsTransport] Ligne reçue: {}", buffer);
+
         data += buffer;
         // Vérifier si message complet (double newline)
         if (data.find("\n\n") != std::string::npos ||
             data.find("\r\n\r\n") != std::string::npos)
             break;
     }
-    Logger::log("[UdsTransport] Message reçu");
+
     return parseMessage(data);
 }
 

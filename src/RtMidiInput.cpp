@@ -100,7 +100,7 @@ bool RtMidiInput::initialize() {
         // usages)
         midiOut->openVirtualPort("output");
 
-        midiIn->ignoreTypes(false, false, false);
+        midiIn->ignoreTypes(true, true, true);
 
         // Lancer thread de traitement MIDI
         shouldStop = false;

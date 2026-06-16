@@ -3,7 +3,7 @@
 #include <doctest/doctest.h>
 
 /// Vérifie la validation de notes individuelles
-/// Compare notes jouées vs attendues (égalité stricte)
+/// Compare notes jouées vs attendues
 TEST_CASE("AnswerValidator::valider") {
     AnswerValidator vn;
     CHECK(vn.valider("c4", "c4"));
