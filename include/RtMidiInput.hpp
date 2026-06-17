@@ -4,6 +4,7 @@
 #include "IMidiInput.hpp"
 #include "Logger.hpp"
 #include <atomic>
+#include <memory>
 #include <mutex>
 #include <thread>
 #include <vector>
@@ -44,11 +45,11 @@ class IRtMidiOut {
  */
 class RtMidiInput : public IMidiInput {
   private:
-    IRtMidiIn* midiIn{nullptr};              ///< Instance RTMidi (Wrapper)
-    IRtMidiOut* midiOut{nullptr};            ///< Sortie MIDI (Wrapper)
-    std::vector<Note> lastNotes;             ///< Dernières notes jouées
-    std::atomic<bool> notesAvailable{false}; ///< Notes disponibles?
-    std::mutex notesMutex;                   ///< Mutex pour accès aux notes
+    std::unique_ptr<IRtMidiIn> midiIn{nullptr};   ///< Instance RTMidi (Wrapper)
+    std::unique_ptr<IRtMidiOut> midiOut{nullptr}; ///< Sortie MIDI (Wrapper)
+    std::vector<Note> lastNotes;                  ///< Dernières notes jouées
+    std::atomic<bool> notesAvailable{false};      ///< Notes disponibles?
+    std::mutex notesMutex; ///< Mutex pour accès aux notes
 
     std::atomic<bool> shouldStop{false}; ///< Flag d'arrêt du thread
     std::thread inputThread;             ///< Thread de traitement
@@ -67,9 +68,14 @@ class RtMidiInput : public IMidiInput {
     Note convertMidiToNote(int midiNote) const;
 
   public:
+    RtMidiInput(const RtMidiInput&) = delete;
+    RtMidiInput& operator=(const RtMidiInput&) = delete;
+    RtMidiInput(RtMidiInput&&) = delete;
+    RtMidiInput& operator=(RtMidiInput&&) = delete;
+
     RtMidiInput() { Logger::log("[RtMidiInput] Instance créée"); }
 
-    ~RtMidiInput() {
+    ~RtMidiInput() override {
         close();
         Logger::log("[RtMidiInput] Instance détruite");
     }
@@ -106,15 +112,15 @@ class RtMidiInput : public IMidiInput {
   protected:
     /**
      * @brief Crée l'instance IRtMidiIn
-     * @return Pointeur vers IRtMidiIn
+     * @return Pointeur unique vers IRtMidiIn
      */
-    virtual IRtMidiIn* createMidiIn();
+    virtual std::unique_ptr<IRtMidiIn> createMidiIn();
 
     /**
      * @brief Crée l'instance IRtMidiOut
-     * @return Pointeur vers IRtMidiOut
+     * @return Pointeur unique vers IRtMidiOut
      */
-    virtual IRtMidiOut* createMidiOut();
+    virtual std::unique_ptr<IRtMidiOut> createMidiOut();
 };
 
 #endif // RTMIDIINPUT_HPP

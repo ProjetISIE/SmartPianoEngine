@@ -93,10 +93,11 @@ GameResult ChordGame::play() {
 
         bool isValid = false;
         if (withInversions) {
-            isValid = validator.validerAccordRenversement(playedNotesStr,
-                                                          targetNotes, 1);
+            isValid = AnswerValidator::validerAccordRenversement(
+                playedNotesStr, targetNotes, 1);
         } else {
-            isValid = validator.validerAccordSR(playedNotesStr, targetNotes);
+            isValid =
+                AnswerValidator::validerAccordSR(playedNotesStr, targetNotes);
         }
 
         // Déterminer correct/incorrect pour le message résultat
@@ -107,7 +108,7 @@ GameResult ChordGame::play() {
         for (const auto& played : playedNotesStr) {
             bool found = false;
             for (const auto& expected : targetNotes) {
-                if (validator.valider(played, expected)) {
+                if (AnswerValidator::valider(played, expected)) {
                     if (!correctNotes.empty()) correctNotes += " ";
                     correctNotes += played;
                     found = true;

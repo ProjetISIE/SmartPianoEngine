@@ -92,16 +92,7 @@ class Note {
      * @param other Autre note
      * @return true si les notes sont identiques
      */
-    bool operator==(const Note& other) const {
-        return this->name == other.name && this->octave == other.octave;
-    }
-
-    /**
-     * @brief Compare deux notes pour l'inégalité
-     * @param other Autre note
-     * @return true si les notes sont différentes
-     */
-    bool operator!=(const Note& other) const { return !(*this == other); }
+    bool operator==(const Note& other) const = default;
 };
 
 #endif // NOTE_HPP

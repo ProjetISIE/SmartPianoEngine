@@ -31,12 +31,17 @@ class UdsTransport : public ITransport {
     Message parseMessage(const std::string& data) const;
 
   public:
+    UdsTransport(const UdsTransport&) = delete;
+    UdsTransport& operator=(const UdsTransport&) = delete;
+    UdsTransport(UdsTransport&&) = delete;
+    UdsTransport& operator=(UdsTransport&&) = delete;
+
     explicit UdsTransport(std::string path = "/tmp/smartpiano.sock")
         : sockPath(std::move(path)) {
         Logger::log("[UdsTransport] Instance créée sur {}", sockPath);
     }
 
-    ~UdsTransport() {
+    ~UdsTransport() override {
         stop();
         Logger::log("[UdsTransport] Instance détruite");
     }

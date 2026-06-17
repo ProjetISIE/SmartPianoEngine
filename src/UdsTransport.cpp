@@ -32,7 +32,8 @@ bool UdsTransport::start() {
     addr.sun_family = AF_UNIX;
     strncpy(addr.sun_path, this->sockPath.c_str(), sizeof(addr.sun_path) - 1);
     // Lier le socket
-    if (bind(this->serverSock, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
+    if (bind(this->serverSock, reinterpret_cast<sockaddr*>(&addr),
+             sizeof(addr)) < 0) {
         Logger::err("[UdsTransport] Erreur: Impossible de lier le socket");
         close(this->serverSock);
         this->serverSock = -1;
@@ -153,7 +154,7 @@ Message UdsTransport::parseMessage(const std::string& data) const {
     }
 
     // Enlever le \r si présent (pour compatibilité Windows)
-    if (!line.empty() && line.back() == '\r') line.pop_back();
+    if (line.back() == '\r') line.pop_back();
 
     std::string messageType = line;
     std::map<std::string, std::string> messageFields;

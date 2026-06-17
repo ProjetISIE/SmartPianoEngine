@@ -24,7 +24,7 @@ bool AnswerValidator::valider(const std::string& noteJouee,
     return n1 == n2;
 }
 
-int AnswerValidator::getNoteValue(std::string noteName) const {
+int AnswerValidator::getNoteValue(std::string noteName) {
     static const std::map<std::string, int> notesMidi = {
         {"C", 0},  {"C#", 1}, {"DB", 1},  {"D", 2},   {"D#", 3}, {"EB", 3},
         {"E", 4},  {"F", 5},  {"F#", 6},  {"GB", 6},  {"G", 7},  {"G#", 8},
@@ -40,7 +40,7 @@ int AnswerValidator::getNoteValue(std::string noteName) const {
     return it->second;
 }
 
-int AnswerValidator::getAbsoluteMidiValue(const std::string& noteStr) const {
+int AnswerValidator::getAbsoluteMidiValue(const std::string& noteStr) {
     if (noteStr.empty()) return -1;
     std::string namePart = noteStr.substr(0, noteStr.size() - 1);
     int noteVal = getNoteValue(namePart);

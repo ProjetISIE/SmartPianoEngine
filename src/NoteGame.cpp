@@ -70,7 +70,7 @@ GameResult NoteGame::play() {
 
         for (const auto& played : playedNotes) {
             std::string playedNoteStr = played.toString();
-            if (validator.valider(playedNoteStr, targetNoteStr)) {
+            if (AnswerValidator::valider(playedNoteStr, targetNoteStr)) {
                 if (!correctNotes.empty()) correctNotes += " ";
                 correctNotes += playedNoteStr;
                 correct = true;

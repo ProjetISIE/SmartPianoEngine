@@ -19,7 +19,6 @@ class ChordGame : public IGameMode {
     IMidiInput& midi;          ///< Référence à l'entrée MIDI
     ChallengeFactory& factory; ///< Référence à la factory
     GameConfig config;         ///< Configuration du jeu
-    AnswerValidator validator; ///< Validateur de réponses
     bool withInversions;       ///< Mode avec renversements?
     int challengeId;           ///< ID du challenge actuel
 

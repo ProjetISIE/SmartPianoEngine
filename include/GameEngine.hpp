@@ -56,6 +56,11 @@ class GameEngine {
                  const std::string& errorMessage = "");
 
   public:
+    GameEngine(const GameEngine&) = delete;
+    GameEngine& operator=(const GameEngine&) = delete;
+    GameEngine(GameEngine&&) = delete;
+    GameEngine& operator=(GameEngine&&) = delete;
+
     GameEngine(ITransport& transport, IMidiInput& midi)
         : transport(transport), midi(midi) {
         Logger::log("[GameEngine] Instance créée");

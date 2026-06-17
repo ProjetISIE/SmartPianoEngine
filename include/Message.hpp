@@ -9,10 +9,10 @@
  *
  * Un message est composé d'un type et de champs optionnels key=value
  */
-struct Message {
+class Message {
   private:
-    const std::string type;                          ///< Type du message
-    const std::map<std::string, std::string> fields; ///< Champs du message
+    std::string type;                          ///< Type du message
+    std::map<std::string, std::string> fields; ///< Champs du message
 
   public:
     /**
@@ -49,8 +49,8 @@ struct Message {
         return this->fields.find(key) != this->fields.end();
     }
 
-    std::string getType() const { return this->type; }
-    std::map<std::string, std::string> getFields() const {
+    const std::string& getType() const { return this->type; }
+    const std::map<std::string, std::string>& getFields() const {
         return this->fields;
     }
 };

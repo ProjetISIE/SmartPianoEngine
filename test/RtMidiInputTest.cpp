@@ -103,17 +103,19 @@ class TestableRtMidiInput : public RtMidiInput {
     bool throwOnOpen = false;
 
   protected:
-    IRtMidiIn* createMidiIn() override {
+    std::unique_ptr<IRtMidiIn> createMidiIn() override {
         if (forceCreateError)
             throw RtMidiError("Mock creation error", RtMidiError::DRIVER_ERROR);
-        mockIn = new MockRtMidiIn();
-        mockIn->throwOnOpen = throwOnOpen;
-        return mockIn;
+        auto m = std::make_unique<MockRtMidiIn>();
+        m->throwOnOpen = throwOnOpen;
+        mockIn = m.get();
+        return m;
     }
 
-    IRtMidiOut* createMidiOut() override {
-        mockOut = new MockRtMidiOut();
-        return mockOut;
+    std::unique_ptr<IRtMidiOut> createMidiOut() override {
+        auto m = std::make_unique<MockRtMidiOut>();
+        mockOut = m.get();
+        return m;
     }
 };
 
@@ -134,11 +136,11 @@ TEST_CASE("RtMidiInput initialization success (hardware detection)") {
 /// Vérifie initialisation avec détection de FluidSynth
 class FluidSynthRtMidiInput : public TestableRtMidiInput {
   protected:
-    IRtMidiOut* createMidiOut() override {
-        auto m = new MockRtMidiOut();
+    std::unique_ptr<IRtMidiOut> createMidiOut() override {
+        auto m = std::make_unique<MockRtMidiOut>();
         m->mockPorts = {"Midi Through Port 14:0",
                         "FluidSynth:FluidSynth 128:0"};
-        mockOut = m;
+        mockOut = m.get();
         return m;
     }
 };
@@ -155,10 +157,10 @@ TEST_CASE("RtMidiInput initialization with FluidSynth detection") {
 /// Vérifie repli sur port virtuel si aucun matériel détecté
 class FallbackRtMidiInput : public TestableRtMidiInput {
   protected:
-    IRtMidiIn* createMidiIn() override {
-        auto m = new MockRtMidiIn();
+    std::unique_ptr<IRtMidiIn> createMidiIn() override {
+        auto m = std::make_unique<MockRtMidiIn>();
         m->mockPorts = {"SmartPianoEngine Port", "Midi Through"};
-        mockIn = m;
+        mockIn = m.get();
         return m;
     }
 };
@@ -281,7 +283,7 @@ TEST_CASE("RtMidiInput Real Implementation Instantiation") {
     // Tenter créer instances réelles
 
     try {
-        IRtMidiIn* in = input.createMidiIn();
+        std::unique_ptr<IRtMidiIn> in = input.createMidiIn();
         CHECK(in != nullptr);
         // Couvrir méthodes wrapper
         try {
@@ -290,18 +292,16 @@ TEST_CASE("RtMidiInput Real Implementation Instantiation") {
             std::vector<unsigned char> msg;
             in->getMessage(&msg);
         } catch (...) {}
-        delete in;
     } catch (const RtMidiError&) {
         // Attendu si pas système audio
     } catch (const std::exception&) {}
 
     try {
-        IRtMidiOut* out = input.createMidiOut();
+        std::unique_ptr<IRtMidiOut> out = input.createMidiOut();
         CHECK(out != nullptr);
         try {
             out->openVirtualPort("test_output");
         } catch (...) {}
-        delete out;
     } catch (const RtMidiError&) {
         // Attendu si pas système audio
     } catch (const std::exception&) {}

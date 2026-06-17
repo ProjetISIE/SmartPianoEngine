@@ -21,7 +21,8 @@ class AnswerValidator {
      * @param noteAttendue La note attendue (ex: "C4").
      * @return true si la note jouee correspond a la note attendue, false sinon.
      */
-    bool valider(const std::string& noteJouee, const std::string& noteAttendue);
+    static bool valider(const std::string& noteJouee,
+                        const std::string& noteAttendue);
 
     /**
      * @brief Valide un accord sans prendre en compte le renversement.
@@ -33,8 +34,8 @@ class AnswerValidator {
      * @return true si les deux accords contiennent les memes notes, false
      * sinon.
      */
-    bool validerAccordSR(const std::vector<std::string>& accordJoue,
-                         const std::vector<std::string>& accordAttendu);
+    static bool validerAccordSR(const std::vector<std::string>& accordJoue,
+                                const std::vector<std::string>& accordAttendu);
 
     /**
      * @brief Valide un accord avec prise en compte d'un renversement
@@ -52,7 +53,7 @@ class AnswerValidator {
      * @return true si l'accord joue correspond a l'accord attendu pour le
      * renversement donne, false sinon.
      */
-    bool
+    static bool
     validerAccordRenversement(const std::vector<std::string>& accordJoue,
                               const std::vector<std::string>& accordAttendu,
                               uint32_t renversement);
@@ -63,14 +64,14 @@ class AnswerValidator {
      * @param note Nom de la note (ex: "C", "Gb", "D#")
      * @return Valeur MIDI (0-11) ou -1 si invalide
      */
-    int getNoteValue(std::string noteName) const;
+    static int getNoteValue(std::string noteName);
 
     /**
      * @brief Convertit une note avec octave en valeur MIDI absolue
      * @param note Str de la note (ex: "C4")
      * @return Valeur MIDI absolue ou -1 si invalide
      */
-    int getAbsoluteMidiValue(const std::string& noteStr) const;
+    static int getAbsoluteMidiValue(const std::string& noteStr);
 };
 
 #endif // ANSWERVALIDATOR_HPP

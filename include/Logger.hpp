@@ -67,14 +67,12 @@ class Logger {
      * @param message Message à écrire
      * @param isError true pour log d'erreurs, false pour log standard
      */
-    static void writeLog(const std::string& message, std::string& path) {
+    static void writeLog(const std::string& message, const std::string& path) {
         std::lock_guard<std::mutex> lock(logMutex);
-        static int writeCount = 0;
-        if (++writeCount % 100 == 0) {
-            if (std::filesystem::exists(path) &&
-                std::filesystem::is_regular_file(path) &&
-                std::filesystem::file_size(path) > MAX_LOG_SIZE)
-                rotateLog(path); // Rotation des logs si nécessaire
+        if (std::filesystem::exists(path) &&
+            std::filesystem::is_regular_file(path) &&
+            std::filesystem::file_size(path) > MAX_LOG_SIZE) {
+            rotateLog(path); // Rotation des logs si nécessaire
         }
         // Écrit message dans fichier et dans sortie appropriés
         std::ofstream file(path, std::ios::app);

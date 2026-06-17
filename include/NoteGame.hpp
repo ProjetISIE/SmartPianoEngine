@@ -20,7 +20,6 @@ class NoteGame : public IGameMode {
     IMidiInput& midi;          ///< Référence à l'entrée MIDI
     ChallengeFactory& factory; ///< Référence à la factory
     GameConfig config;         ///< Configuration du jeu
-    AnswerValidator validator; ///< Validateur de réponses
     int challengeId;           ///< ID du challenge actuel
 
   public:

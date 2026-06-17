@@ -180,9 +180,13 @@ bool RtMidiInput::initialize() {
     }
 }
 
-IRtMidiIn* RtMidiInput::createMidiIn() { return new RtMidiInImpl(); }
+std::unique_ptr<IRtMidiIn> RtMidiInput::createMidiIn() {
+    return std::make_unique<RtMidiInImpl>();
+}
 
-IRtMidiOut* RtMidiInput::createMidiOut() { return new RtMidiOutImpl(); }
+std::unique_ptr<IRtMidiOut> RtMidiInput::createMidiOut() {
+    return std::make_unique<RtMidiOutImpl>();
+}
 
 std::vector<Note> RtMidiInput::readNotes() {
     // Attendre que des notes soient disponibles
@@ -212,14 +216,8 @@ void RtMidiInput::close() {
         inputThread.join();
     }
 
-    if (midiIn) {
-        delete midiIn;
-        midiIn = nullptr;
-    }
-    if (midiOut) {
-        delete midiOut;
-        midiOut = nullptr;
-    }
+    midiIn.reset();
+    midiOut.reset();
 }
 
 bool RtMidiInput::isReady() const {

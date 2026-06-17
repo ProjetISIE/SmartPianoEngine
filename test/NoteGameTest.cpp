@@ -70,7 +70,7 @@ TEST_CASE("NoteGame Incorrect Answer") {
     std::string expectedNote = msg1.getField("note");
 
     // Envoyer note incorrecte
-    std::string wrongNote = (expectedNote == "c4") ? "d4" : "c4";
+    std::string wrongNote = (expectedNote.front() == 'c') ? "d4" : "c4";
     midi.pushNotes({wrongNote});
 
     Message res1 = transport.waitForSentMessage();
