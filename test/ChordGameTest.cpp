@@ -169,3 +169,91 @@ TEST_CASE("ChordGame Completely Incorrect") {
     game.stop();
     if (gameThread.joinable()) gameThread.join();
 }
+
+/// Vérifie l'insensibilité à l'octave pour le jeu d'accords simples
+TEST_CASE("ChordGame Octave Insensitivity Simple Chords") {
+    MockTransport transport;
+    MockMidiInput midi;
+    ChallengeFactory factory;
+    GameConfig config;
+    config.scale = "c";
+    config.mode = "maj";
+    config.maxChallenges = 1;
+    ChordGame game(transport, midi, factory, config, false);
+
+    transport.waitForClient();
+    game.start();
+    std::thread gameThread([&game]() { game.play(); });
+
+    Message msg1 = transport.waitForSentMessage();
+    CHECK(msg1.getType() == "chord");
+    std::string notesStr = msg1.getField("notes");
+
+    std::vector<std::string> notes;
+    std::stringstream ss(notesStr);
+    std::string segment;
+    while (std::getline(ss, segment, ' ')) notes.push_back(segment);
+
+    // Décale toutes les notes d'un octave vers le bas pour tester
+    // l'insensibilité
+    std::vector<std::string> playedNotes;
+    for (const auto& note : notes) {
+        int oct = note.back() - '0';
+        playedNotes.push_back(note.substr(0, note.size() - 1) +
+                              std::to_string(oct - 1));
+    }
+
+    midi.pushNotes(playedNotes);
+
+    Message res1 = transport.waitForSentMessage();
+    CHECK(res1.getType() == "result");
+    CHECK(res1.hasField("correct"));
+    CHECK_FALSE(res1.hasField("incorrect"));
+
+    game.stop();
+    if (gameThread.joinable()) gameThread.join();
+}
+
+/// Vérifie l'insensibilité à l'octave pour le jeu d'accords avec renversements
+TEST_CASE("ChordGame Octave Insensitivity Inversed Chords") {
+    MockTransport transport;
+    MockMidiInput midi;
+    ChallengeFactory factory;
+    GameConfig config;
+    config.scale = "c";
+    config.mode = "maj";
+    config.maxChallenges = 1;
+    ChordGame game(transport, midi, factory, config, true);
+
+    transport.waitForClient();
+    game.start();
+    std::thread gameThread([&game]() { game.play(); });
+
+    Message msg1 = transport.waitForSentMessage();
+    CHECK(msg1.getType() == "chord");
+    std::string notesStr = msg1.getField("notes");
+
+    std::vector<std::string> notes;
+    std::stringstream ss(notesStr);
+    std::string segment;
+    while (std::getline(ss, segment, ' ')) notes.push_back(segment);
+
+    // Décale toutes les notes d'un octave vers le bas pour tester
+    // l'insensibilité
+    std::vector<std::string> playedNotes;
+    for (const auto& note : notes) {
+        int oct = note.back() - '0';
+        playedNotes.push_back(note.substr(0, note.size() - 1) +
+                              std::to_string(oct - 1));
+    }
+
+    midi.pushNotes(playedNotes);
+
+    Message res1 = transport.waitForSentMessage();
+    CHECK(res1.getType() == "result");
+    CHECK(res1.hasField("correct"));
+    CHECK_FALSE(res1.hasField("incorrect"));
+
+    game.stop();
+    if (gameThread.joinable()) gameThread.join();
+}

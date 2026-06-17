@@ -30,14 +30,11 @@ GameResult ChordGame::play() {
         // Générer un accord via la factory
         std::string name;
         std::vector<std::string> targetNotes;
-        int inversion = 1;
-
         if (withInversions) {
             auto tuple =
                 factory.generateInversedChord(config.scale, config.mode);
             name = std::get<0>(tuple);
             targetNotes = std::get<1>(tuple);
-            inversion = std::get<2>(tuple);
         } else {
             auto pair = factory.generateChord(config.scale, config.mode);
             name = pair.first;
@@ -96,8 +93,8 @@ GameResult ChordGame::play() {
 
         bool isValid = false;
         if (withInversions) {
-            isValid = validator.validerAccordRenversement(
-                playedNotesStr, targetNotes, inversion);
+            isValid = validator.validerAccordRenversement(playedNotesStr,
+                                                          targetNotes, 1);
         } else {
             isValid = validator.validerAccordSR(playedNotesStr, targetNotes);
         }
@@ -110,7 +107,7 @@ GameResult ChordGame::play() {
         for (const auto& played : playedNotesStr) {
             bool found = false;
             for (const auto& expected : targetNotes) {
-                if (played == expected) {
+                if (validator.valider(played, expected)) {
                     if (!correctNotes.empty()) correctNotes += " ";
                     correctNotes += played;
                     found = true;
