@@ -19,17 +19,18 @@ add_compile_options(
   # -Wconversion -Werror
 )
 
+option(COVERAGE "Mesure couverture de code" ON)
+if(COVERAGE)
+  add_compile_options(-fprofile-instr-generate -fcoverage-mapping)
+  add_link_options(-fprofile-instr-generate)
+endif()
+
 add_subdirectory(src)
 
 if(BUILD_TESTING)
   enable_testing()
   add_subdirectory(test)
 
-  option(COVERAGE "Mesure couverture de code" ON)
-  if(COVERAGE)
-    add_compile_options(-fprofile-instr-generate -fcoverage-mapping)
-    add_link_options(-fprofile-instr-generate)
-  endif()
   set(PROFRAW_MAIN "main.profraw")
   set(PROFRAW_TESTS "tests-%m.profraw")
   set(PROFDATA_FILE "coverage.profdata")

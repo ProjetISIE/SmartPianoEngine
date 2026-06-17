@@ -51,7 +51,7 @@
             ];
             buildInputs = defaultPkg.buildInputs;
             configurePhase = ''
-              cmake -DCMAKE_BUILD_TYPE=Debug -DCOVERAGE=ON -GNinja -S . -B build
+              cmake -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON -DCOVERAGE=ON -GNinja -S . -B build
             '';
             buildPhase = ''
               cmake --build build -j16
