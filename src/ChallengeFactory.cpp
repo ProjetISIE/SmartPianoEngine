@@ -22,7 +22,47 @@ const std::map<std::string, std::vector<std::string>> ChallengeFactory::scales =
      {"b_min", {"b", "c#", "d", "e", "f#", "g", "a"}}};
 
 ChallengeFactory::ChallengeFactory() : rng(std::random_device{}()) {
-    Logger::log("[ChallengeFactory] Générateur initialisé");
+    initMarkovAndSR();
+    Logger::log("[ChallengeFactory] Générateur initialisé avec Markov + SR");
+}
+
+void ChallengeFactory::initMarkovAndSR() {
+    // Matrice de Markov de base pour la pop (7 degrés: I à vii°)
+    // Lignes: de quel degré on part. Colonnes: vers quel degré on va.
+    // Base: I(0), ii(1), iii(2), IV(3), V(4), vi(5), vii°(6)
+    markovMatrix = {
+        {0.05, 0.10, 0.05, 0.20, 0.30, 0.25, 0.05}, // I
+        {0.05, 0.05, 0.05, 0.25, 0.50, 0.05, 0.05}, // ii
+        {0.05, 0.05, 0.05, 0.35, 0.05, 0.40, 0.05}, // iii
+        {0.25, 0.20, 0.05, 0.05, 0.35, 0.05, 0.05}, // IV
+        {0.50, 0.05, 0.05, 0.05, 0.05, 0.25, 0.05}, // V
+        {0.05, 0.20, 0.05, 0.45, 0.15, 0.05, 0.05}, // vi
+        {0.70, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05}  // vii°
+    };
+
+    // Initialisation du multiplicateur de SR à 1.0 partout
+    srMultiplier =
+        std::vector<std::vector<double>>(7, std::vector<double>(7, 1.0));
+}
+
+void ChallengeFactory::feedbackLastChallenge(bool success) {
+    if (lastChordIdx >= 0 && currentChordIdx >= 0) {
+        if (!success) {
+            // Echec : on augmente fortement le multiplicateur (urgence)
+            srMultiplier[lastChordIdx][currentChordIdx] *= 5.0;
+            // Plafond pour éviter un overflow
+            if (srMultiplier[lastChordIdx][currentChordIdx] > 100.0) {
+                srMultiplier[lastChordIdx][currentChordIdx] = 100.0;
+            }
+        } else {
+            // Succès : on divise le multiplicateur par 2 (espacement)
+            srMultiplier[lastChordIdx][currentChordIdx] /= 2.0;
+            // Plancher à 1.0 (on ne descend pas sous la probabilité naturelle)
+            if (srMultiplier[lastChordIdx][currentChordIdx] < 1.0) {
+                srMultiplier[lastChordIdx][currentChordIdx] = 1.0;
+            }
+        }
+    }
 }
 
 static int noteToValue(const std::string& noteName, int octave) {
@@ -57,16 +97,34 @@ std::pair<std::string, std::vector<std::string>>
 ChallengeFactory::generateChord(const std::string& scale,
                                 const std::string& mode) {
     auto notes = getScaleNotes(scale, mode);
-    std::uniform_int_distribution<> degDist(0, 6);
     std::uniform_int_distribution<> octaveDist(3, 4);
 
     int rootIdx, baseOctave;
-    do {
-        rootIdx = degDist(rng);
-        baseOctave = octaveDist(rng);
-    } while (rootIdx == lastChordIdx && baseOctave == lastOctave);
 
-    lastChordIdx = rootIdx;
+    // Génération basée sur Markov + Répétition Espacée (SR)
+    if (currentChordIdx == -1) {
+        // Premier accord : tirage aléatoire uniforme
+        std::uniform_int_distribution<> degDist(0, 6);
+        rootIdx = degDist(rng);
+    } else {
+        // Tirage pondéré
+        std::vector<double> weights(7, 0.0);
+        for (int i = 0; i < 7; ++i) {
+            weights[i] = markovMatrix[currentChordIdx][i] *
+                         srMultiplier[currentChordIdx][i];
+        }
+        weights[currentChordIdx] =
+            0.0; // Eviter la répétition du même accord en boucle
+
+        std::discrete_distribution<> dist(weights.begin(), weights.end());
+        rootIdx = dist(rng);
+    }
+
+    baseOctave = octaveDist(rng);
+
+    // Mise à jour de l'état des transitions
+    lastChordIdx = currentChordIdx;
+    currentChordIdx = rootIdx;
     lastOctave = baseOctave;
 
     int thirdIdx = (rootIdx + 2) % 7;

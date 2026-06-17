@@ -15,13 +15,26 @@ class ChallengeFactory {
   private:
     std::mt19937 rng; ///< Générateur de nombres aléatoires
     int lastChordIdx{-1};
+    int currentChordIdx{-1}; ///< Index de l'accord en cours
     int lastOctave{-1};
+
+    // Matrices pour le modèle de génération (Markov) et Répétition Espacée (SR)
+    std::vector<std::vector<double>> markovMatrix;
+    std::vector<std::vector<double>> srMultiplier;
+
+    void initMarkovAndSR();
 
     // Tables de gammes harmonisées avec le protocole
     static const std::map<std::string, std::vector<std::string>> scales;
 
   public:
     ChallengeFactory();
+
+    /**
+     * @brief Retour sur l'exercice précédent pour adapter la répétition espacée
+     * @param success true si l'exercice a été réussi, false si échec
+     */
+    void feedbackLastChallenge(bool success);
 
     /**
      * @brief Génère une note aléatoire dans une gamme et un mode

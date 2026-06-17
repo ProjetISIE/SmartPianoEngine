@@ -129,7 +129,10 @@ GameResult ChordGame::play() {
         if (!incorrectNotes.empty()) resultFields["incorrect"] = incorrectNotes;
         this->transport.send(Message("result", resultFields));
 
-        if (isValid && incorrectNotes.empty()) {
+        bool isPerfect = (isValid && incorrectNotes.empty());
+        this->factory.feedbackLastChallenge(isPerfect);
+
+        if (isPerfect) {
             perfectCount++;
             Logger::log("[ChordGame] Résultat: parfait");
         } else if (correctCount > 0) {

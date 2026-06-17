@@ -424,9 +424,9 @@ notation standard (lettre a-g + altération optionnelle + octave 0-8).
 tous les accords musicaux mappés par tonalité et degré avec leurs notes MIDI
 correspondantes (ex: Do majeur I = C4, E4, G4).
 
-[`ChallengeFactory`](include/ChallengeFactory.hpp) Générateur aléatoire de notes
+[`ChallengeFactory`](include/ChallengeFactory.hpp) Générateur de notes
 et d'accords (simples ou avec renversements) selon une gamme et un mode musical
-donné.
+donné. Intègre un **modèle de Markov** couplé à un système de **répétition espacée** en mémoire vive pour cibler et faire retravailler dynamiquement les enchaînements difficiles lors d'une session.
 
 [`AnswerValidator`](include/AnswerValidator.hpp) Validateur spécialisé qui
 compare notes et accords joués vs attendus, avec support des renversements
