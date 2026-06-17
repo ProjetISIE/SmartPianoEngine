@@ -71,6 +71,7 @@ class MockRtMidiOut : public IRtMidiOut {
   public:
     bool openPortCalled = false;
     bool openVirtualPortCalled = false;
+    std::vector<std::string> mockPorts;
 
     void openPort(unsigned int portNumber,
                   const std::string& portName) override {
@@ -84,9 +85,9 @@ class MockRtMidiOut : public IRtMidiOut {
         openVirtualPortCalled = true;
     }
 
-    unsigned int getPortCount() override { return 0; }
+    unsigned int getPortCount() override { return mockPorts.size(); }
     std::string getPortName(unsigned int portNumber) override {
-        (void)portNumber;
+        if (portNumber < mockPorts.size()) return mockPorts[portNumber];
         return "";
     }
 };
@@ -128,6 +129,27 @@ TEST_CASE("RtMidiInput initialization success (hardware detection)") {
     CHECK(input.mockOut->openVirtualPortCalled);
     input.close();
     CHECK_FALSE(input.isReady());
+}
+
+/// Vérifie initialisation avec détection de FluidSynth
+class FluidSynthRtMidiInput : public TestableRtMidiInput {
+  protected:
+    IRtMidiOut* createMidiOut() override {
+        auto m = new MockRtMidiOut();
+        m->mockPorts = {"Midi Through Port 14:0",
+                        "FluidSynth:FluidSynth 128:0"};
+        mockOut = m;
+        return m;
+    }
+};
+
+TEST_CASE("RtMidiInput initialization with FluidSynth detection") {
+    FluidSynthRtMidiInput input;
+    CHECK(input.initialize());
+    CHECK(input.isReady());
+    CHECK(input.mockIn->openPortCalled);
+    CHECK(input.mockOut->openVirtualPortCalled);
+    input.close();
 }
 
 /// Vérifie repli sur port virtuel si aucun matériel détecté

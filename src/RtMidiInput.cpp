@@ -1,6 +1,7 @@
 #include "RtMidiInput.hpp"
 #include "Logger.hpp"
 #include <chrono>
+#include <cstdlib>
 #include <map>
 #include <rtmidi/RtMidi.h>
 #include <thread>
@@ -72,21 +73,83 @@ bool RtMidiInput::initialize() {
         Logger::log("[RtMidiInput] Nombre de ports MIDI trouvés: {}",
                     std::to_string(nPorts));
 
+        unsigned int hardwarePortIndex = 0;
         for (unsigned int i = 0; i < nPorts; i++) {
             std::string portName = midiIn->getPortName(i);
             Logger::log("[RtMidiInput] Port {}: {}", std::to_string(i),
                         portName);
             // On cherche un clavier (ex: "reface CP", "USB MIDI", etc.)
-            // On évite de se connecter à soi-même ou à "Midi Through"
+            // On évite de se connecter à soi-même, "Midi Through", ou
+            // "FluidSynth"
             if (portName.find("SmartPianoEngine") == std::string::npos &&
-                portName.find("Through") == std::string::npos) {
+                portName.find("Through") == std::string::npos &&
+                portName.find("FluidSynth") == std::string::npos &&
+                portName.find("fluidsynth") == std::string::npos &&
+                portName.find("FLUID Synth") == std::string::npos) {
                 Logger::log("[RtMidiInput] Tentative d'ouverture du port: {}",
                             portName);
                 midiIn->openPort(i);
                 hardwareFound = true;
+                hardwarePortIndex = i;
                 Logger::log("[RtMidiInput] Connecté au port matériel: {}",
                             portName);
                 break;
+            }
+        }
+
+        if (hardwareFound) {
+            // Check if there is a running instance of FluidSynth
+            unsigned int nOutPorts = midiOut->getPortCount();
+            bool fluidSynthFound = false;
+            std::string fluidSynthPortName;
+            for (unsigned int j = 0; j < nOutPorts; j++) {
+                std::string outPortName = midiOut->getPortName(j);
+                if (outPortName.find("FluidSynth") != std::string::npos ||
+                    outPortName.find("fluidsynth") != std::string::npos ||
+                    outPortName.find("FLUID Synth") != std::string::npos) {
+                    fluidSynthFound = true;
+                    fluidSynthPortName = outPortName;
+                    break;
+                }
+            }
+            if (fluidSynthFound) {
+                std::string keyboardPortName =
+                    midiIn->getPortName(hardwarePortIndex);
+                Logger::log("[RtMidiInput] FluidSynth détecté sur le port: {}",
+                            fluidSynthPortName);
+
+                auto getClientPort = [](const std::string& name) {
+                    size_t lastSpace = name.find_last_of(' ');
+                    if (lastSpace != std::string::npos) {
+                        std::string lastToken = name.substr(lastSpace + 1);
+                        if (lastToken.find(':') != std::string::npos) {
+                            return lastToken;
+                        }
+                    }
+                    return name;
+                };
+
+                std::string src = getClientPort(keyboardPortName);
+                std::string dest = getClientPort(fluidSynthPortName);
+                Logger::log("[RtMidiInput] Tentative de connexion via "
+                            "aconnect: {} -> {}",
+                            src, dest);
+
+                std::string command =
+                    "aconnect \"" + src + "\" \"" + dest + "\"";
+                int status = std::system(command.c_str());
+                if (status == 0) {
+                    Logger::log("[RtMidiInput] Connexion aconnect réussie de "
+                                "{} vers {}",
+                                src, dest);
+                } else {
+                    Logger::err(
+                        "[RtMidiInput] Échec de la commande aconnect: {}",
+                        std::to_string(status));
+                }
+            } else {
+                Logger::log(
+                    "[RtMidiInput] Aucun synthétiseur FluidSynth détecté");
             }
         }
 
