@@ -26,6 +26,23 @@ void GameEngine::stop() {
 void GameEngine::handleClientConnection() {
     Logger::log("[GameEngine] En attente de connexion client");
     this->transport.waitForClient();
+
+    if (this->transport.isClientConnected()) {
+        struct GameDesc {
+            std::string id, name;
+            int keys;
+        };
+        std::vector<GameDesc> games = {
+            {"note", "Jeu de notes", 7},
+            {"chord", "Jeu d'accords", 14},
+            {"inversed", "Jeu d'accords renversés", 14}};
+        for (const auto& g : games) {
+            this->transport.send(
+                Message("gametype", {{"id", g.id},
+                                     {"name", g.name},
+                                     {"keys", std::to_string(g.keys)}}));
+        }
+    }
     while (this->transport.isClientConnected()) {
         // Attendre un message de configuration
         Message msg = this->transport.receive();
