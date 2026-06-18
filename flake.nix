@@ -51,7 +51,8 @@
             ];
             buildInputs = defaultPkg.buildInputs;
             configurePhase = ''
-              cmake -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON -DCOVERAGE=ON -GNinja -S . -B build
+              cmake -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON \
+                -DCOVERAGE=ON -GNinja -B build -S .
             '';
             buildPhase = ''
               cmake --build build -j16
@@ -109,8 +110,9 @@
                 # Export compile commands JSON for LSP and other tools
                 shellHook = ''
                   export LD_LIBRARY_PATH="${pkgs.lib.makeLibraryPath defaultPkg.buildInputs}:$LD_LIBRARY_PATH"
-                  cmake -S . -B build -GNinja -DCMAKE_BUILD_TYPE=Debug \
-                    -DCOVERAGE=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+                  cmake -GNinja -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+                    -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON -DCOVERAGE=ON \
+                    -B build # -S .
                 '';
               };
         }
