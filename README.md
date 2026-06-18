@@ -10,8 +10,6 @@ lang: fr
   - [Gammes Supportées](#gammes-supportées)
   - [Modes Supportés](#modes-supportés)
 - [Retour Audio](#retour-audio)
-- [Matériel](#matériel)
-- [Dépannage et Résolution des Problèmes](#dépannage-et-résolution-des-problèmes)
 - [Outillage](#outillage)
 - [Compilation & Exécution](#compilation-exécution)
   - [Test Manuel](#test-manuel)
@@ -28,14 +26,17 @@ lang: fr
   - [Ajout d’un Transport](#ajout-dun-transport)
 - [Architecture](#architecture)
   - [Composants Musicaux](#composants-musicaux)
-  - [Utilitaires](#utilitaires)
-  - [Diagramme de Flux](#diagramme-de-flux)
 
 <!--toc:end-->
 
 Smart Piano est un système aidant à progresser au piano en s'entrainant à en
 jouer d’une manière optimisant l’apprentissage grâce à des exercices
 intelligents.
+
+Ce dépôt est la partie moteur de jeu, déterminant les challenges et les règles
+du jeu, mais ne communiquent que via un [protocole](PROTOCOL.md) textuel simple.
+Une [interface utilisateur] a été développée sur ce protocole pour rendre
+l’utilisation agréable.
 
 L’utilisateur interagit via un **clavier MIDI** connecté au dispositif Smart
 Piano, sur lequel fonctionne l’application.
@@ -80,27 +81,6 @@ développement (`C++`).
 données _MIDI_ (les notes jouées) en fonction d’exercices. Pour entendre un son
 de piano, il est nécessaire de router aussi les données _MIDI_ vers un
 synthétiseur tel que [FluidSynth] tournant en parallèle.
-
-## Matériel
-
-Smart Piano a été conçu pour fonctionner avec :
-
-- **Raspberry Pi 4**
-  - Sous **Raspberry Pi OS**
-  - MicroSD de **32 Go**
-- **Écran tactile** connecté à la Raspberry Pi (via HDMI)
-- **Clavier MIDI** standard (ex. SWISSONIC EasyKeys49)
-
-Il est néanmoins possible que l'application fonctionne sur d'autres systèmes
-d’exploitations, architectures ou configurations, sans garantie.
-
-## Dépannage et Résolution des Problèmes
-
-| **Problème**                | **Solution**                                                                        |
-| --------------------------- | ----------------------------------------------------------------------------------- |
-| Aucune note n'est détectée  | Vérifier que le **clavier MIDI** est bien **branché** et reconnu avec `aconnect -l` |
-| Connexion au MDJ impossible | S’assurer que le **moteur de jeu** est bien lancé : `./engine`                      |
-| L'application plante        | **Relancer l'application**, voire **redémarrer la Raspberry Pi**                    |
 
 ## Outillage
 
@@ -424,40 +404,17 @@ notation standard (lettre a-g + altération optionnelle + octave 0-8).
 tous les accords musicaux mappés par tonalité et degré avec leurs notes MIDI
 correspondantes (ex: Do majeur I = C4, E4, G4).
 
-[`ChallengeFactory`](include/ChallengeFactory.hpp) Générateur de notes
-et d'accords (simples ou avec renversements) selon une gamme et un mode musical
-donné. Intègre un **modèle de Markov** couplé à un système de **répétition espacée** en mémoire vive pour cibler et faire retravailler dynamiquement les enchaînements difficiles lors d'une session.
+[`ChallengeFactory`](include/ChallengeFactory.hpp) Générateur de notes et
+d'accords (simples ou avec renversements) selon une gamme et un mode musical
+donné. Intègre un **modèle de Markov** couplé à un système de **répétition
+espacée** en mémoire vive pour cibler et faire retravailler dynamiquement les
+enchaînements difficiles lors d'une session.
 
 [`AnswerValidator`](include/AnswerValidator.hpp) Validateur spécialisé qui
 compare notes et accords joués vs attendus, avec support des renversements
 d'accords.
 
-### Utilitaires
-
-[`Logger`](include/Logger.hpp) Système de journalisation thread-safe avec
-rotation automatique de fichiers logs (standard et erreurs), formatage avec
-timestamps.
-
-### Diagramme de Flux
-
-```
-main.cpp                                                                      
-  └─> GameEngine(transport, midi)                                             
-        ├─> transport.start()                                                 
-        └─> run() [boucle principale]                                         
-              ├─> transport.waitForClient()                                   
-              ├─> transport.receive() → Message config                        
-              ├─> createGameMode(config) → IGameMode                          
-              │     ├─> NoteGame                                              
-              │     └─> ChordGame                                             
-              └─> gameMode.play(transport, midi)                              
-                    ├─> ChallengeFactory.generate() → Challenge               
-                    ├─> transport.send(challenge)                             
-                    ├─> midi.readNotes() → Notes jouées                       
-                    ├─> AnswerValidator.validate() → Résultat                 
-                    └─> transport.send(result)
-```
-
+[boitier-support VESA]: https://makerworld.com/en/models/2940514-raspberry-pi-4-vesa-case
 [CMake]: https://cmake.org
 [Clang]: https://clang.llvm.org
 [clangd]: https://clangd.llvm.org
@@ -472,11 +429,17 @@ main.cpp
 [FluidSynth]: https://www.fluidsynth.org
 [Git]: https://git-scm.com
 [Helix]: https://helix-editor.com
+[interface utilisateur]: https://github.com/ProjetISIE/SmartPianoLightUI
+[Joy-It RB-LCD-10-2]: https://joy-it.net/en/products/RB-LCD-10-2
 [lcov]: https://github.com/linux-test-project/lcov
 [lldb]: https://lldb.llvm.org
 [llvm-cov]: https://llvm.org/docs/CommandGuide/llvm-cov.html
 [Nix]: https://nixos.org
+[NixGL]: https://github.com/nix-community/nixGL
 [Polytech Tours]: https://polytech.univ-tours.fr
+[Raspberry Pi 4]: https://www.raspberrypi.com/products/raspberry-pi-4-model-b
+[Raylib]: https://www.raylib.com
+[RB-LCD-10-2]: https://joy-it.net/en/products/RB-LCD-10-2
 [socat]: http://www.dest-unreach.org/socat
 [tio]: https://github.com/tio/tio
 [VS Code]: https://code.visualstudio.com
