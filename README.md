@@ -348,9 +348,75 @@ particulier celles des [Conventions de Code](#conventions-de-code).
 
 ### Ajout d’un Mode de Jeu
 
-1. Créer une classe héritant de `IGameMode`
-2. Implémenter `start()`, `play()`, `stop()`
-3. Enregistrer dans `GameEngine::createGameMode()`
+Pour ajouter un nouveau mode de jeu, suivez ces étapes. Prenons l'exemple d'un
+jeu de rythme (`rhythm`) :
+
+1. **Créer la classe du mode de jeu** Créez les fichiers d'en-tête et de source
+   (ex. `include/RhythmGame.hpp` et `src/RhythmGame.cpp`). La classe doit
+   hériter de l'interface `IGameMode`.
+
+   ```cpp
+   #pragma once
+   #include "IGameMode.hpp"
+   #include "ITransport.hpp"
+   #include "IMidiInput.hpp"
+
+   class RhythmGame : public IGameMode {
+     public:
+       RhythmGame(ITransport& transport, IMidiInput& midi, GameConfig config);
+       void start() override;
+       GameResult play() override;
+       void stop() override;
+       
+     private:
+       ITransport& transport;
+       IMidiInput& midi;
+       GameConfig config;
+       bool running{false};
+   };
+   ```
+
+2. **Implémenter les méthodes de l'interface** Dans le fichier source (`.cpp`),
+   implémentez la logique :
+   - `start()` : initialise l'état du jeu.
+   - `play()` : contient la boucle principale de la partie. Génère les défis
+     (ex. jouer en rythme), écoute le piano via `IMidiInput`, envoie l'état au
+     client via `ITransport`, et retourne un `GameResult`.
+   - `stop()` : permet l'interruption prématurée du jeu (ex. via un appui de
+     touche d'abandon, ou la déconnexion du client).
+
+3. **Déclarer le mode au client** Dans `src/GameEngine.cpp` (méthode
+   `handleClientConnection()`), ajoutez votre mode dans la liste diffusée au
+   démarrage pour que l'interface le propose :
+   ```cpp
+   std::vector<GameDesc> games = {
+       {"note", "Jeu de notes", 7},
+       {"chord", "Jeu d'accords", 14},
+       {"inversed", "Jeu d'accords renversés", 14},
+       {"rhythm", "Jeu de rythme", 7} // Nouveau mode !
+   };
+   ```
+
+4. **L'enregistrer dans la fabrique** Toujours dans `src/GameEngine.cpp`
+   (méthode `createGameMode()`), ajoutez la condition pour instancier votre jeu
+   :
+   ```cpp
+   std::unique_ptr<IGameMode>
+   GameEngine::createGameMode(const GameConfig& config) {
+       if (config.gameType == "note")
+           return std::make_unique<NoteGame>(/*...*/);
+       // ...
+       else if (config.gameType == "rhythm")
+           return std::make_unique<RhythmGame>(this->transport, this->midi, config);
+       
+       Logger::err("[GameEngine] Mode de jeu inconnu: {}", config.gameType);
+       return nullptr;
+   }
+   ```
+
+5. **Ajouter aux sources compilées** N'oubliez pas d'ajouter
+   `src/RhythmGame.cpp` à la liste des fichiers source compilés dans le fichier
+   `CMakeLists.txt` (`add_executable(main ...)` et/ou pour les tests unitaires).
 
 ### Ajout d’un Transport
 
