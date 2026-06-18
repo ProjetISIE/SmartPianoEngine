@@ -13,6 +13,7 @@ TEST_CASE("GameEngine workflow") {
 
     std::thread engineThread([&engine]() { engine.run(); });
     transport.waitForClient();
+    for (int i = 0; i < 3; ++i) transport.waitForSentMessage();
 
     Message configMsg("config",
                       {{"game", "note"}, {"scale", "c"}, {"mode", "maj"}});
@@ -39,6 +40,7 @@ TEST_CASE("GameEngine Error Handling") {
 
     std::thread engineThread([&engine]() { engine.run(); });
     transport.waitForClient();
+    for (int i = 0; i < 3; ++i) transport.waitForSentMessage();
 
     /// Vérifie erreur config manquante (champ "game" absent)
     SUBCASE("Invalid Config (Missing Game Type)") {
@@ -110,6 +112,7 @@ TEST_CASE("GameEngine Game Modes") {
     GameEngine engine(transport, midi);
     std::thread engineThread([&engine]() { engine.run(); });
     transport.waitForClient();
+    for (int i = 0; i < 3; ++i) transport.waitForSentMessage();
 
     /// Vérifie mode Chord (accords sans renversement)
     SUBCASE("Chord Game") {
@@ -145,6 +148,7 @@ TEST_CASE("GameEngine Session Interruptions") {
     GameEngine engine(transport, midi);
     std::thread engineThread([&engine]() { engine.run(); });
     transport.waitForClient();
+    for (int i = 0; i < 3; ++i) transport.waitForSentMessage();
 
     /// Vérifie gestion quit pendant session (avant ready)
     SUBCASE("Quit during session (before ready)") {
@@ -273,6 +277,7 @@ TEST_CASE("GameEngine Exception in handleClientConnection") {
 
     std::thread engineThread([&engine]() { engine.run(); });
     transport.waitForClient();
+    for (int i = 0; i < 3; ++i) transport.waitForSentMessage();
 
     // Forcer exception en envoyant message mal formé ou déconnectant
     // abruptement La boucle devrait attraper exception et continuer

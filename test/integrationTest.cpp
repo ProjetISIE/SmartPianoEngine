@@ -12,6 +12,7 @@ TEST_CASE("Full System Integration Test (Mocked IO)") {
     GameEngine engine(transport, midi);
     std::thread engineThread([&engine]() { engine.run(); });
     transport.waitForClient();
+    for (int i = 0; i < 3; ++i) transport.waitForSentMessage();
     Message configMsg("config", {{"game", "note"},
                                  {"scale", "c"},
                                  {"mode", "maj"},
