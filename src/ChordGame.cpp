@@ -122,6 +122,18 @@ GameResult ChordGame::play() {
             }
         }
 
+        // CORRECTION : Si le jeu est en mode renversement, que la forme de
+        // l'accord est invalide (isValid == false), mais que l'utilisateur a
+        // joué toutes les bonnes notes dans le désordre ou explosées sur
+        // plusieurs octaves (incorrectNotes.empty()), l'interface ne montrait
+        // aucune erreur. On force donc toutes ces notes à s'afficher en erreur
+        // (rouge) pour indiquer que le renversement est faux.
+        if (withInversions && !isValid && incorrectNotes.empty()) {
+            incorrectNotes = correctNotes;
+            correctNotes = "";
+            correctCount = 0;
+        }
+
         std::map<std::string, std::string> resultFields{
             {"id", std::to_string(this->challengeId)},
             {"duration", std::to_string(duration)}};
