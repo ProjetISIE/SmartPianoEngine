@@ -43,23 +43,39 @@ void ChallengeFactory::initMarkovAndSR() {
     // Initialisation du multiplicateur de SR à 1.0 partout
     srMultiplier =
         std::vector<std::vector<double>>(7, std::vector<double>(7, 1.0));
+
+    noteSrMultiplier = std::vector<double>(7, 1.0);
+
+    invMarkovMatrix = {{0.1, 0.45, 0.45}, {0.45, 0.1, 0.45}, {0.45, 0.45, 0.1}};
+    invSrMultiplier =
+        std::vector<std::vector<double>>(3, std::vector<double>(3, 1.0));
 }
 
 void ChallengeFactory::feedbackLastChallenge(bool success) {
-    if (lastChordIdx >= 0 && currentChordIdx >= 0) {
+    auto updateMultiplier = [](double& val, bool success) {
         if (!success) {
-            // Echec : on augmente fortement le multiplicateur (urgence)
-            srMultiplier[lastChordIdx][currentChordIdx] *= 5.0;
-            // Plafond pour éviter un overflow
-            if (srMultiplier[lastChordIdx][currentChordIdx] > 100.0) {
-                srMultiplier[lastChordIdx][currentChordIdx] = 100.0;
-            }
+            val *= 5.0;
+            if (val > 100.0) val = 100.0;
         } else {
-            // Succès : on divise le multiplicateur par 2 (espacement)
-            srMultiplier[lastChordIdx][currentChordIdx] /= 2.0;
-            // Plancher à 1.0 (on ne descend pas sous la probabilité naturelle)
-            if (srMultiplier[lastChordIdx][currentChordIdx] < 1.0) {
-                srMultiplier[lastChordIdx][currentChordIdx] = 1.0;
+            val /= 2.0;
+            if (val < 1.0) val = 1.0;
+        }
+    };
+
+    if (lastGenType == LastGenType::Note) {
+        if (currentNoteIdx >= 0 && currentNoteIdx < 7) {
+            updateMultiplier(noteSrMultiplier[currentNoteIdx], success);
+        }
+    } else if (lastGenType == LastGenType::Chord ||
+               lastGenType == LastGenType::InversedChord) {
+        if (lastChordIdx >= 0 && currentChordIdx >= 0) {
+            updateMultiplier(srMultiplier[lastChordIdx][currentChordIdx],
+                             success);
+        }
+        if (lastGenType == LastGenType::InversedChord) {
+            if (lastInversion >= 0 && currentInversion >= 0) {
+                updateMultiplier(
+                    invSrMultiplier[lastInversion][currentInversion], success);
             }
         }
     }
@@ -88,9 +104,15 @@ ChallengeFactory::getScaleNotes(const std::string& scale,
 std::string ChallengeFactory::generateNote(const std::string& scale,
                                            const std::string& mode) {
     auto notes = getScaleNotes(scale, mode);
-    std::uniform_int_distribution<> noteDist(0, notes.size() - 1);
     std::uniform_int_distribution<> octaveDist(3, 5);
-    return notes[noteDist(rng)] + std::to_string(octaveDist(rng));
+
+    std::vector<double> weights = noteSrMultiplier;
+    std::discrete_distribution<> noteDist(weights.begin(), weights.end());
+
+    currentNoteIdx = noteDist(rng);
+    lastGenType = LastGenType::Note;
+
+    return notes[currentNoteIdx] + std::to_string(octaveDist(rng));
 }
 
 std::pair<std::string, std::vector<std::string>>
@@ -166,15 +188,37 @@ ChallengeFactory::generateChord(const std::string& scale,
         notes[rootIdx] + std::to_string(baseOctave),
         notes[thirdIdx] + std::to_string(thirdOctave),
         notes[fifthIdx] + std::to_string(fifthOctave)};
+
+    if (lastGenType != LastGenType::InversedChord) {
+        lastGenType = LastGenType::Chord;
+    }
+
     return {name, chordNotes};
 }
 
 std::tuple<std::string, std::vector<std::string>, int>
 ChallengeFactory::generateInversedChord(const std::string& scale,
                                         const std::string& mode) {
+    lastGenType = LastGenType::InversedChord;
     auto chord = generateChord(scale, mode);
-    std::uniform_int_distribution<> invDist(1, 3);
-    int inversion = invDist(rng);
+
+    int inversion;
+    if (currentInversion == -1) {
+        std::uniform_int_distribution<> invDist(0, 2);
+        inversion = invDist(rng);
+    } else {
+        std::vector<double> weights(3, 0.0);
+        for (int i = 0; i < 3; ++i) {
+            weights[i] = invMarkovMatrix[currentInversion][i] *
+                         invSrMultiplier[currentInversion][i];
+        }
+        weights[currentInversion] = 0.0;
+        std::discrete_distribution<> dist(weights.begin(), weights.end());
+        inversion = dist(rng);
+    }
+
+    lastInversion = currentInversion;
+    currentInversion = inversion;
 
     auto moveNoteUp = [](std::vector<std::string>& notes) {
         if (notes.empty()) return;
@@ -185,15 +229,15 @@ ChallengeFactory::generateInversedChord(const std::string& scale,
                         std::to_string(oct + 1));
     };
 
-    if (inversion == 2) { // 1er renversement
+    if (inversion == 1) { // 1er renversement
         moveNoteUp(chord.second);
-    } else if (inversion == 3) { // 2ème renversement
+    } else if (inversion == 2) { // 2ème renversement
         moveNoteUp(chord.second);
         moveNoteUp(chord.second);
     }
 
     std::string name = chord.first;
-    if (inversion > 1) name += " " + std::to_string(inversion - 1);
+    if (inversion > 0) name += " " + std::to_string(inversion);
 
-    return {name, chord.second, inversion};
+    return {name, chord.second, inversion + 1};
 }

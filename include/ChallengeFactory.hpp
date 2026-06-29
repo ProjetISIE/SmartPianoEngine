@@ -18,9 +18,22 @@ class ChallengeFactory {
     int currentChordIdx{-1}; ///< Index de l'accord en cours
     int lastOctave{-1};
 
+    enum class LastGenType { None, Note, Chord, InversedChord };
+    LastGenType lastGenType{LastGenType::None};
+
     // Matrices pour le modèle de génération (Markov) et Répétition Espacée (SR)
     std::vector<std::vector<double>> markovMatrix;
     std::vector<std::vector<double>> srMultiplier;
+
+    // Pour le jeu de notes (SR uniquement)
+    int currentNoteIdx{-1};
+    std::vector<double> noteSrMultiplier;
+
+    // Pour les renversements (Markov + SR)
+    int lastInversion{-1};
+    int currentInversion{-1};
+    std::vector<std::vector<double>> invMarkovMatrix;
+    std::vector<std::vector<double>> invSrMultiplier;
 
     void initMarkovAndSR();
 

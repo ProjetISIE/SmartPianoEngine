@@ -99,6 +99,9 @@ GameResult NoteGame::play() {
             perfectCount++;
         }
 
+        this->factory.feedbackLastChallenge(correct && incorrectNotes.empty() &&
+                                            playedNotes.size() == 1);
+
         this->transport.send(Message("result", resultFields));
 
         if (i < maxChallenges - 1) {
