@@ -100,7 +100,8 @@ GameResult NoteGame::play() {
         }
 
         this->factory.feedbackLastChallenge(correct && incorrectNotes.empty() &&
-                                            playedNotes.size() == 1);
+                                                playedNotes.size() == 1,
+                                            duration);
 
         this->transport.send(Message("result", resultFields));
 

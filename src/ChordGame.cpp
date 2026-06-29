@@ -130,7 +130,7 @@ GameResult ChordGame::play() {
         this->transport.send(Message("result", resultFields));
 
         bool isPerfect = (isValid && incorrectNotes.empty());
-        this->factory.feedbackLastChallenge(isPerfect);
+        this->factory.feedbackLastChallenge(isPerfect, duration);
 
         if (isPerfect) {
             perfectCount++;

@@ -46,8 +46,9 @@ class ChallengeFactory {
     /**
      * @brief Retour sur l'exercice précédent pour adapter la répétition espacée
      * @param success true si l'exercice a été réussi, false si échec
+     * @param durationMs temps de réponse en millisecondes
      */
-    void feedbackLastChallenge(bool success);
+    void feedbackLastChallenge(bool success, int durationMs = 0);
 
     /**
      * @brief Génère une note aléatoire dans une gamme et un mode

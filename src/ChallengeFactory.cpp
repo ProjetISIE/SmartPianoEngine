@@ -51,13 +51,22 @@ void ChallengeFactory::initMarkovAndSR() {
         std::vector<std::vector<double>>(3, std::vector<double>(3, 1.0));
 }
 
-void ChallengeFactory::feedbackLastChallenge(bool success) {
-    auto updateMultiplier = [](double& val, bool success) {
+void ChallengeFactory::feedbackLastChallenge(bool success, int durationMs) {
+    auto updateMultiplier = [durationMs](double& val, bool success) {
         if (!success) {
-            val *= 5.0;
+            val *= 5.0; // Échec net
             if (val > 100.0) val = 100.0;
         } else {
-            val /= 2.0;
+            // Pondération continue de 0 à 10 000 ms
+            // Si t = 0s -> factor = 0.5 (val divisée par 2)
+            // Si t = 5s -> factor = 1.0 (val neutre)
+            // Si t = 10s -> factor = 1.5 (val augmentée de 50%)
+            double clampedDuration = std::max(
+                0.0, std::min(static_cast<double>(durationMs), 10000.0));
+            double factor = 0.5 + (clampedDuration / 10000.0) * (1.5 - 0.5);
+
+            val *= factor;
+
             if (val < 1.0) val = 1.0;
         }
     };
